@@ -9,27 +9,18 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
 <style>
-  :root{
-    --bg:#0a0c10; --panel:#13161d; --panel2:#191d26; --line:#262c37;
-    --text:#e9eef4; --muted:#8b94a3; --teal:#00e0c6; --gold:#f3c000; --no:#ff3b46;
-  }
-  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent}
-  html,body{margin:0;padding:0;background:var(--bg);color:var(--text);
-    font-family:'Inter',system-ui,sans-serif;-webkit-text-size-adjust:100%}
+  :root{--bg:#0a0c10;--panel:#13161d;--panel2:#191d26;--line:#262c37;--text:#e9eef4;--muted:#8b94a3;--teal:#00e0c6;--gold:#f3c000;--no:#ff3b46;}
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;padding:0;background:var(--bg);color:var(--text);font-family:'Inter',system-ui,sans-serif;-webkit-text-size-adjust:100%}
   body{padding-bottom:74px}
   .mono{font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums}
-
   body:not(.authed) header, body:not(.authed) main, body:not(.authed) nav{display:none}
   body.authed #login{display:none}
 
-  .loginwrap{position:fixed;inset:0;z-index:100;display:flex;align-items:center;justify-content:center;
-    padding:22px;background:radial-gradient(120% 80% at 50% 0%,#11151d,#0a0c10)}
-  .logincard{width:100%;max-width:340px;background:var(--panel);border:1px solid var(--line);
-    border-radius:18px;padding:26px 22px;text-align:center}
-  .logincard .logo{width:46px;height:46px;border-radius:12px;background:#0a0c10;border:1px solid var(--line);
-    display:grid;place-items:center;margin:0 auto 14px}
-  .logincard .logo span{width:20px;height:20px;border-radius:5px;
-    background:conic-gradient(#e23b3b,#2f6fed,#f3c000,#1f9d4d,#e23b3b)}
+  .loginwrap{position:fixed;inset:0;z-index:100;display:flex;align-items:center;justify-content:center;padding:22px;background:radial-gradient(120% 80% at 50% 0%,#11151d,#0a0c10)}
+  .logincard{width:100%;max-width:340px;background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:26px 22px;text-align:center}
+  .logincard .logo{width:46px;height:46px;border-radius:12px;background:#0a0c10;border:1px solid var(--line);display:grid;place-items:center;margin:0 auto 14px}
+  .logincard .logo span{width:20px;height:20px;border-radius:5px;background:conic-gradient(#e23b3b,#2f6fed,#f3c000,#1f9d4d,#e23b3b)}
   .logincard h1{font-family:'Oswald';font-weight:700;letter-spacing:.06em;font-size:21px;margin:0}
   .logincard h1 b{color:var(--teal)}
   .loginsub{color:var(--muted);font-size:13px;margin:6px 0 20px}
@@ -37,8 +28,7 @@
   .lierr{color:var(--no);font-size:13px;min-height:18px;margin:2px 0 8px;font-weight:600}
   .loginnote{color:var(--muted);font-size:11.5px;line-height:1.5;margin-top:16px}
 
-  header{position:sticky;top:0;z-index:30;background:linear-gradient(180deg,#0c0f15,#0a0c10);
-    border-bottom:1px solid var(--line);padding:10px 14px}
+  header{position:sticky;top:0;z-index:30;background:linear-gradient(180deg,#0c0f15,#0a0c10);border-bottom:1px solid var(--line);padding:10px 14px}
   .brandrow{display:flex;align-items:center;gap:10px}
   .logo{width:30px;height:30px;border-radius:8px;background:#0a0c10;border:1px solid var(--line);display:grid;place-items:center}
   .logo span{width:13px;height:13px;border-radius:3px;background:conic-gradient(#e23b3b,#2f6fed,#f3c000,#1f9d4d,#e23b3b)}
@@ -61,6 +51,7 @@
   .btn.ghost{background:transparent}
   .btn.sm{padding:7px 11px;font-size:13px;border-radius:8px}
   .btn.full{width:100%}
+  .btn:disabled{opacity:.5}
   .row{display:flex;gap:8px}.row>*{flex:1}
 
   main{padding:14px}
@@ -139,8 +130,10 @@
   .videoembed{width:100%;aspect-ratio:16/9;border:0;border-radius:12px;margin-top:14px;background:#000}
   .backbtn{align-self:flex-start;margin-bottom:6px}
 
-  nav{position:fixed;left:0;right:0;bottom:0;z-index:40;background:#0b0e14;border-top:1px solid var(--line);
-    display:flex;padding:6px 4px calc(6px + env(safe-area-inset-bottom))}
+  .toast{position:fixed;left:50%;bottom:84px;transform:translateX(-50%);background:#1c2129;border:1px solid var(--line);color:var(--text);padding:10px 16px;border-radius:10px;font-size:13px;z-index:200;opacity:0;transition:opacity .2s;pointer-events:none;max-width:90%}
+  .toast.show{opacity:1}
+
+  nav{position:fixed;left:0;right:0;bottom:0;z-index:40;background:#0b0e14;border-top:1px solid var(--line);display:flex;padding:6px 4px calc(6px + env(safe-area-inset-bottom))}
   nav button{flex:1;background:none;border:none;color:var(--muted);padding:7px 2px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:11px;font-weight:600}
   nav button svg{width:21px;height:21px;stroke:currentColor;fill:none;stroke-width:1.8}
   nav button.active{color:var(--teal)}
@@ -166,10 +159,7 @@
   <div class="brandrow">
     <div class="logo"><span></span></div>
     <div class="brand">GAPLF <b>RANKINGS</b></div>
-    <div class="userchip">
-      <span id="whoName"></span>
-      <button id="logoutBtn" class="btn ghost">Logout</button>
-    </div>
+    <div class="userchip"><span id="whoName"></span><button id="logoutBtn" class="btn ghost">Logout</button></div>
   </div>
   <div class="meetline">
     <input id="meetName" class="field" placeholder="Meet name (e.g. GAPLF National Open)" />
@@ -210,11 +200,7 @@
     <div id="rankOut"></div>
     <div class="row" style="margin-top:12px">
       <button class="btn sm ghost" id="expCsv">Export CSV</button>
-      <span id="adminTools" style="display:flex;gap:8px;flex:2">
-        <button class="btn sm ghost" id="expJson" style="flex:1">Backup</button>
-        <button class="btn sm ghost" id="impJson" style="flex:1">Restore</button>
-      </span>
-      <input type="file" id="impFile" accept="application/json" style="display:none" />
+      <button class="btn sm ghost" id="migrateBtn" style="flex:2;display:none">Upload local lifters to cloud</button>
     </div>
   </section>
 
@@ -274,52 +260,70 @@
   <button data-go="users"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.3 2.7-5 6-5s6 1.7 6 5M17 11l2 2 3-3.5"/></svg>Users</button>
 </nav>
 
+<div class="toast" id="toast"></div>
+
 <script>
-const _mem={};
-const DB={
-  get(k,d){ try{const v=localStorage.getItem(k);return v!==null?JSON.parse(v):(k in _mem?_mem[k]:d);}catch(e){return (k in _mem?_mem[k]:d);} },
-  set(k,v){ try{localStorage.setItem(k,JSON.stringify(v));}catch(e){_mem[k]=v;} }
-};
+/* ===== Supabase config ===== */
+const SB_URL='https://uqzrgipbojgfaussrzxx.supabase.co';
+const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVxenJnaXBib2pnZmF1c3Nyenh4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI3NjMxOTksImV4cCI6MjA5ODMzOTE5OX0.Da0UbA3EZ3k4NlUAE3suGsqpJnCZnDP4FpFIAqFiR1Q';
+async function sb(path,opts){ opts=opts||{};
+  const r=await fetch(SB_URL+'/rest/v1/'+path,{method:opts.method||'GET',body:opts.body,
+    headers:Object.assign({apikey:SB_KEY,Authorization:'Bearer '+SB_KEY,'Content-Type':'application/json'},opts.headers||{})});
+  const txt=await r.text();
+  if(!r.ok){ let m=txt; try{m=JSON.parse(txt).message||m;}catch(e){} throw new Error(m||('HTTP '+r.status)); }
+  return txt?JSON.parse(txt):null;
+}
+const rpc=(fn,args)=>sb('rpc/'+fn,{method:'POST',body:JSON.stringify(args||{})});
+
 const esc=s=>(s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const uid=()=>Math.random().toString(36).slice(2,8);
+const $=id=>document.getElementById(id);
+let toastT=null;
+function toast(msg){const t=$('toast');t.textContent=msg;t.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('show'),2200);}
 
-async function hash(s){
-  try{ const buf=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(s));
-    return [...new Uint8Array(buf)].map(b=>b.toString(16).padStart(2,'0')).join(''); }
-  catch(e){ let h=0; for(let i=0;i<s.length;i++){h=(h*31+s.charCodeAt(i))|0;} return 'f'+(h>>>0).toString(16); }
-}
+/* ===== state (in-memory; no local persistence) ===== */
+let session=null;              // {id, username, role, pw}
+let lifters=[], users=[], meta={name:'',date:''}, profiles={};
+let form={sex:'M',eq:'Classic'}, sortBy='gl', fSex='all', fEq='all', editId=null;
 
-let session=null;
-async function seedUsers(){ let u=DB.get('gaplf:users',null);
-  if(!u||!u.length){ u=[{id:uid(),u:'Kadeem Bowen',role:'Admin',p:await hash('admin')}]; DB.set('gaplf:users',u); } return u; }
-function adminCount(arr){return arr.filter(x=>x.role==='Admin').length;}
-document.getElementById('liBtn').onclick=doLogin;
-document.getElementById('liPass').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
+/* ===== data loading ===== */
+async function loadLifters(){ const lf=await sb('lifters?select=*');
+  lifters=(lf||[]).map(l=>({id:l.id,name:l.name,sex:l.sex,eq:l.equip,bw:Number(l.bw)||0,age:l.age_cat||'',sq:Number(l.sq)||0,bp:Number(l.bp)||0,dl:Number(l.dl)||0})); }
+async function loadUsers(){ const us=await rpc('app_list_users',{}); users=(us||[]).map(u=>({id:u.id,u:u.username,role:u.role})); }
+async function loadProfiles(){ const pf=await sb('profiles?select=*'); profiles={}; (pf||[]).forEach(p=>profiles[p.user_id]={bio:p.bio,video:p.video,img:p.img}); }
+async function loadMeta(){ const mt=await sb('app_meta?id=eq.1&select=*'); const m=(mt&&mt[0])||{}; meta={name:m.name||'',date:m.meet_date||''};
+  $('meetName').value=meta.name; $('meetDate').value=meta.date; }
+async function loadAll(){ await Promise.all([loadLifters(),loadUsers(),loadProfiles(),loadMeta()]); }
+
+/* ===== auth ===== */
+$('liBtn').onclick=doLogin;
+$('liPass').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
 async function doLogin(){
-  const u=document.getElementById('liUser').value.trim(), p=document.getElementById('liPass').value;
-  const err=document.getElementById('liErr'); err.textContent='';
-  const users=DB.get('gaplf:users',[]);
-  const found=users.find(x=>x.u.toLowerCase()===u.toLowerCase());
-  if(!found){ err.textContent='No account with that username.'; return; }
-  if((await hash(p))!==found.p){ err.textContent='Incorrect password.'; return; }
-  session={u:found.u,role:found.role,id:found.id}; DB.set('gaplf:session',session);
-  document.getElementById('liPass').value=''; applyAuth();
+  const u=$('liUser').value.trim(), p=$('liPass').value, err=$('liErr'); err.textContent='';
+  const btn=$('liBtn'); btn.disabled=true; btn.textContent='Signing in…';
+  try{
+    const res=await rpc('app_login',{p_username:u,p_password:p});
+    if(!res||!res.length){ err.textContent='Wrong username or password.'; return; }
+    session={id:res[0].id,username:res[0].username,role:res[0].role,pw:p};
+    $('liPass').value='';
+    await loadAll(); applyAuth();
+  }catch(e){ err.textContent='Could not reach the server — check your connection.'; }
+  finally{ btn.disabled=false; btn.textContent='Sign in'; }
 }
-document.getElementById('logoutBtn').onclick=()=>{ session=null; DB.set('gaplf:session',null);
-  document.body.classList.remove('authed','role-Admin','role-Lifter','role-Spectate'); };
+$('logoutBtn').onclick=()=>{ session=null; lifters=[];users=[];profiles={};
+  document.body.classList.remove('authed','role-Admin','role-Lifter','role-Spectate');
+  $('liUser').value=''; };
 
 function applyAuth(){
   document.body.classList.add('authed');
   document.body.classList.remove('role-Admin','role-Lifter','role-Spectate');
   document.body.classList.add('role-'+session.role);
   const admin=session.role==='Admin', spec=session.role==='Spectate';
-  document.getElementById('whoName').textContent=session.u+' · '+session.role;
+  $('whoName').textContent=session.username+' · '+session.role;
   document.querySelector('nav [data-go="users"]').style.display=admin?'':'none';
   document.querySelector('nav [data-go="prog"]').style.display=spec?'none':'';
-  document.getElementById('addCard').style.display=admin?'':'none';
-  document.getElementById('adminTools').style.display=admin?'flex':'none';
-  document.getElementById('meetName').disabled=!admin;
-  document.getElementById('meetDate').disabled=!admin;
+  $('addCard').style.display=admin?'':'none';
+  $('migrateBtn').style.display=admin?'':'none';
+  $('meetName').disabled=!admin; $('meetDate').disabled=!admin;
   navTo('rank'); renderRank(); if(admin) renderUsers();
 }
 function navTo(go){
@@ -327,6 +331,7 @@ function navTo(go){
   document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('active',s.id===go));
 }
 
+/* ===== GL points ===== */
 const GLC={'M-Classic':[1199.72839,1025.18162,0.00921],'F-Classic':[610.32796,1045.59282,0.03048],
   'M-Equipped':[1236.25115,1449.21864,0.01644],'F-Equipped':[758.63878,949.31382,0.02435]};
 function gl(total,bw,sex,eq){ if(!total||!bw)return 0; const c=GLC[sex+'-'+eq]; if(!c)return 0;
@@ -334,32 +339,23 @@ function gl(total,bw,sex,eq){ if(!total||!bw)return 0; const c=GLC[sex+'-'+eq]; 
 const MC=[53,59,66,74,83,93,105,120],WC=[43,47,52,57,63,69,76,84];
 function wclass(bw,sex){ const a=sex==='M'?MC:WC; if(!bw)return '–'; for(const c of a) if(bw<=c)return c+''; return a[a.length-1]+'+'; }
 
-const PLATES=[
-  {kg:25,c:'#e23b3b',h:92,w:17},
-  {kg:20,c:'#2f6fed',h:88,w:16},
-  {kg:15,c:'#f3c000',h:84,w:15,light:1},
-  {kg:10,c:'#1f9d4d',h:74,w:13},
-  {kg:5, c:'#eef1f5',h:60,w:12,light:1},
-  {kg:2.5,c:'#16191f',h:46,w:10,blk:1},
-  {kg:2, c:'#2f6fed',h:40,w:9},
-  {kg:1.5,c:'#f3c000',h:36,w:8,light:1},
-  {kg:1, c:'#1f9d4d',h:32,w:7},
-  {kg:0.5,c:'#eef1f5',h:28,w:6,light:1}
-];
-const round=(x,s=2.5)=>Math.round(x/s)*s;
+/* ===== plates ===== */
+const PLATES=[{kg:25,c:'#e23b3b',h:92,w:17},{kg:20,c:'#2f6fed',h:88,w:16},{kg:15,c:'#f3c000',h:84,w:15,light:1},
+  {kg:10,c:'#1f9d4d',h:74,w:13},{kg:5,c:'#eef1f5',h:60,w:12,light:1},{kg:2.5,c:'#16191f',h:46,w:10,blk:1},
+  {kg:2,c:'#2f6fed',h:40,w:9},{kg:1.5,c:'#f3c000',h:36,w:8,light:1},{kg:1,c:'#1f9d4d',h:32,w:7},{kg:0.5,c:'#eef1f5',h:28,w:6,light:1}];
+const round=(x,s)=>{s=s||2.5;return Math.round(x/s)*s;};
 function perSide(t,bar,cp){ let s=(t-bar-cp)/2; if(s<0)return{plates:[],left:s*2};
   const out=[];let r=s; for(const p of PLATES){while(r+1e-6>=p.kg){out.push(p);r-=p.kg;}} return{plates:out,left:round(r*2,0.01)}; }
-function plateTxt(p){ return p.light?'rgba(0,0,0,.62)':'rgba(255,255,255,.88)'; }
-function plateBorder(p){ return p.light?'rgba(0,0,0,.22)':(p.blk?'rgba(255,255,255,.35)':'rgba(0,0,0,.35)'); }
-function chipStyle(p){ const t=p.light?'var(--text)':(p.blk?'#cfd5dd':p.c); const b=p.light?'var(--muted)':(p.blk?'#5b626d':p.c); return 'border-color:'+b+';color:'+t; }
+function plateTxt(p){return p.light?'rgba(0,0,0,.62)':'rgba(255,255,255,.88)';}
+function plateBorder(p){return p.light?'rgba(0,0,0,.22)':(p.blk?'rgba(255,255,255,.35)':'rgba(0,0,0,.35)');}
+function chipStyle(p){const t=p.light?'var(--text)':(p.blk?'#cfd5dd':p.c);const b=p.light?'var(--muted)':(p.blk?'#5b626d':p.c);return 'border-color:'+b+';color:'+t;}
 function barHTML(t,bar,cp){
-  const r=perSide(t,bar,cp), plates=r.plates, left=r.left;
+  const r=perSide(t,bar,cp),plates=r.plates,left=r.left;
   const pl=p=>'<div class="plate" style="height:'+p.h+'px;width:'+p.w+'px;background:'+p.c+';color:'+plateTxt(p)+';border-color:'+plateBorder(p)+'">'+p.kg+'</div>';
   const coll=cp>0?'<div class="collar"></div>':'';
   const bv='<div class="barview"><div class="sleeve"><div class="barend"></div>'+[...plates].reverse().map(pl).join('')+coll+'<div class="center"></div>'+coll+plates.map(pl).join('')+'<div class="barend"></div></div></div>';
   const counts={};plates.forEach(p=>counts[p.kg]=(counts[p.kg]||0)+1);
-  const chips=Object.keys(counts).map(k=>{const p=PLATES.find(x=>x.kg==k);
-    return '<span class="chip" style="'+chipStyle(p)+'">'+counts[k]+' × '+k+'</span>';}).join('');
+  const chips=Object.keys(counts).map(k=>{const p=PLATES.find(x=>x.kg==k);return '<span class="chip" style="'+chipStyle(p)+'">'+counts[k]+' × '+k+'</span>';}).join('');
   const ps=plates.reduce((a,p)=>a+p.kg,0);
   const warn=left>0?'<div class="leftover">'+left+' kg short of a clean load</div>':'';
   return bv+'<div class="perside">'+(chips||'<span class="chip" style="border-color:var(--line);color:var(--muted)">bar only</span>')+'</div>'+
@@ -368,36 +364,37 @@ function barHTML(t,bar,cp){
 function miniBar(t,bar,cp){const plates=perSide(t,bar,cp).plates;
   return '<div style="display:flex;gap:2px;height:16px;align-items:flex-end;margin-top:4px">'+plates.map(p=>'<i style="display:block;height:'+(Math.round(p.h*0.15)+4)+'px;width:5px;border-radius:1px;background:'+p.c+';outline:'+(p.blk?'1px solid rgba(255,255,255,.3)':'none')+'"></i>').join('')+'</div>';}
 
-let lifters=DB.get('gaplf:lifters',[]);
-let meta=DB.get('gaplf:meta',{name:'',date:''});
-let form={sex:'M',eq:'Classic'}, sortBy='gl', fSex='all', fEq='all', editId=null;
-document.getElementById('meetName').value=meta.name||'';
-document.getElementById('meetDate').value=meta.date||'';
-document.getElementById('meetName').addEventListener('input',e=>{meta.name=e.target.value;DB.set('gaplf:meta',meta);});
-document.getElementById('meetDate').addEventListener('input',e=>{meta.date=e.target.value;DB.set('gaplf:meta',meta);});
+/* ===== meet meta (admin) ===== */
+async function saveMeta(){ if(!session||session.role!=='Admin')return;
+  try{ await rpc('app_save_meta',{p_actor:session.id,p_actor_pass:session.pw,p_name:$('meetName').value.trim()||null,p_date:$('meetDate').value||null}); toast('Meet details saved'); }
+  catch(e){ toast(e.message); } }
+$('meetName').addEventListener('change',saveMeta);
+$('meetDate').addEventListener('change',saveMeta);
 
+/* ===== rankings ===== */
 function seg(id,key){document.querySelectorAll('#'+id+' button').forEach(b=>b.onclick=()=>{
   document.querySelectorAll('#'+id+' button').forEach(x=>x.classList.toggle('on',x===b)); form[key]=b.dataset.v;});}
 seg('fSex','sex'); seg('fEq','eq');
-function readForm(){const num=id=>parseFloat(document.getElementById(id).value)||0;
-  return {name:document.getElementById('fName').value.trim(),sex:form.sex,eq:form.eq,bw:num('fBw'),
-    age:document.getElementById('fAge').value.trim(),sq:num('fSq'),bp:num('fBp'),dl:num('fDl')};}
-function clearForm(){['fName','fBw','fAge','fSq','fBp','fDl'].forEach(id=>document.getElementById(id).value='');
-  editId=null;document.getElementById('saveBtn').textContent='Add to rankings';document.getElementById('cancelEdit').style.display='none';}
-document.getElementById('saveBtn').onclick=()=>{
-  const d=readForm(); if(!d.name){alert('Enter a name');return;} if(!d.bw){alert('Bodyweight is needed for GL points');return;}
-  if(editId){const i=lifters.findIndex(x=>x.id===editId);if(i>=0)lifters[i]={...lifters[i],...d};}
-  else lifters.push({id:uid(),...d});
-  DB.set('gaplf:lifters',lifters); clearForm(); renderRank();
+function readForm(){const num=id=>parseFloat($(id).value)||0;
+  return {name:$('fName').value.trim(),sex:form.sex,eq:form.eq,bw:num('fBw'),age:$('fAge').value.trim(),sq:num('fSq'),bp:num('fBp'),dl:num('fDl')};}
+function clearForm(){['fName','fBw','fAge','fSq','fBp','fDl'].forEach(id=>$(id).value='');
+  editId=null;$('saveBtn').textContent='Add to rankings';$('cancelEdit').style.display='none';}
+$('saveBtn').onclick=async()=>{
+  const d=readForm(); if(!d.name){toast('Enter a name');return;} if(!d.bw){toast('Bodyweight is needed for GL points');return;}
+  const btn=$('saveBtn'); btn.disabled=true;
+  try{
+    await rpc('app_upsert_lifter',{p_actor:session.id,p_actor_pass:session.pw,p_id:editId||null,p_name:d.name,p_sex:d.sex,p_equip:d.eq,p_bw:d.bw,p_age:d.age||null,p_sq:d.sq,p_bp:d.bp,p_dl:d.dl});
+    await loadLifters(); clearForm(); renderRank(); toast('Saved');
+  }catch(e){ toast(e.message); } finally{ btn.disabled=false; }
 };
-document.getElementById('cancelEdit').onclick=clearForm;
+$('cancelEdit').onclick=clearForm;
 
 function rows(){return lifters.map(l=>{const total=(l.sq||0)+(l.bp||0)+(l.dl||0);
-    return {...l,total,gl:gl(total,l.bw,l.sex,l.eq),cls:wclass(l.bw,l.sex)};})
+    return Object.assign({},l,{total:total,gl:gl(total,l.bw,l.sex,l.eq),cls:wclass(l.bw,l.sex)});})
   .filter(l=>(fSex==='all'||l.sex===fSex)&&(fEq==='all'||l.eq===fEq))
   .sort((a,b)=>sortBy==='gl'?b.gl-a.gl:b.total-a.total);}
 function renderRank(){
-  const out=document.getElementById('rankOut'),data=rows();
+  const out=$('rankOut'),data=rows();
   if(!data.length){out.innerHTML='<div class="empty">No lifters yet.</div>';return;}
   const head='<thead><tr><th>#</th><th class="l">Lifter</th><th>BW</th><th>Cls</th><th>SQ</th><th>BP</th><th>DL</th><th>Total</th><th>GL</th><th></th></tr></thead>';
   const body=data.map((l,i)=>{const rk=i===0?'g1':i===1?'g2':i===2?'g3':'';
@@ -411,121 +408,91 @@ function renderRank(){
   out.innerHTML='<div class="tablewrap"><table>'+head+'<tbody>'+body+'</tbody></table></div>'+
     '<div class="note">'+data.length+' lifter'+(data.length>1?'s':'')+' shown · GL points compare strength within the same sex &amp; equipment.'+(session&&session.role==='Admin'?' Tap a row to edit.':'')+'</div>';
 }
-document.getElementById('rankOut').addEventListener('click',e=>{
+$('rankOut').addEventListener('click',async e=>{
   if(!session||session.role!=='Admin')return;
   const del=e.target.closest('[data-del]');
-  if(del){e.stopPropagation(); if(confirm('Remove this lifter?')){lifters=lifters.filter(x=>x.id!==del.dataset.del);DB.set('gaplf:lifters',lifters);if(editId===del.dataset.del)clearForm();renderRank();} return;}
+  if(del){e.stopPropagation(); if(confirm('Remove this lifter?')){try{await rpc('app_delete_lifter',{p_actor:session.id,p_actor_pass:session.pw,p_id:del.dataset.del});await loadLifters();if(editId===del.dataset.del)clearForm();renderRank();toast('Removed');}catch(err){toast(err.message);}} return;}
   const tr=e.target.closest('tr[data-id]'); if(!tr)return;
   const l=lifters.find(x=>x.id===tr.dataset.id); if(!l)return;
   editId=l.id; form.sex=l.sex; form.eq=l.eq;
   document.querySelectorAll('#fSex button').forEach(b=>b.classList.toggle('on',b.dataset.v===l.sex));
   document.querySelectorAll('#fEq button').forEach(b=>b.classList.toggle('on',b.dataset.v===l.eq));
-  const set=(id,v)=>document.getElementById(id).value=v||'';
+  const set=(id,v)=>$(id).value=(v||v===0)?v:'';
   set('fName',l.name);set('fBw',l.bw);set('fAge',l.age);set('fSq',l.sq);set('fBp',l.bp);set('fDl',l.dl);
-  document.getElementById('saveBtn').textContent='Update lifter';document.getElementById('cancelEdit').style.display='block';
+  $('saveBtn').textContent='Update lifter';$('cancelEdit').style.display='block';
   window.scrollTo({top:0,behavior:'smooth'}); renderRank();
 });
 document.querySelectorAll('[data-sort]').forEach(p=>p.onclick=()=>{sortBy=p.dataset.sort;document.querySelectorAll('[data-sort]').forEach(x=>x.classList.toggle('on',x===p));renderRank();});
 document.querySelector('[data-fsex]').onclick=function(){fSex=fSex==='all'?'M':fSex==='M'?'F':'all';this.textContent=fSex==='all'?'All':fSex==='M'?'Men':'Women';this.classList.toggle('on',fSex!=='all');renderRank();};
 document.querySelector('[data-feq]').onclick=function(){fEq=fEq==='all'?'Classic':fEq==='Classic'?'Equipped':'all';this.textContent=fEq==='all'?'All gear':fEq;this.classList.toggle('on',fEq!=='all');renderRank();};
 
-function download(name,text,type){const b=new Blob([text],{type});const u=URL.createObjectURL(b);const a=document.createElement('a');a.href=u;a.download=name;a.click();URL.revokeObjectURL(u);}
-document.getElementById('expCsv').onclick=()=>{const data=rows();if(!data.length)return;
+$('expCsv').onclick=()=>{const data=rows();if(!data.length)return;
   const head=['Rank','Name','Sex','Equip','BW','Class','Squat','Bench','Deadlift','Total','GLPoints'];
   const lines=data.map((l,i)=>[i+1,l.name,l.sex,l.eq,l.bw,l.cls,l.sq,l.bp,l.dl,l.total,l.gl.toFixed(2)].map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(','));
-  download((meta.name||'gaplf-rankings').replace(/\s+/g,'_')+'.csv',[head.join(','),...lines].join('\n'),'text/csv');};
-document.getElementById('expJson').onclick=()=>download('gaplf-backup.json',JSON.stringify({meta,lifters},null,2),'application/json');
-document.getElementById('impJson').onclick=()=>document.getElementById('impFile').click();
-document.getElementById('impFile').onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();
-  r.onload=()=>{try{const d=JSON.parse(r.result);if(d.lifters){lifters=d.lifters;DB.set('gaplf:lifters',lifters);}
-    if(d.meta){meta=d.meta;DB.set('gaplf:meta',meta);document.getElementById('meetName').value=meta.name||'';document.getElementById('meetDate').value=meta.date||'';}
-    renderRank();}catch(err){alert('Could not read that file');}};r.readAsText(f);};
+  const b=new Blob([[head.join(','),...lines].join('\n')],{type:'text/csv'});const u=URL.createObjectURL(b);
+  const a=document.createElement('a');a.href=u;a.download=(meta.name||'gaplf-rankings').replace(/\s+/g,'_')+'.csv';a.click();URL.revokeObjectURL(u);};
 
+$('migrateBtn').onclick=async()=>{
+  let local=[]; try{local=JSON.parse(localStorage.getItem('gaplf:lifters')||'[]');}catch(e){}
+  if(!local.length){toast('No local lifters found on this device.');return;}
+  if(!confirm('Upload '+local.length+' lifter(s) saved on this device to the cloud?'))return;
+  const btn=$('migrateBtn'); btn.disabled=true; let ok=0;
+  for(const l of local){ try{ await rpc('app_upsert_lifter',{p_actor:session.id,p_actor_pass:session.pw,p_id:null,p_name:l.name,p_sex:l.sex,p_equip:l.eq,p_bw:l.bw,p_age:l.age||null,p_sq:l.sq||0,p_bp:l.bp||0,p_dl:l.dl||0}); ok++; }catch(e){} }
+  await loadLifters(); renderRank(); btn.disabled=false; toast('Uploaded '+ok+' of '+local.length+' lifters');
+};
+
+/* ===== users ===== */
+function adminCount(){return users.filter(u=>u.role==='Admin').length;}
 function renderUsers(){
-  const list=DB.get('gaplf:users',[]);
-  document.getElementById('usersOut').innerHTML=list.map(u=>
-    '<div class="urow"><div class="uinfo"><span class="nm">'+esc(u.u)+'</span>'+(u.u===session.u?'<span class="tag">you</span>':'')+'</div>'+
+  $('usersOut').innerHTML=users.map(u=>
+    '<div class="urow"><div class="uinfo"><span class="nm">'+esc(u.u)+'</span>'+(u.id===session.id?'<span class="tag">you</span>':'')+'</div>'+
     '<select class="field rolesel" data-role="'+u.id+'">'+['Admin','Lifter','Spectate'].map(r=>'<option '+(r===u.role?'selected':'')+'>'+r+'</option>').join('')+'</select>'+
     '<button class="btn sm ghost" data-reset="'+u.id+'">Reset PW</button>'+
     '<button class="xbtn" data-udel="'+u.id+'">✕</button></div>').join('');
 }
-document.getElementById('addUserBtn').onclick=async()=>{
-  const name=document.getElementById('nuName').value.trim();
-  const pass=document.getElementById('nuPass').value;
-  const role=document.getElementById('nuRole').value;
-  if(!name||!pass){alert('Username and password required');return;}
-  const list=DB.get('gaplf:users',[]);
-  if(list.some(x=>x.u.toLowerCase()===name.toLowerCase())){alert('That username already exists');return;}
-  list.push({id:uid(),u:name,role,p:await hash(pass)}); DB.set('gaplf:users',list);
-  document.getElementById('nuName').value='';document.getElementById('nuPass').value='';
-  renderUsers();
+$('addUserBtn').onclick=async()=>{
+  const name=$('nuName').value.trim(),pass=$('nuPass').value,role=$('nuRole').value;
+  if(!name||!pass){toast('Username and password required');return;}
+  const btn=$('addUserBtn'); btn.disabled=true;
+  try{ await rpc('app_create_user',{p_actor:session.id,p_actor_pass:session.pw,p_username:name,p_password:pass,p_role:role});
+    $('nuName').value='';$('nuPass').value=''; await loadUsers(); renderUsers(); toast('User created'); }
+  catch(e){ toast(e.message); } finally{ btn.disabled=false; }
 };
-document.getElementById('usersOut').addEventListener('change',e=>{
+$('usersOut').addEventListener('change',async e=>{
   const sel=e.target.closest('[data-role]'); if(!sel)return;
-  const list=DB.get('gaplf:users',[]); const u=list.find(x=>x.id===sel.dataset.role); if(!u)return;
-  if(u.role==='Admin'&&sel.value!=='Admin'&&adminCount(list)===1){alert('This is the only admin — promote someone else first.');sel.value='Admin';return;}
-  u.role=sel.value; DB.set('gaplf:users',list);
-  if(u.u===session.u){session.role=u.role;DB.set('gaplf:session',session);applyAuth();navTo('users');}
+  const u=users.find(x=>x.id===sel.dataset.role); if(!u)return;
+  try{ await rpc('app_set_role',{p_actor:session.id,p_actor_pass:session.pw,p_user:u.id,p_role:sel.value});
+    await loadUsers();
+    if(u.id===session.id){ session.role=sel.value; applyAuth(); navTo('users'); } else renderUsers();
+    toast('Role updated');
+  }catch(err){ toast(err.message); sel.value=u.role; }
 });
-document.getElementById('usersOut').addEventListener('click',async e=>{
-  const rs=e.target.closest('[data-reset]'); const dl=e.target.closest('[data-udel]');
-  const list=DB.get('gaplf:users',[]);
-  if(rs){const u=list.find(x=>x.id===rs.dataset.reset);if(!u)return;
+$('usersOut').addEventListener('click',async e=>{
+  const rs=e.target.closest('[data-reset]'), dl=e.target.closest('[data-udel]');
+  if(rs){const u=users.find(x=>x.id===rs.dataset.reset);if(!u)return;
     const np=prompt('New password for '+u.u);if(np===null||np==='')return;
-    u.p=await hash(np);DB.set('gaplf:users',list);alert('Password updated for '+u.u);return;}
-  if(dl){const u=list.find(x=>x.id===dl.dataset.udel);if(!u)return;
-    if(u.u===session.u){alert("You can't delete the account you're signed in with.");return;}
-    if(u.role==='Admin'&&adminCount(list)===1){alert('Cannot delete the only admin.');return;}
-    if(confirm('Delete user '+u.u+'?')){const nl=list.filter(x=>x.id!==u.id);DB.set('gaplf:users',nl);renderUsers();}}
+    try{await rpc('app_set_password',{p_actor:session.id,p_actor_pass:session.pw,p_user:u.id,p_password:np});toast('Password updated');}catch(err){toast(err.message);}return;}
+  if(dl){const u=users.find(x=>x.id===dl.dataset.udel);if(!u)return;
+    if(confirm('Delete user '+u.u+'?')){try{await rpc('app_delete_user',{p_actor:session.id,p_actor_pass:session.pw,p_user:u.id});await loadUsers();renderUsers();toast('User deleted');}catch(err){toast(err.message);}}}
 });
 
-const TEMPLATES={
-  linear:{name:'Linear base (4 wk)',desc:'Steady volume-to-intensity build off your training max. Good general prep 8+ weeks out.',
-    weeks:[{focus:'Volume',sets:[{p:.72,r:5,n:4}]},{focus:'Volume',sets:[{p:.78,r:4,n:4}]},{focus:'Intensity',sets:[{p:.84,r:3,n:4}]},{focus:'Intensity',sets:[{p:.90,r:2,n:3}]}]},
-  accum:{name:'5-week accumulation',desc:'Higher-volume block to build work capacity before a peak. Run off ~90% training max.',
-    weeks:[{focus:'Base',sets:[{p:.68,r:6,n:4}]},{focus:'Base',sets:[{p:.71,r:6,n:4}]},{focus:'Build',sets:[{p:.74,r:5,n:5}]},{focus:'Build',sets:[{p:.77,r:4,n:5}]},{focus:'Overreach',sets:[{p:.80,r:4,n:4}]}]},
-  peak:{name:'3-week peak',desc:'Sharpening block ~3.5 weeks out. Ends on an opener single, then deload into the platform.',
-    weeks:[{focus:'Heavy triples',sets:[{p:.82,r:3,n:4}]},{focus:'Heavy doubles',sets:[{p:.88,r:2,n:3}]},{focus:'Opener single',sets:[{p:.91,r:1,n:1},{p:.70,r:3,n:2}]}]},
-  rpe:{name:'Top single + back-off',desc:'RPE-style day: work to a heavy single, then volume back-offs. Nudge the single up weekly as RPE allows.',
-    weeks:[{focus:'~RPE 8 single',sets:[{p:.90,r:1,n:1},{p:.80,r:3,n:3}]}]}
-};
-const psel=document.getElementById('pTpl');
-Object.keys(TEMPLATES).forEach(k=>{const o=document.createElement('option');o.value=k;o.textContent=TEMPLATES[k].name;psel.appendChild(o);});
-function renderProg(){const t=TEMPLATES[psel.value],tm=parseFloat(document.getElementById('pTm').value)||0;
-  document.getElementById('pDesc').textContent=t.desc;
-  document.getElementById('progOut').innerHTML=t.weeks.map((w,i)=>{
-    const lines=w.sets.map(s=>{const wt=round(tm*s.p);
-      return '<div class="setline"><div class="sx">'+s.n+' × '+s.r+'</div><div class="sw">'+wt+' kg '+miniBar(wt,20,5)+'</div><div class="sp">'+Math.round(s.p*100)+'%</div></div>';}).join('');
-    return '<div class="weekcard"><div class="weekhd"><span class="wn">Week '+(i+1)+'</span><span class="focus">'+w.focus+'</span></div>'+lines+'</div>';}).join('')
-    +'<div class="note">Percentages run off the training max (typically ~90–95% of a true 1RM). Weights round to 2.5 kg.</div>';}
-['pTpl','pLift','pTm'].forEach(id=>document.getElementById(id).addEventListener('input',renderProg));
-
-function renderLoad(){const w=parseFloat(document.getElementById('loadW').value)||0;const bar=parseFloat(document.getElementById('loadBar').value);const cp=document.getElementById('loadCollar').checked?5:0;
-  document.getElementById('loadOut').innerHTML=barHTML(w,bar,cp);}
-['loadW','loadBar','loadCollar'].forEach(id=>document.getElementById(id).addEventListener('input',renderLoad));
-
-document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{const go=b.dataset.go;navTo(go);
-  if(go==='profiles'){pView={mode:'list',uid:null};renderProfiles();}
-  if(go==='prog')renderProg();if(go==='load')renderLoad();if(go==='users')renderUsers();});
-
-/* ---------- profiles ---------- */
+/* ===== profiles ===== */
 let pView={mode:'list',uid:null}, pendingImg=null;
 function initials(n){return (n||'?').trim().split(/\s+/).map(w=>w[0]).slice(0,2).join('').toUpperCase();}
-function avatarHTML(p,name){ return (p&&p.img)?'<img class="avatar" src="'+p.img+'" alt="">':'<div class="avatar ph">'+initials(name)+'</div>'; }
-function ytId(u){ if(!u)return null; const m=u.match(/(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/)|youtu\.be\/)([\w-]{11})/); return m?m[1]:null; }
-function videoHTML(url){ if(!url)return ''; const id=ytId(url);
+function avatarHTML(p,name){return (p&&p.img)?'<img class="avatar" src="'+p.img+'" alt="">':'<div class="avatar ph">'+initials(name)+'</div>';}
+function ytId(u){if(!u)return null;const m=u.match(/(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/)|youtu\.be\/)([\w-]{11})/);return m?m[1]:null;}
+function videoHTML(url){if(!url)return '';const id=ytId(url);
   return id?'<iframe class="videoembed" src="https://www.youtube.com/embed/'+id+'" allowfullscreen></iframe>'
-           :'<a class="btn full" style="margin-top:14px" href="'+esc(url)+'" target="_blank" rel="noopener">Watch video ↗</a>'; }
+           :'<a class="btn full" style="margin-top:14px" href="'+esc(url)+'" target="_blank" rel="noopener">Watch video ↗</a>';}
 function renderProfiles(){
-  const users=DB.get('gaplf:users',[]), profs=DB.get('gaplf:profiles',{});
-  const out=document.getElementById('profilesOut'), title=document.getElementById('profTitle');
+  const out=$('profilesOut'),title=$('profTitle');
   if(pView.mode==='list'){ title.textContent='Athlete profiles';
-    out.innerHTML = users.length? '<div class="pgrid">'+users.map(u=>{const p=profs[u.id];
+    out.innerHTML=users.length?'<div class="pgrid">'+users.map(u=>{const p=profiles[u.id];
       return '<div class="pcard" data-open="'+u.id+'">'+avatarHTML(p,u.u)+'<div class="pn">'+esc(u.u)+'</div><div class="pr">'+u.role+'</div></div>';}).join('')+'</div>'
-      : '<div class="empty">No athletes yet.</div>';
+      :'<div class="empty">No athletes yet.</div>';
     return; }
   const u=users.find(x=>x.id===pView.uid); if(!u){pView={mode:'list',uid:null};return renderProfiles();}
-  const p=profs[u.id]||{}; const canEdit=session&&(session.role==='Admin'||session.id===u.id);
+  const p=profiles[u.id]||{}; const canEdit=session&&(session.role==='Admin'||session.id===u.id);
   if(pView.mode==='edit'&&canEdit){ title.textContent='Edit profile';
     out.innerHTML='<button class="btn sm ghost backbtn" data-back="view">‹ Cancel</button>'+
       '<div class="card pdetail"><div id="editAvatar">'+avatarHTML(p,u.u)+'</div>'+
@@ -545,39 +512,66 @@ function renderProfiles(){
     (session&&session.role==='Admin'?'<button class="btn full ghost" style="margin-top:8px;color:var(--no);border-color:var(--no)" data-clear="'+u.id+'">Clear profile</button>':'')+
     '</div>';
 }
-function resizeImg(file,max,cb){ const img=new Image(),url=URL.createObjectURL(file);
-  img.onload=()=>{URL.revokeObjectURL(url); const sc=Math.min(1,max/Math.max(img.width,img.height));
+function resizeImg(file,max,cb){const img=new Image(),url=URL.createObjectURL(file);
+  img.onload=()=>{URL.revokeObjectURL(url);const sc=Math.min(1,max/Math.max(img.width,img.height));
     const w=Math.round(img.width*sc),h=Math.round(img.height*sc);
     const c=document.createElement('canvas');c.width=w;c.height=h;c.getContext('2d').drawImage(img,0,0,w,h);
     cb(c.toDataURL('image/jpeg',0.82));};
-  img.onerror=()=>alert('Could not read that image'); img.src=url; }
-document.getElementById('profilesOut').addEventListener('change',e=>{
+  img.onerror=()=>toast('Could not read that image');img.src=url;}
+$('profilesOut').addEventListener('change',e=>{
   const f=e.target.closest('#pImgFile'); if(!f||!f.files[0])return;
-  resizeImg(f.files[0],480,d=>{pendingImg=d; const ea=document.getElementById('editAvatar'); if(ea)ea.innerHTML='<img class="avatar" src="'+d+'" alt="">';});
+  resizeImg(f.files[0],480,d=>{pendingImg=d;const ea=$('editAvatar');if(ea)ea.innerHTML='<img class="avatar" src="'+d+'" alt="">';});
 });
-document.getElementById('profilesOut').addEventListener('click',e=>{
-  const open=e.target.closest('[data-open]'), back=e.target.closest('[data-back]'),
-        ed=e.target.closest('[data-edit]'), sv=e.target.closest('[data-save]'), cl=e.target.closest('[data-clear]');
+$('profilesOut').addEventListener('click',async e=>{
+  const open=e.target.closest('[data-open]'),back=e.target.closest('[data-back]'),
+        ed=e.target.closest('[data-edit]'),sv=e.target.closest('[data-save]'),cl=e.target.closest('[data-clear]');
   if(open){pView={mode:'view',uid:open.dataset.open};renderProfiles();return;}
   if(back){pView=back.dataset.back==='view'?{mode:'view',uid:pView.uid}:{mode:'list',uid:null};pendingImg=null;renderProfiles();return;}
   if(ed){pendingImg=null;pView={mode:'edit',uid:ed.dataset.edit};renderProfiles();return;}
-  if(cl){if(!confirm('Clear this profile (photo, bio, video)?'))return; const profs=DB.get('gaplf:profiles',{});delete profs[cl.dataset.clear];DB.set('gaplf:profiles',profs);renderProfiles();return;}
-  if(sv){const uid=sv.dataset.save; const profs=DB.get('gaplf:profiles',{}); const cur=profs[uid]||{};
-    const np={...cur,bio:document.getElementById('pBio').value.trim(),video:document.getElementById('pVideo').value.trim()};
-    if(pendingImg!==null)np.img=pendingImg; profs[uid]=np;
-    let ok=true; try{localStorage.setItem('gaplf:profiles',JSON.stringify(profs));}catch(err){ok=false;_mem['gaplf:profiles']=profs;}
-    if(!ok)alert('Saved for now, but storage is full — try a smaller photo for it to persist.');
-    pendingImg=null; pView={mode:'view',uid}; renderProfiles();}
+  if(cl){ if(!confirm('Clear this profile (photo, bio, video)?'))return;
+    try{await rpc('app_clear_profile',{p_actor:session.id,p_actor_pass:session.pw,p_user:cl.dataset.clear});await loadProfiles();renderProfiles();toast('Profile cleared');}catch(err){toast(err.message);} return; }
+  if(sv){ const uid=sv.dataset.save; const cur=profiles[uid]||{};
+    const bio=$('pBio').value.trim(), video=$('pVideo').value.trim(), img=(pendingImg!==null)?pendingImg:(cur.img||null);
+    const btn=sv; btn.disabled=true;
+    try{ await rpc('app_save_profile',{p_actor:session.id,p_actor_pass:session.pw,p_user:uid,p_bio:bio||null,p_video:video||null,p_img:img});
+      await loadProfiles(); pendingImg=null; pView={mode:'view',uid:uid}; renderProfiles(); toast('Profile saved'); }
+    catch(err){ toast(err.message); btn.disabled=false; } }
 });
 
-(async()=>{
-  await seedUsers();
-  const s=DB.get('gaplf:session',null);
-  const users=DB.get('gaplf:users',[]);
-  const f=s?users.find(x=>x.u===s.u):null;
-  if(f){ session={u:f.u,role:f.role,id:f.id}; applyAuth(); }
-  renderLoad(); renderProg();
-})();
+/* ===== programs ===== */
+const TEMPLATES={
+  linear:{name:'Linear base (4 wk)',desc:'Steady volume-to-intensity build off your training max. Good general prep 8+ weeks out.',
+    weeks:[{focus:'Volume',sets:[{p:.72,r:5,n:4}]},{focus:'Volume',sets:[{p:.78,r:4,n:4}]},{focus:'Intensity',sets:[{p:.84,r:3,n:4}]},{focus:'Intensity',sets:[{p:.90,r:2,n:3}]}]},
+  accum:{name:'5-week accumulation',desc:'Higher-volume block to build work capacity before a peak. Run off ~90% training max.',
+    weeks:[{focus:'Base',sets:[{p:.68,r:6,n:4}]},{focus:'Base',sets:[{p:.71,r:6,n:4}]},{focus:'Build',sets:[{p:.74,r:5,n:5}]},{focus:'Build',sets:[{p:.77,r:4,n:5}]},{focus:'Overreach',sets:[{p:.80,r:4,n:4}]}]},
+  peak:{name:'3-week peak',desc:'Sharpening block ~3.5 weeks out. Ends on an opener single, then deload into the platform.',
+    weeks:[{focus:'Heavy triples',sets:[{p:.82,r:3,n:4}]},{focus:'Heavy doubles',sets:[{p:.88,r:2,n:3}]},{focus:'Opener single',sets:[{p:.91,r:1,n:1},{p:.70,r:3,n:2}]}]},
+  rpe:{name:'Top single + back-off',desc:'RPE-style day: work to a heavy single, then volume back-offs. Nudge the single up weekly as RPE allows.',
+    weeks:[{focus:'~RPE 8 single',sets:[{p:.90,r:1,n:1},{p:.80,r:3,n:3}]}]}
+};
+const psel=$('pTpl');
+Object.keys(TEMPLATES).forEach(k=>{const o=document.createElement('option');o.value=k;o.textContent=TEMPLATES[k].name;psel.appendChild(o);});
+function renderProg(){const t=TEMPLATES[psel.value],tm=parseFloat($('pTm').value)||0;
+  $('pDesc').textContent=t.desc;
+  $('progOut').innerHTML=t.weeks.map((w,i)=>{
+    const lines=w.sets.map(s=>{const wt=round(tm*s.p);
+      return '<div class="setline"><div class="sx">'+s.n+' × '+s.r+'</div><div class="sw">'+wt+' kg '+miniBar(wt,20,5)+'</div><div class="sp">'+Math.round(s.p*100)+'%</div></div>';}).join('');
+    return '<div class="weekcard"><div class="weekhd"><span class="wn">Week '+(i+1)+'</span><span class="focus">'+w.focus+'</span></div>'+lines+'</div>';}).join('')
+    +'<div class="note">Percentages run off the training max (typically ~90–95% of a true 1RM). Weights round to 2.5 kg.</div>';}
+['pTpl','pLift','pTm'].forEach(id=>$(id).addEventListener('input',renderProg));
+
+/* ===== loading ===== */
+function renderLoad(){const w=parseFloat($('loadW').value)||0;const bar=parseFloat($('loadBar').value);const cp=$('loadCollar').checked?5:0;
+  $('loadOut').innerHTML=barHTML(w,bar,cp);}
+['loadW','loadBar','loadCollar'].forEach(id=>$(id).addEventListener('input',renderLoad));
+
+/* ===== nav ===== */
+document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{const go=b.dataset.go;navTo(go);
+  if(go==='profiles'){pView={mode:'list',uid:null};renderProfiles();}
+  if(go==='prog')renderProg();if(go==='load')renderLoad();if(go==='users')renderUsers();});
+
+/* ===== init (no stored session — login required each visit) ===== */
+renderLoad(); renderProg();
 </script>
 </body>
 </html>
