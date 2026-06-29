@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="theme-color" content="#0a0c10" />
+<title>GAPLF Rankings</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0a0c10; --panel:#13161d; --panel2:#191d26; --line:#262c37;
+    --text:#e9eef4; --muted:#8b94a3; --teal:#00e0c6; --gold:#f3c000; --no:#ff3b46;
+    --p25:#e23b3b; --p20:#2f6fed; --p15:#f3c000; --p10:#1f9d4d; --p5:#eef1f5;
+    --p2:#e23b3b; --pc:#c2c8d2; --bar:#9aa2ad;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent}
+  html,body{margin:0;padding:0;background:var(--bg);color:var(--text);
+    font-family:'Inter',system-ui,sans-serif;-webkit-text-size-adjust:100%}
+  body{padding-bottom:74px}
+  .mono{font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums}
+
+  header{position:sticky;top:0;z-index:30;background:linear-gradient(180deg,#0c0f15,#0a0c10);
+    border-bottom:1px solid var(--line);padding:10px 14px}
+  .brandrow{display:flex;align-items:center;gap:10px}
+  .logo{width:30px;height:30px;border-radius:8px;background:#0a0c10;border:1px solid var(--line);display:grid;place-items:center}
+  .logo span{width:13px;height:13px;border-radius:3px;background:conic-gradient(var(--p25),var(--p20),var(--p15),var(--p10),var(--p25))}
+  .brand{font-family:'Oswald';font-weight:700;letter-spacing:.06em;font-size:18px}
+  .brand b{color:var(--teal)}
+  .badge{margin-left:auto;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);
+    border:1px solid var(--line);padding:3px 8px;border-radius:20px}
+  .meetline{display:flex;gap:8px;margin-top:9px}
+  .meetline input{min-width:0}
+  .meetline #meetName{flex:2}
+  .meetline #meetDate{flex:1}
+
+  input,select,button,textarea{font-family:inherit;font-size:15px;color:var(--text)}
+  .field{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:11px 12px;outline:none;width:100%}
+  .field:focus{border-color:var(--teal)}
+  label.lbl{display:block;font-size:11px;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);margin:0 0 6px 2px;font-weight:600}
+  .btn{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:11px 14px;font-weight:600;cursor:pointer}
+  .btn:active{transform:translateY(1px)}
+  .btn.primary{background:var(--teal);border-color:var(--teal);color:#02211d}
+  .btn.ghost{background:transparent}
+  .btn.sm{padding:7px 11px;font-size:13px;border-radius:8px}
+  .row{display:flex;gap:8px}.row>*{flex:1}
+
+  main{padding:14px}
+  .screen{display:none}.screen.active{display:block;animation:fade .18s ease}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+  h2.title{font-family:'Oswald';font-weight:600;letter-spacing:.05em;font-size:15px;text-transform:uppercase;color:var(--muted);margin:2px 0 12px}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:13px;margin-bottom:11px}
+  .empty{text-align:center;color:var(--muted);padding:30px 16px;border:1px dashed var(--line);border-radius:14px;font-size:14px}
+
+  /* form grid */
+  .fg{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+  .fg .full{grid-column:1/3}
+  .seg{display:flex;background:var(--panel2);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+  .seg button{flex:1;background:none;border:none;padding:11px 6px;color:var(--muted);font-weight:600;cursor:pointer;font-size:14px}
+  .seg button.on{background:var(--teal);color:#02211d}
+
+  /* toolbar */
+  .toolbar{display:flex;gap:7px;flex-wrap:wrap;align-items:center;margin-bottom:10px}
+  .toolbar .grow{flex:1}
+  .pill{border:1px solid var(--line);background:var(--panel2);border-radius:20px;padding:6px 11px;font-size:12px;font-weight:600;color:var(--muted);cursor:pointer}
+  .pill.on{border-color:var(--teal);color:var(--teal)}
+
+  /* table */
+  .tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:14px}
+  table{border-collapse:collapse;width:100%;min-width:540px;font-size:13px}
+  thead th{font-family:'Oswald';font-weight:600;letter-spacing:.04em;text-transform:uppercase;font-size:11px;
+    color:var(--muted);text-align:right;padding:10px 9px;border-bottom:1px solid var(--line);white-space:nowrap;background:#0e1117;position:sticky;top:0}
+  thead th.l{text-align:left}
+  tbody td{padding:10px 9px;text-align:right;border-bottom:1px solid var(--line);white-space:nowrap}
+  tbody td.l{text-align:left}
+  tbody tr:last-child td{border-bottom:none}
+  tbody tr:nth-child(even){background:rgba(255,255,255,.015)}
+  .rk{font-family:'Oswald';font-weight:700;font-size:15px;color:var(--muted);width:30px;text-align:center}
+  .rk.g1{color:var(--gold)} .rk.g2{color:#cdd3db} .rk.g3{color:#c08a4a}
+  .nm{font-weight:600}
+  .tag{display:inline-block;font-size:9px;font-weight:700;letter-spacing:.04em;padding:1px 5px;border-radius:4px;border:1px solid var(--line);color:var(--muted);margin-left:6px;vertical-align:middle}
+  .glcell{font-family:'JetBrains Mono';font-weight:700;color:var(--teal)}
+  .totcell{font-family:'JetBrains Mono';font-weight:700}
+  .xbtn{border:none;background:none;color:var(--muted);cursor:pointer;font-size:15px;padding:0 2px}
+  tbody tr{cursor:pointer}
+  tbody tr.editing{outline:1px solid var(--teal);outline-offset:-1px}
+
+  /* plate bar (loading + programs) */
+  .platewrap{display:flex;flex-direction:column;align-items:center;gap:14px;padding:6px 0 2px}
+  .barview{display:flex;align-items:center;justify-content:center;min-height:104px;width:100%;overflow-x:auto}
+  .sleeve{display:flex;align-items:center}
+  .center{width:30px;height:7px;background:linear-gradient(var(--bar),#5a626d);border-radius:2px}
+  .plate{border-radius:3px;margin:0 1px;border:1px solid rgba(0,0,0,.35);display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono';font-size:9px;font-weight:700;color:rgba(0,0,0,.55);box-shadow:inset 0 0 6px rgba(0,0,0,.25)}
+  .collar{width:11px;height:34px;background:linear-gradient(90deg,#d9dde3,#aab0ba);border-radius:2px;margin:0 1px;border:1px solid rgba(0,0,0,.3)}
+  .barend{width:16px;height:7px;background:#6b727d;border-radius:2px}
+  .perside{display:flex;flex-wrap:wrap;gap:6px;justify-content:center}
+  .chip{font-family:'JetBrains Mono';font-size:12px;font-weight:700;padding:4px 9px;border-radius:7px;border:1px solid var(--line)}
+  .leftover{color:var(--no);font-size:12px;margin-top:4px}
+  .note{font-size:12px;color:var(--muted);line-height:1.55;margin-top:6px}
+
+  /* programs */
+  .weekcard{border:1px solid var(--line);border-radius:12px;margin-bottom:9px;overflow:hidden}
+  .weekhd{display:flex;align-items:center;gap:8px;padding:9px 12px;background:#0e1117;border-bottom:1px solid var(--line)}
+  .weekhd .wn{font-family:'Oswald';font-weight:600;letter-spacing:.04em;font-size:14px}
+  .weekhd .focus{margin-left:auto;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+  .setline{display:flex;align-items:center;gap:10px;padding:9px 12px;border-bottom:1px solid var(--line)}
+  .setline:last-child{border-bottom:none}
+  .setline .sx{font-family:'Oswald';font-weight:600;color:var(--muted);width:54px;font-size:14px}
+  .setline .sw{font-family:'JetBrains Mono';font-weight:700;font-size:16px;flex:1}
+  .setline .sp{font-size:11px;color:var(--muted)}
+
+  nav{position:fixed;left:0;right:0;bottom:0;z-index:40;background:#0b0e14;border-top:1px solid var(--line);
+    display:grid;grid-template-columns:repeat(3,1fr);padding:6px 4px calc(6px + env(safe-area-inset-bottom))}
+  nav button{background:none;border:none;color:var(--muted);padding:7px 2px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:11px;font-weight:600}
+  nav button svg{width:21px;height:21px;stroke:currentColor;fill:none;stroke-width:1.8}
+  nav button.active{color:var(--teal)}
+  ::-webkit-scrollbar{height:6px;width:6px}::-webkit-scrollbar-thumb{background:var(--line);border-radius:3px}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brandrow">
+    <div class="logo"><span></span></div>
+    <div class="brand">GAPLF <b>RANKINGS</b></div>
+    <div class="badge">GL · IPF formula</div>
+  </div>
+  <div class="meetline">
+    <input id="meetName" class="field" placeholder="Meet name (e.g. GAPLF National Open)" />
+    <input id="meetDate" class="field" type="date" />
+  </div>
+</header>
+
+<main>
+  <!-- RANKINGS -->
+  <section id="rank" class="screen active">
+    <h2 class="title">Add lifter</h2>
+    <div class="card">
+      <div class="fg">
+        <input id="fName" class="field full" placeholder="Lifter name" />
+        <div class="seg" id="fSex">
+          <button data-v="M" class="on">Men</button><button data-v="F">Women</button>
+        </div>
+        <div class="seg" id="fEq">
+          <button data-v="Classic" class="on">Classic</button><button data-v="Equipped">Equipped</button>
+        </div>
+        <input id="fBw" class="field mono" type="number" inputmode="decimal" placeholder="Bodyweight kg" />
+        <input id="fAge" class="field" placeholder="Age cat. (optional)" />
+        <input id="fSq" class="field mono" type="number" inputmode="decimal" placeholder="Best squat" />
+        <input id="fBp" class="field mono" type="number" inputmode="decimal" placeholder="Best bench" />
+        <input id="fDl" class="field mono" type="number" inputmode="decimal" placeholder="Best deadlift" />
+      </div>
+      <div class="row" style="margin-top:10px">
+        <button class="btn primary" id="saveBtn">Add to rankings</button>
+        <button class="btn ghost" id="cancelEdit" style="display:none;flex:0 0 auto">Cancel</button>
+      </div>
+    </div>
+
+    <h2 class="title" style="margin-top:18px">Rankings</h2>
+    <div class="toolbar">
+      <span class="pill on" data-sort="gl">By GL points</span>
+      <span class="pill" data-sort="total">By total</span>
+      <span class="grow"></span>
+      <span class="pill" data-fsex="all">All</span>
+      <span class="pill" data-feq="all">All gear</span>
+    </div>
+    <div id="rankOut"></div>
+    <div class="row" style="margin-top:12px">
+      <button class="btn sm ghost" id="expCsv">Export CSV</button>
+      <button class="btn sm ghost" id="expJson">Backup</button>
+      <button class="btn sm ghost" id="impJson">Restore</button>
+      <input type="file" id="impFile" accept="application/json" style="display:none" />
+    </div>
+  </section>
+
+  <!-- PROGRAMS -->
+  <section id="prog" class="screen">
+    <h2 class="title">Program builder</h2>
+    <div class="card">
+      <div class="fg">
+        <div class="full"><label class="lbl">Block template</label>
+          <select id="pTpl" class="field"></select></div>
+        <div><label class="lbl">Lift</label>
+          <select id="pLift" class="field"><option>Squat</option><option>Bench</option><option>Deadlift</option></select></div>
+        <div><label class="lbl">Training max (kg)</label>
+          <input id="pTm" class="field mono" type="number" inputmode="decimal" value="180" /></div>
+      </div>
+      <div class="note" id="pDesc"></div>
+    </div>
+    <div id="progOut"></div>
+  </section>
+
+  <!-- LOADING -->
+  <section id="load" class="screen">
+    <h2 class="title">Eleiko loading</h2>
+    <div class="card">
+      <div class="row" style="margin-bottom:10px">
+        <div><label class="lbl">Target (kg)</label><input id="loadW" class="field mono" type="number" inputmode="decimal" value="180" /></div>
+        <div><label class="lbl">Bar</label>
+          <select id="loadBar" class="field"><option value="20">20 kg (men)</option><option value="15">15 kg (women)</option></select></div>
+      </div>
+      <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted)">
+        <input id="loadCollar" type="checkbox" checked style="width:16px;height:16px"/> 2.5 kg competition collars (5 kg pair)
+      </label>
+    </div>
+    <div class="card platewrap" id="loadOut"></div>
+  </section>
+</main>
+
+<nav>
+  <button data-go="rank" class="active">
+    <svg viewBox="0 0 24 24"><path d="M4 19h4v-7H4zM10 19h4V5h-4zM16 19h4v-10h-4z"/></svg>Rankings
+  </button>
+  <button data-go="prog">
+    <svg viewBox="0 0 24 24"><path d="M5 12h2l2-7 4 14 3-9 2 2h2"/></svg>Programs
+  </button>
+  <button data-go="load">
+    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.4"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/></svg>Loading
+  </button>
+</nav>
+
+<script>
+/* ---------- persistence (works on a hosted static site; safe fallback elsewhere) ---------- */
+const _mem={};
+const DB={
+  get(k,d){ try{const v=localStorage.getItem(k);return v?JSON.parse(v):(k in _mem?_mem[k]:d);}catch(e){return (k in _mem?_mem[k]:d);} },
+  set(k,v){ try{localStorage.setItem(k,JSON.stringify(v));}catch(e){_mem[k]=v;} }
+};
+
+/* ---------- IPF GL points ---------- */
+const GLC={ // [A,B,C] — 3-lift (full power)
+  'M-Classic':[1199.72839,1025.18162,0.00921],
+  'F-Classic':[610.32796,1045.59282,0.03048],
+  'M-Equipped':[1236.25115,1449.21864,0.01644],
+  'F-Equipped':[758.63878,949.31382,0.02435]
+};
+function gl(total,bw,sex,eq){
+  if(!total||!bw) return 0;
+  const c=GLC[sex+'-'+eq]; if(!c) return 0;
+  const denom=c[0]-c[1]*Math.exp(-c[2]*bw);
+  if(denom<=0) return 0;
+  return total*100/denom;
+}
+const MC=[53,59,66,74,83,93,105,120], WC=[43,47,52,57,63,69,76,84];
+function wclass(bw,sex){ const a=sex==='M'?MC:WC; if(!bw) return '–';
+  for(const c of a) if(bw<=c) return c+''; return a[a.length-1]+'+'; }
+
+/* ---------- plates ---------- */
+const PLATES=[
+  {kg:25,c:'var(--p25)',h:92,w:17},{kg:20,c:'var(--p20)',h:88,w:16},{kg:15,c:'var(--p15)',h:84,w:15},
+  {kg:10,c:'var(--p10)',h:74,w:13},{kg:5,c:'var(--p5)',h:60,w:12},{kg:2.5,c:'var(--p2)',h:46,w:9},
+  {kg:1.25,c:'var(--pc)',h:38,w:8},{kg:0.5,c:'var(--pc)',h:30,w:7},{kg:0.25,c:'var(--pc)',h:26,w:6}
+];
+const round=(x,s=2.5)=>Math.round(x/s)*s;
+function perSide(t,bar,cp){ let s=(t-bar-cp)/2; if(s<0)return{plates:[],left:s*2};
+  const out=[];let r=s; for(const p of PLATES){while(r+1e-6>=p.kg){out.push(p);r-=p.kg;}} return{plates:out,left:round(r*2,0.01)}; }
+function barHTML(t,bar,cp){
+  const{plates,left}=perSide(t,bar,cp);
+  const pl=p=>`<div class="plate" style="height:${p.h}px;width:${p.w}px;background:${p.c}">${p.kg}</div>`;
+  const coll=cp>0?'<div class="collar"></div>':'';
+  const bv=`<div class="barview"><div class="sleeve"><div class="barend"></div>${[...plates].reverse().map(pl).join('')}${coll}<div class="center"></div>${coll}${plates.map(pl).join('')}<div class="barend"></div></div></div>`;
+  const counts={};plates.forEach(p=>counts[p.kg]=(counts[p.kg]||0)+1);
+  const chips=Object.keys(counts).map(k=>{const col=PLATES.find(p=>p.kg==k).c;
+    return `<span class="chip" style="border-color:${col};color:${col=='var(--p5)'||col=='var(--pc)'?'var(--text)':col}">${counts[k]} × ${k}</span>`;}).join('');
+  const ps=plates.reduce((a,p)=>a+p.kg,0);
+  const warn=left>0?`<div class="leftover">${left} kg short of a clean load</div>`:'';
+  return `${bv}<div class="perside">${chips||'<span class="chip">bar only</span>'}</div>
+    <div class="note">Per side ${ps} kg · Bar ${bar} + collars ${cp} + plates ${ps*2} = <b style="color:var(--text)">${bar+cp+ps*2} kg</b></div>${warn}`;
+}
+function miniBar(t,bar,cp){const{plates}=perSide(t,bar,cp);
+  return '<div style="display:flex;gap:2px;height:16px;align-items:flex-end;margin-top:4px">'+plates.map(p=>`<i style="display:block;height:${Math.round(p.h*0.15)+4}px;width:5px;border-radius:1px;background:${p.c}"></i>`).join('')+'</div>';}
+
+/* ---------- state ---------- */
+let lifters=DB.get('gaplf:lifters',[]);
+let meta=DB.get('gaplf:meta',{name:'',date:''});
+let form={sex:'M',eq:'Classic'};
+let sortBy='gl', fSex='all', fEq='all', editId=null;
+const esc=s=>(s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const uid=()=>Math.random().toString(36).slice(2,8);
+
+/* ---------- meta ---------- */
+document.getElementById('meetName').value=meta.name||'';
+document.getElementById('meetDate').value=meta.date||'';
+document.getElementById('meetName').addEventListener('input',e=>{meta.name=e.target.value;DB.set('gaplf:meta',meta);});
+document.getElementById('meetDate').addEventListener('input',e=>{meta.date=e.target.value;DB.set('gaplf:meta',meta);});
+
+/* ---------- form segments ---------- */
+function seg(id,key){document.querySelectorAll('#'+id+' button').forEach(b=>b.onclick=()=>{
+  document.querySelectorAll('#'+id+' button').forEach(x=>x.classList.toggle('on',x===b)); form[key]=b.dataset.v;});}
+seg('fSex','sex'); seg('fEq','eq');
+
+function readForm(){
+  const num=id=>parseFloat(document.getElementById(id).value)||0;
+  return {name:document.getElementById('fName').value.trim(), sex:form.sex, eq:form.eq,
+    bw:num('fBw'), age:document.getElementById('fAge').value.trim(),
+    sq:num('fSq'), bp:num('fBp'), dl:num('fDl')};
+}
+function clearForm(){['fName','fBw','fAge','fSq','fBp','fDl'].forEach(id=>document.getElementById(id).value='');
+  editId=null; document.getElementById('saveBtn').textContent='Add to rankings';
+  document.getElementById('cancelEdit').style.display='none';}
+
+document.getElementById('saveBtn').onclick=()=>{
+  const d=readForm(); if(!d.name){alert('Enter a name');return;}
+  if(!d.bw){alert('Bodyweight is needed for GL points');return;}
+  if(editId){ const i=lifters.findIndex(x=>x.id===editId); if(i>=0) lifters[i]={...lifters[i],...d}; }
+  else { lifters.push({id:uid(),...d}); }
+  DB.set('gaplf:lifters',lifters); clearForm(); renderRank();
+};
+document.getElementById('cancelEdit').onclick=clearForm;
+
+/* ---------- rankings render ---------- */
+function rows(){
+  return lifters.map(l=>{
+    const total=(l.sq||0)+(l.bp||0)+(l.dl||0);
+    return {...l, total, gl:gl(total,l.bw,l.sex,l.eq), cls:wclass(l.bw,l.sex)};
+  }).filter(l=>(fSex==='all'||l.sex===fSex)&&(fEq==='all'||l.eq===fEq))
+    .sort((a,b)=> sortBy==='gl' ? b.gl-a.gl : b.total-a.total);
+}
+function renderRank(){
+  const out=document.getElementById('rankOut');
+  const data=rows();
+  if(!data.length){ out.innerHTML='<div class="empty">No lifters yet.<br>Add lifters above to build the ranking.</div>'; return; }
+  const head=`<thead><tr><th>#</th><th class="l">Lifter</th><th>BW</th><th>Cls</th><th>SQ</th><th>BP</th><th>DL</th><th>Total</th><th>GL</th><th></th></tr></thead>`;
+  const body=data.map((l,i)=>{
+    const rkcls=i===0?'g1':i===1?'g2':i===2?'g3':'';
+    return `<tr data-id="${l.id}" class="${l.id===editId?'editing':''}">
+      <td class="rk ${rkcls}">${i+1}</td>
+      <td class="l"><span class="nm">${esc(l.name)}</span><span class="tag">${l.sex==='M'?'M':'W'}·${l.eq==='Classic'?'CL':'EQ'}</span>${l.age?`<span class="tag">${esc(l.age)}</span>`:''}</td>
+      <td class="mono">${l.bw||'–'}</td>
+      <td class="mono">${l.cls}</td>
+      <td class="mono">${l.sq||'–'}</td><td class="mono">${l.bp||'–'}</td><td class="mono">${l.dl||'–'}</td>
+      <td class="totcell">${l.total||'–'}</td>
+      <td class="glcell">${l.gl?l.gl.toFixed(2):'–'}</td>
+      <td><button class="xbtn" data-del="${l.id}" title="Remove">✕</button></td>
+    </tr>`;
+  }).join('');
+  out.innerHTML=`<div class="tablewrap"><table>${head}<tbody>${body}</tbody></table></div>
+    <div class="note">${data.length} lifter${data.length>1?'s':''} shown · GL points compare strength across bodyweight within the same sex &amp; equipment. Tap a row to edit.</div>`;
+}
+document.getElementById('rankOut').addEventListener('click',e=>{
+  const del=e.target.closest('[data-del]');
+  if(del){ e.stopPropagation(); if(confirm('Remove this lifter?')){ lifters=lifters.filter(x=>x.id!==del.dataset.del); DB.set('gaplf:lifters',lifters); if(editId===del.dataset.del)clearForm(); renderRank(); } return; }
+  const tr=e.target.closest('tr[data-id]'); if(!tr) return;
+  const l=lifters.find(x=>x.id===tr.dataset.id); if(!l) return;
+  editId=l.id; form.sex=l.sex; form.eq=l.eq;
+  document.querySelectorAll('#fSex button').forEach(b=>b.classList.toggle('on',b.dataset.v===l.sex));
+  document.querySelectorAll('#fEq button').forEach(b=>b.classList.toggle('on',b.dataset.v===l.eq));
+  const set=(id,v)=>document.getElementById(id).value=v||'';
+  set('fName',l.name);set('fBw',l.bw);set('fAge',l.age);set('fSq',l.sq);set('fBp',l.bp);set('fDl',l.dl);
+  document.getElementById('saveBtn').textContent='Update lifter';
+  document.getElementById('cancelEdit').style.display='block';
+  window.scrollTo({top:0,behavior:'smooth'}); renderRank();
+});
+
+/* sort & filter pills */
+document.querySelectorAll('[data-sort]').forEach(p=>p.onclick=()=>{
+  sortBy=p.dataset.sort; document.querySelectorAll('[data-sort]').forEach(x=>x.classList.toggle('on',x===p)); renderRank();});
+document.querySelector('[data-fsex]').onclick=function(){
+  fSex = fSex==='all'?'M':fSex==='M'?'F':'all';
+  this.textContent = fSex==='all'?'All':fSex==='M'?'Men':'Women'; this.classList.toggle('on',fSex!=='all'); renderRank();};
+document.querySelector('[data-feq]').onclick=function(){
+  fEq = fEq==='all'?'Classic':fEq==='Classic'?'Equipped':'all';
+  this.textContent = fEq==='all'?'All gear':fEq; this.classList.toggle('on',fEq!=='all'); renderRank();};
+
+/* export / backup */
+function download(name,text,type){const b=new Blob([text],{type});const u=URL.createObjectURL(b);
+  const a=document.createElement('a');a.href=u;a.download=name;a.click();URL.revokeObjectURL(u);}
+document.getElementById('expCsv').onclick=()=>{
+  const data=rows(); if(!data.length)return;
+  const head=['Rank','Name','Sex','Equip','BW','Class','Squat','Bench','Deadlift','Total','GLPoints'];
+  const lines=data.map((l,i)=>[i+1,l.name,l.sex,l.eq,l.bw,l.cls,l.sq,l.bp,l.dl,l.total,l.gl.toFixed(2)]
+    .map(v=>`"${String(v).replace(/"/g,'""')}"`).join(','));
+  download((meta.name||'gaplf-rankings').replace(/\s+/g,'_')+'.csv',[head.join(','),...lines].join('\n'),'text/csv');
+};
+document.getElementById('expJson').onclick=()=>download('gaplf-backup.json',JSON.stringify({meta,lifters},null,2),'application/json');
+document.getElementById('impJson').onclick=()=>document.getElementById('impFile').click();
+document.getElementById('impFile').onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();
+  r.onload=()=>{try{const d=JSON.parse(r.result); if(d.lifters){lifters=d.lifters;DB.set('gaplf:lifters',lifters);}
+    if(d.meta){meta=d.meta;DB.set('gaplf:meta',meta);document.getElementById('meetName').value=meta.name||'';document.getElementById('meetDate').value=meta.date||'';}
+    renderRank();}catch(err){alert('Could not read that file');}};r.readAsText(f);};
+
+/* ---------- programs ---------- */
+const TEMPLATES={
+  linear:{name:'Linear base (4 wk)', desc:'Steady volume-to-intensity build off your training max. Good general prep when a meet is 8+ weeks out.',
+    weeks:[
+      {focus:'Volume', sets:[{p:.72,r:5,n:4}]},
+      {focus:'Volume', sets:[{p:.78,r:4,n:4}]},
+      {focus:'Intensity', sets:[{p:.84,r:3,n:4}]},
+      {focus:'Intensity', sets:[{p:.90,r:2,n:3}]}
+    ]},
+  accum:{name:'5-week accumulation', desc:'Higher-volume accumulation block to build work capacity before a peak. Run off ~90% training max.',
+    weeks:[
+      {focus:'Base', sets:[{p:.68,r:6,n:4}]},
+      {focus:'Base', sets:[{p:.71,r:6,n:4}]},
+      {focus:'Build', sets:[{p:.74,r:5,n:5}]},
+      {focus:'Build', sets:[{p:.77,r:4,n:5}]},
+      {focus:'Overreach', sets:[{p:.80,r:4,n:4}]}
+    ]},
+  peak:{name:'3-week peak', desc:'Sharpening block when the meet is ~3.5 weeks out. Ends on an opener single, then deload into the platform.',
+    weeks:[
+      {focus:'Heavy triples', sets:[{p:.82,r:3,n:4}]},
+      {focus:'Heavy doubles', sets:[{p:.88,r:2,n:3}]},
+      {focus:'Opener single', sets:[{p:.91,r:1,n:1},{p:.70,r:3,n:2}]}
+    ]},
+  rpe:{name:'Top single + back-off', desc:'RPE-style day: work to a heavy single, then volume back-offs. Repeat weekly, nudging the single up as RPE allows.',
+    weeks:[
+      {focus:'~RPE 8 single', sets:[{p:.90,r:1,n:1},{p:.80,r:3,n:3}]}
+    ]}
+  };
+const psel=document.getElementById('pTpl');
+Object.keys(TEMPLATES).forEach(k=>{const o=document.createElement('option');o.value=k;o.textContent=TEMPLATES[k].name;psel.appendChild(o);});
+function renderProg(){
+  const t=TEMPLATES[psel.value]; const tm=parseFloat(document.getElementById('pTm').value)||0;
+  const bar=document.getElementById('pLift').value==='Bench'?20:20;
+  document.getElementById('pDesc').textContent=t.desc;
+  document.getElementById('progOut').innerHTML=t.weeks.map((w,i)=>{
+    const lines=w.sets.map(s=>{const wt=round(tm*s.p);
+      return `<div class="setline"><div class="sx">${s.n} × ${s.r}</div>
+        <div class="sw">${wt} kg ${miniBar(wt,bar,5)}</div>
+        <div class="sp">${Math.round(s.p*100)}%</div></div>`;}).join('');
+    return `<div class="weekcard"><div class="weekhd"><span class="wn">Week ${i+1}</span><span class="focus">${w.focus}</span></div>${lines}</div>`;
+  }).join('') + `<div class="note">Percentages run off the training max you entered (typically ~90–95% of a true 1RM). Weights round to 2.5 kg. Add warm-ups before the top sets.</div>`;
+}
+['pTpl','pLift','pTm'].forEach(id=>document.getElementById(id).addEventListener('input',renderProg));
+
+/* ---------- loading ---------- */
+function renderLoad(){const w=parseFloat(document.getElementById('loadW').value)||0;
+  const bar=parseFloat(document.getElementById('loadBar').value);const cp=document.getElementById('loadCollar').checked?5:0;
+  document.getElementById('loadOut').innerHTML=barHTML(w,bar,cp);}
+['loadW','loadBar','loadCollar'].forEach(id=>document.getElementById(id).addEventListener('input',renderLoad));
+
+/* ---------- nav ---------- */
+document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{
+  const go=b.dataset.go;
+  document.querySelectorAll('nav button').forEach(x=>x.classList.toggle('active',x===b));
+  document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('active',s.id===go));
+  if(go==='prog') renderProg(); if(go==='load') renderLoad();
+});
+
+/* init */
+renderRank();
+</script>
+</body>
+</html>
