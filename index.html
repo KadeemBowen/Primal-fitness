@@ -327,19 +327,23 @@ async function loadAll(){ await Promise.all([loadLifters(),loadUsers(),loadProfi
 $('liBtn').onclick=doLogin;
 $('liPass').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
 $('pwToggle').onclick=()=>{const i=$('liPass');const sh=i.type==='password';i.type=sh?'text':'password';$('pwToggle').textContent=sh?'Hide':'Show';};
+function saveSession(s){try{localStorage.setItem('primal:session',JSON.stringify(s));}catch(e){}}
+function loadStoredSession(){try{return JSON.parse(localStorage.getItem('primal:session'));}catch(e){return null;}}
+function clearStoredSession(){try{localStorage.removeItem('primal:session');}catch(e){}}
 async function doLogin(){
   const u=$('liUser').value.trim(), p=$('liPass').value, err=$('liErr'); err.textContent='';
   const btn=$('liBtn'); btn.disabled=true; btn.textContent='Signing in…';
   try{
     const res=await rpc('app_login',{p_username:u,p_password:p});
     if(!res||!res.length){ err.textContent='Wrong username or password.'; return; }
-    session={id:res[0].id,username:res[0].username,role:res[0].role,pw:p};
+    session={id:res[0].id,username:res[0].username,role:res[0].role,token:res[0].token};saveSession(session);
     $('liPass').value='';
     await loadAll(); applyAuth();
   }catch(e){ err.textContent='Could not reach the server — check your connection.'; }
   finally{ btn.disabled=false; btn.textContent='Sign in'; }
 }
-$('logoutBtn').onclick=()=>{ session=null; lifters=[];users=[];profiles={};
+$('logoutBtn').onclick=async()=>{ try{ if(session&&session.token) await rpc('app_logout',{p_token:session.token}); }catch(e){}
+  session=null; clearStoredSession(); lifters=[];users=[];profiles={};
   document.body.classList.remove('authed','role-Admin','role-Lifter','role-Spectate');
   $('liUser').value=''; };
 
@@ -440,7 +444,7 @@ $('saveBtn').onclick=async()=>{
   const d=readForm(); if(!d.name){toast('Enter a name');return;} if(!d.bw){toast('Bodyweight is needed for GL points');return;}
   const btn=$('saveBtn'); btn.disabled=true;
   try{
-    await rpc('app_upsert_lifter',{p_actor:session.id,p_actor_pass:session.pw,p_id:editId||null,p_name:d.name,p_sex:d.sex,p_equip:d.eq,p_bw:d.bw,p_age:d.age||null,p_sq:d.sq,p_bp:d.bp,p_dl:d.dl,p_gsq:d.gsq,p_gbp:d.gbp,p_gdl:d.gdl});
+    await rpc('app_upsert_lifter',{p_token:session.token,p_id:editId||null,p_name:d.name,p_sex:d.sex,p_equip:d.eq,p_bw:d.bw,p_age:d.age||null,p_sq:d.sq,p_bp:d.bp,p_dl:d.dl,p_gsq:d.gsq,p_gbp:d.gbp,p_gdl:d.gdl});
     await loadLifters(); clearForm(); renderRank(); toast('Saved');
   }catch(e){ toast(e.message); } finally{ btn.disabled=false; }
 };
@@ -481,7 +485,7 @@ $('rankOut').addEventListener('click',async e=>{
     return;
   }
   const del=e.target.closest('[data-del]');
-  if(del){e.stopPropagation(); if(confirm('Remove this lifter?')){try{await rpc('app_delete_lifter',{p_actor:session.id,p_actor_pass:session.pw,p_id:del.dataset.del});await loadLifters();if(editId===del.dataset.del)clearForm();renderRank();toast('Removed');}catch(err){toast(err.message);}} return;}
+  if(del){e.stopPropagation(); if(confirm('Remove this lifter?')){try{await rpc('app_delete_lifter',{p_token:session.token,p_id:del.dataset.del});await loadLifters();if(editId===del.dataset.del)clearForm();renderRank();toast('Removed');}catch(err){toast(err.message);}} return;}
   editId=l.id; form.sex=l.sex; form.eq=l.eq;
   document.querySelectorAll('#fSex button').forEach(b=>b.classList.toggle('on',b.dataset.v===l.sex));
   document.querySelectorAll('#fEq button').forEach(b=>b.classList.toggle('on',b.dataset.v===l.eq));
@@ -506,7 +510,7 @@ $('migrateBtn').onclick=async()=>{
   if(!local.length){toast('No local lifters found on this device.');return;}
   if(!confirm('Upload '+local.length+' lifter(s) saved on this device to the cloud?'))return;
   const btn=$('migrateBtn'); btn.disabled=true; let ok=0;
-  for(const l of local){ try{ await rpc('app_upsert_lifter',{p_actor:session.id,p_actor_pass:session.pw,p_id:null,p_name:l.name,p_sex:l.sex,p_equip:l.eq,p_bw:l.bw,p_age:l.age||null,p_sq:l.sq||0,p_bp:l.bp||0,p_dl:l.dl||0,p_gsq:0,p_gbp:0,p_gdl:0}); ok++; }catch(e){} }
+  for(const l of local){ try{ await rpc('app_upsert_lifter',{p_token:session.token,p_id:null,p_name:l.name,p_sex:l.sex,p_equip:l.eq,p_bw:l.bw,p_age:l.age||null,p_sq:l.sq||0,p_bp:l.bp||0,p_dl:l.dl||0,p_gsq:0,p_gbp:0,p_gdl:0}); ok++; }catch(e){} }
   await loadLifters(); renderRank(); btn.disabled=false; toast('Uploaded '+ok+' of '+local.length+' lifters');
 };
 
@@ -523,16 +527,16 @@ $('addUserBtn').onclick=async()=>{
   const name=$('nuName').value.trim(),pass=$('nuPass').value,role=$('nuRole').value;
   if(!name||!pass){toast('Username and password required');return;}
   const btn=$('addUserBtn'); btn.disabled=true;
-  try{ await rpc('app_create_user',{p_actor:session.id,p_actor_pass:session.pw,p_username:name,p_password:pass,p_role:role});
+  try{ await rpc('app_create_user',{p_token:session.token,p_username:name,p_password:pass,p_role:role});
     $('nuName').value='';$('nuPass').value=''; await loadUsers(); renderUsers(); toast('User created'); }
   catch(e){ toast(e.message); } finally{ btn.disabled=false; }
 };
 $('usersOut').addEventListener('change',async e=>{
   const sel=e.target.closest('[data-role]'); if(!sel)return;
   const u=users.find(x=>x.id===sel.dataset.role); if(!u)return;
-  try{ await rpc('app_set_role',{p_actor:session.id,p_actor_pass:session.pw,p_user:u.id,p_role:sel.value});
+  try{ await rpc('app_set_role',{p_token:session.token,p_user:u.id,p_role:sel.value});
     await loadUsers();
-    if(u.id===session.id){ session.role=sel.value; applyAuth(); navTo('users'); } else renderUsers();
+    if(u.id===session.id){ session.role=sel.value; saveSession(session); applyAuth(); navTo('users'); } else renderUsers();
     toast('Role updated');
   }catch(err){ toast(err.message); sel.value=u.role; }
 });
@@ -540,9 +544,9 @@ $('usersOut').addEventListener('click',async e=>{
   const rs=e.target.closest('[data-reset]'), dl=e.target.closest('[data-udel]');
   if(rs){const u=users.find(x=>x.id===rs.dataset.reset);if(!u)return;
     const np=prompt('New password for '+u.u);if(np===null||np==='')return;
-    try{await rpc('app_set_password',{p_actor:session.id,p_actor_pass:session.pw,p_user:u.id,p_password:np});toast('Password updated');}catch(err){toast(err.message);}return;}
+    try{await rpc('app_set_password',{p_token:session.token,p_user:u.id,p_password:np});toast('Password updated');}catch(err){toast(err.message);}return;}
   if(dl){const u=users.find(x=>x.id===dl.dataset.udel);if(!u)return;
-    if(confirm('Delete user '+u.u+'?')){try{await rpc('app_delete_user',{p_actor:session.id,p_actor_pass:session.pw,p_user:u.id});await loadUsers();renderUsers();toast('User deleted');}catch(err){toast(err.message);}}}
+    if(confirm('Delete user '+u.u+'?')){try{await rpc('app_delete_user',{p_token:session.token,p_user:u.id});await loadUsers();renderUsers();toast('User deleted');}catch(err){toast(err.message);}}}
 });
 
 /* ===== profiles ===== */
@@ -613,11 +617,11 @@ $('profilesOut').addEventListener('click',async e=>{
   if(back){pView=back.dataset.back==='view'?{mode:'view',uid:pView.uid}:{mode:'list',uid:null};pendingImg=null;renderProfiles();return;}
   if(ed){pendingImg=null;pView={mode:'edit',uid:ed.dataset.edit};renderProfiles();return;}
   if(cl){ if(!confirm('Clear this profile (photo, bio, video)?'))return;
-    try{await rpc('app_clear_profile',{p_actor:session.id,p_actor_pass:session.pw,p_user:cl.dataset.clear});await loadProfiles();renderProfiles();toast('Profile cleared');}catch(err){toast(err.message);} return; }
+    try{await rpc('app_clear_profile',{p_token:session.token,p_user:cl.dataset.clear});await loadProfiles();renderProfiles();toast('Profile cleared');}catch(err){toast(err.message);} return; }
   if(sv){ const uid=sv.dataset.save; const cur=profiles[uid]||{};
     const bio=$('pBio').value.trim(), video=$('pVideo').value.trim(), img=(pendingImg!==null)?pendingImg:(cur.img||null);
     const btn=sv; btn.disabled=true;
-    try{ await rpc('app_save_profile',{p_actor:session.id,p_actor_pass:session.pw,p_user:uid,p_bio:bio||null,p_video:video||null,p_img:img});
+    try{ await rpc('app_save_profile',{p_token:session.token,p_user:uid,p_bio:bio||null,p_video:video||null,p_img:img});
       await loadProfiles(); pendingImg=null; pView={mode:'view',uid:uid}; renderProfiles(); toast('Profile saved'); }
     catch(err){ toast(err.message); btn.disabled=false; } }
 });
@@ -684,7 +688,16 @@ document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{const go=navTo
   if(go==='prog'){renderProg();renderE1();}if(go==='load')renderLoad();if(go==='users')renderUsers();});
 
 /* ===== init (no stored session — login required each visit) ===== */
-renderLoad(); renderProg(); renderE1();
+(async()=>{
+  const s=loadStoredSession();
+  if(s&&s.token){
+    try{ const r=await rpc('app_session',{p_token:s.token});
+      if(r&&r.length){ session={id:r[0].id,username:r[0].username,role:r[0].role,token:s.token}; await loadAll(); applyAuth(); }
+      else clearStoredSession();
+    }catch(e){}
+  }
+  renderLoad(); renderProg(); renderE1();
+})();
 </script>
 </body>
 </html>
