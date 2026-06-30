@@ -182,9 +182,14 @@
           <div class="seg" id="fEq"><button data-v="Classic" class="on">Classic</button><button data-v="Equipped">Equipped</button></div>
           <input id="fBw" class="field mono" type="number" inputmode="decimal" placeholder="Bodyweight kg" />
           <input id="fAge" class="field" placeholder="Age cat. (optional)" />
-          <input id="fSq" class="field mono" type="number" inputmode="decimal" placeholder="Best squat" />
-          <input id="fBp" class="field mono" type="number" inputmode="decimal" placeholder="Best bench" />
-          <input id="fDl" class="field mono" type="number" inputmode="decimal" placeholder="Best deadlift" />
+          <div class="full" style="font-size:11px;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);font-weight:600;margin-top:2px">Competition bests (kg)</div>
+          <input id="fSq" class="field mono" type="number" inputmode="decimal" placeholder="Squat (kg)" />
+          <input id="fBp" class="field mono" type="number" inputmode="decimal" placeholder="Bench (kg)" />
+          <input id="fDl" class="field mono" type="number" inputmode="decimal" placeholder="Deadlift (kg)" />
+          <div class="full" style="font-size:11px;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);font-weight:600;margin-top:2px">Gym maxes (lb) &mdash; optional</div>
+          <input id="fGsq" class="field mono" type="number" inputmode="decimal" placeholder="Gym squat (lb)" />
+          <input id="fGbp" class="field mono" type="number" inputmode="decimal" placeholder="Gym bench (lb)" />
+          <input id="fGdl" class="field mono" type="number" inputmode="decimal" placeholder="Gym deadlift (lb)" />
         </div>
         <div class="row" style="margin-top:10px">
           <button class="btn primary" id="saveBtn">Add to rankings</button>
@@ -194,6 +199,7 @@
     </div>
 
     <h2 class="title" style="margin-top:18px">Rankings</h2>
+    <div class="seg" id="rankMode" style="margin-bottom:10px"><button data-v="comp" class="on">Competition (kg)</button><button data-v="gym">Gym maxes (lb)</button></div>
     <div class="toolbar">
       <span class="pill on" data-sort="gl">By GL points</span>
       <span class="pill" data-sort="total">By total</span>
@@ -227,15 +233,24 @@
   </section>
 
   <section id="load" class="screen">
-    <h2 class="title">Eleiko loading</h2>
-    <div class="card">
+    <h2 class="title" id="loadTitle">Competition loading</h2>
+    <div class="seg" id="loadMode" style="margin-bottom:12px"><button data-v="comp" class="on">Competition</button><button data-v="gym">Gym</button></div>
+    <div class="card" id="compCard">
       <div class="row" style="margin-bottom:10px">
-        <div><label class="lbl">Target (kg)</label><input id="loadW" class="field mono" type="number" inputmode="decimal" value="180" /><div class="note" id="loadLb" style="margin-top:4px"></div></div>
-        <div><label class="lbl">Bar</label><select id="loadBar" class="field"><option value="20">20 kg (men)</option><option value="15">15 kg (women)</option></select></div>
+        <div><label class="lbl">Target (kg)</label><input id="loadW" class="field mono" type="number" inputmode="decimal" value="180" /></div>
+        <div><label class="lbl">In pounds</label><div id="loadLb" class="field mono" style="color:var(--muted)">&mdash;</div></div>
       </div>
       <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted)">
         <input id="loadCollar" type="checkbox" checked style="width:16px;height:16px"/> 2.5 kg competition collars (5 kg pair)
       </label>
+      <div class="note">20 kg competition bar.</div>
+    </div>
+    <div class="card" id="gymCard" style="display:none">
+      <div class="row" style="margin-bottom:10px">
+        <div><label class="lbl">Target (lb)</label><input id="gymW" class="field mono" type="number" inputmode="decimal" value="225" /></div>
+        <div><label class="lbl">In kilos</label><div id="gymKg" class="field mono" style="color:var(--muted)">&mdash;</div></div>
+      </div>
+      <div class="note">45 lb bar &middot; plates 45 / 35 / 25 / 10 / 5 / 2.5 lb &middot; no collars.</div>
     </div>
     <div class="card platewrap" id="loadOut"></div>
   </section>
@@ -287,11 +302,11 @@ function toast(msg){const t=$('toast');t.textContent=msg;t.classList.add('show')
 /* ===== state (in-memory; no local persistence) ===== */
 let session=null;              // {id, username, role, pw}
 let lifters=[], users=[], meta={name:'',date:''}, profiles={};
-let form={sex:'M',eq:'Classic'}, sortBy='gl', fSex='all', fEq='all', editId=null;
+let form={sex:'M',eq:'Classic'}, sortBy='gl', fSex='all', fEq='all', editId=null, rankMode='comp';
 
 /* ===== data loading ===== */
 async function loadLifters(){ const lf=await sb('lifters?select=*');
-  lifters=(lf||[]).map(l=>({id:l.id,name:l.name,sex:l.sex,eq:l.equip,bw:Number(l.bw)||0,age:l.age_cat||'',sq:Number(l.sq)||0,bp:Number(l.bp)||0,dl:Number(l.dl)||0})); }
+  lifters=(lf||[]).map(l=>({id:l.id,name:l.name,sex:l.sex,eq:l.equip,bw:Number(l.bw)||0,age:l.age_cat||'',sq:Number(l.sq)||0,bp:Number(l.bp)||0,dl:Number(l.dl)||0,gsq:Number(l.gsq)||0,gbp:Number(l.gbp)||0,gdl:Number(l.gdl)||0})); }
 async function loadUsers(){ const us=await rpc('app_list_users',{}); users=(us||[]).map(u=>({id:u.id,u:u.username,role:u.role})); }
 async function loadProfiles(){ const pf=await sb('profiles?select=*'); profiles={}; (pf||[]).forEach(p=>profiles[p.user_id]={bio:p.bio,video:p.video,img:p.img}); }
 async function loadMeta(){ const mt=await sb('app_meta?id=eq.1&select=*'); const m=(mt&&mt[0])||{}; meta={name:m.name||'',date:m.meet_date||''};
@@ -353,9 +368,10 @@ function wclass(bw,sex){ const a=sex==='M'?MC:WC; if(!bw)return '–'; for(const
 const PLATES=[{kg:25,c:'#e23b3b',h:92,w:17,dia:150,th:30},{kg:20,c:'#2f6fed',h:88,w:16,dia:150,th:25},{kg:15,c:'#f3c000',h:84,w:15,light:1,dia:150,th:21},
   {kg:10,c:'#1f9d4d',h:74,w:13,dia:150,th:16},{kg:5,c:'#eef1f5',h:60,w:12,light:1,dia:122,th:14},{kg:2.5,c:'#16191f',h:46,w:10,blk:1,dia:98,th:11},
   {kg:2,c:'#2f6fed',h:40,w:9,dia:86,th:10},{kg:1.5,c:'#f3c000',h:36,w:8,light:1,dia:78,th:9},{kg:1,c:'#1f9d4d',h:32,w:7,dia:68,th:8},{kg:0.5,c:'#eef1f5',h:28,w:6,light:1,dia:58,th:7}];
+const GYM=[{kg:45,c:'#2f6fed',dia:150,th:28},{kg:35,c:'#f3c000',light:1,dia:140,th:24},{kg:25,c:'#1f9d4d',dia:122,th:18},{kg:10,c:'#eef1f5',light:1,dia:104,th:13},{kg:5,c:'#e23b3b',dia:88,th:11},{kg:2.5,c:'#16191f',blk:1,dia:74,th:9}];
 const round=(x,s)=>{s=s||2.5;return Math.round(x/s)*s;};
-function perSide(t,bar,cp){ let s=(t-bar-cp)/2; if(s<0)return{plates:[],left:s*2};
-  const out=[];let r=s; for(const p of PLATES){while(r+1e-6>=p.kg){out.push(p);r-=p.kg;}} return{plates:out,left:round(r*2,0.01)}; }
+function perSide(t,bar,cp,pset){pset=pset||PLATES; let s=(t-bar-cp)/2; if(s<0)return{plates:[],left:s*2};
+  const out=[];let r=s; for(const p of pset){while(r+1e-6>=p.kg){out.push(p);r-=p.kg;}} return{plates:out,left:round(r*2,0.01)}; }
 function plateTxt(p){return p.light?'rgba(0,0,0,.62)':'rgba(255,255,255,.88)';}
 function plateBorder(p){return p.light?'rgba(0,0,0,.22)':(p.blk?'rgba(255,255,255,.35)':'rgba(0,0,0,.35)');}
 function chipStyle(p){const t=p.light?'var(--text)':(p.blk?'#cfd5dd':p.c);const b=p.light?'var(--muted)':(p.blk?'#5b626d':p.c);return 'border-color:'+b+';color:'+t;}
@@ -387,17 +403,16 @@ function barSVG(plates,cp){
     +'<linearGradient id="sheen" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".42"/><stop offset=".16" stop-color="#fff" stop-opacity=".14"/><stop offset=".48" stop-color="#fff" stop-opacity="0"/><stop offset=".84" stop-color="#000" stop-opacity=".18"/><stop offset="1" stop-color="#000" stop-opacity=".34"/></linearGradient></defs>';
   return '<svg viewBox="0 0 '+W.toFixed(1)+' '+H+'" xmlns="http://www.w3.org/2000/svg">'+defs+shaft+'<g transform="translate('+cx.toFixed(1)+',0)">'+right+'</g><g transform="translate('+cx.toFixed(1)+',0) scale(-1,1)">'+right+'</g>'+labels+'</svg>';
 }
-function barHTML(t,bar,cp){
-  const r=perSide(t,bar,cp),plates=r.plates,left=r.left;
-  const pl=p=>'<div class="plate" style="height:'+p.h+'px;width:'+p.w+'px;background:'+p.c+';color:'+plateTxt(p)+';border-color:'+plateBorder(p)+'">'+p.kg+'</div>';
-  const coll=cp>0?'<div class="collar"></div>':'';
+function loadRender(t,bar,cp,pset,unit){
+  const r=perSide(t,bar,cp,pset),plates=r.plates,left=r.left;
   const bv='<div class="barview">'+barSVG(plates,cp)+'</div>';
   const counts={};plates.forEach(p=>counts[p.kg]=(counts[p.kg]||0)+1);
-  const chips=Object.keys(counts).map(k=>{const p=PLATES.find(x=>x.kg==k);return '<span class="chip" style="'+chipStyle(p)+'">'+counts[k]+' × '+k+'</span>';}).join('');
-  const ps=plates.reduce((a,p)=>a+p.kg,0);
-  const warn=left>0?'<div class="leftover">'+left+' kg short of a clean load</div>':'';
+  const chips=Object.keys(counts).map(k=>{const p=pset.find(x=>x.kg==k);return '<span class="chip" style="'+chipStyle(p)+'">'+counts[k]+' × '+k+'</span>';}).join('');
+  const ps=plates.reduce((a,p)=>a+p.kg,0), total=bar+cp+ps*2;
+  const conv=unit==='kg'?('(\u2248 '+Math.round(total*2.20462)+' lb)'):('(\u2248 '+(total/2.20462).toFixed(1)+' kg)');
+  const warn=left>0?'<div class="leftover">'+left+' '+unit+' short of a clean load</div>':'';
   return bv+'<div class="perside">'+(chips||'<span class="chip" style="border-color:var(--line);color:var(--muted)">bar only</span>')+'</div>'+
-    '<div class="note">Per side '+ps+' kg · Bar '+bar+' + collars '+cp+' + plates '+(ps*2)+' = <b style="color:var(--text)">'+(bar+cp+ps*2)+' kg</b> <span style="color:var(--muted)">(≈ '+Math.round((bar+cp+ps*2)*2.20462)+' lb)</span></div>'+warn;
+    '<div class="note">Per side '+ps+' '+unit+' \u00b7 Bar '+bar+(cp>0?(' + collars '+cp):'')+' + plates '+(ps*2)+' = <b style="color:var(--text)">'+total+' '+unit+'</b> <span style="color:var(--muted)">'+conv+'</span></div>'+warn;
 }
 function miniBar(t,bar,cp){const plates=perSide(t,bar,cp).plates;
   return '<div style="display:flex;gap:2px;height:16px;align-items:flex-end;margin-top:4px">'+plates.map(p=>'<i style="display:block;height:'+(Math.round(p.h*0.15)+4)+'px;width:5px;border-radius:1px;background:'+p.c+';outline:'+(p.blk?'1px solid rgba(255,255,255,.3)':'none')+'"></i>').join('')+'</div>';}
@@ -414,37 +429,40 @@ function seg(id,key){document.querySelectorAll('#'+id+' button').forEach(b=>b.on
   document.querySelectorAll('#'+id+' button').forEach(x=>x.classList.toggle('on',x===b)); form[key]=b.dataset.v;});}
 seg('fSex','sex'); seg('fEq','eq');
 function readForm(){const num=id=>parseFloat($(id).value)||0;
-  return {name:$('fName').value.trim(),sex:form.sex,eq:form.eq,bw:num('fBw'),age:$('fAge').value.trim(),sq:num('fSq'),bp:num('fBp'),dl:num('fDl')};}
-function clearForm(){['fName','fBw','fAge','fSq','fBp','fDl'].forEach(id=>$(id).value='');
+  return {name:$('fName').value.trim(),sex:form.sex,eq:form.eq,bw:num('fBw'),age:$('fAge').value.trim(),sq:num('fSq'),bp:num('fBp'),dl:num('fDl'),gsq:num('fGsq'),gbp:num('fGbp'),gdl:num('fGdl')};}
+function clearForm(){['fName','fBw','fAge','fSq','fBp','fDl','fGsq','fGbp','fGdl'].forEach(id=>$(id).value='');
   editId=null;$('saveBtn').textContent='Add to rankings';$('cancelEdit').style.display='none';}
 $('saveBtn').onclick=async()=>{
   const d=readForm(); if(!d.name){toast('Enter a name');return;} if(!d.bw){toast('Bodyweight is needed for GL points');return;}
   const btn=$('saveBtn'); btn.disabled=true;
   try{
-    await rpc('app_upsert_lifter',{p_actor:session.id,p_actor_pass:session.pw,p_id:editId||null,p_name:d.name,p_sex:d.sex,p_equip:d.eq,p_bw:d.bw,p_age:d.age||null,p_sq:d.sq,p_bp:d.bp,p_dl:d.dl});
+    await rpc('app_upsert_lifter',{p_actor:session.id,p_actor_pass:session.pw,p_id:editId||null,p_name:d.name,p_sex:d.sex,p_equip:d.eq,p_bw:d.bw,p_age:d.age||null,p_sq:d.sq,p_bp:d.bp,p_dl:d.dl,p_gsq:d.gsq,p_gbp:d.gbp,p_gdl:d.gdl});
     await loadLifters(); clearForm(); renderRank(); toast('Saved');
   }catch(e){ toast(e.message); } finally{ btn.disabled=false; }
 };
 $('cancelEdit').onclick=clearForm;
 
-function rows(){return lifters.map(l=>{const total=(l.sq||0)+(l.bp||0)+(l.dl||0);
-    return Object.assign({},l,{total:total,gl:gl(total,l.bw,l.sex,l.eq),cls:wclass(l.bw,l.sex)});})
+function rows(){return lifters.map(l=>{
+    const ct=(l.sq||0)+(l.bp||0)+(l.dl||0), gt=(l.gsq||0)+(l.gbp||0)+(l.gdl||0), gym=rankMode==='gym';
+    const total=gym?gt:ct, tkg=gym?total/2.20462:total;
+    return Object.assign({},l,{sqd:gym?l.gsq:l.sq,bpd:gym?l.gbp:l.bp,dld:gym?l.gdl:l.dl,total:total,gl:gl(tkg,l.bw,l.sex,l.eq),cls:wclass(l.bw,l.sex)});})
   .filter(l=>(fSex==='all'||l.sex===fSex)&&(fEq==='all'||l.eq===fEq))
   .sort((a,b)=>sortBy==='gl'?b.gl-a.gl:b.total-a.total);}
 function renderRank(){
-  const out=$('rankOut'),data=rows();
-  if(!data.length){out.innerHTML='<div class="empty">No lifters yet.</div>';return;}
+  const out=$('rankOut'),data=rows(),gym=rankMode==='gym';
+  if(!data.length){out.innerHTML='<div class="empty">No '+(gym?'gym maxes':'lifters')+' yet.</div>';return;}
   const head='<thead><tr><th>#</th><th class="l">Lifter</th><th>BW</th><th>Cls</th><th>SQ</th><th>BP</th><th>DL</th><th>Total</th><th>GL</th><th></th></tr></thead>';
   const body=data.map((l,i)=>{const rk=i===0?'g1':i===1?'g2':i===2?'g3':'';
+    const tot=gym?(l.total?(l.total+'<span style="color:var(--muted);font-weight:500;font-size:10px"> '+Math.round(l.total/2.20462)+'kg</span>'):'\u2013'):(l.total||'\u2013');
     return '<tr data-id="'+l.id+'" class="'+(l.id===editId?'editing':'')+'">'+
       '<td class="rk '+rk+'">'+(i+1)+'</td>'+
-      '<td class="l"><span class="nm">'+esc(l.name)+'</span><span class="tag">'+(l.sex==='M'?'M':'W')+'·'+(l.eq==='Classic'?'CL':'EQ')+'</span>'+(l.age?'<span class="tag">'+esc(l.age)+'</span>':'')+'</td>'+
-      '<td class="mono">'+(l.bw||'–')+'</td><td class="mono">'+l.cls+'</td>'+
-      '<td class="mono">'+(l.sq||'–')+'</td><td class="mono">'+(l.bp||'–')+'</td><td class="mono">'+(l.dl||'–')+'</td>'+
-      '<td class="totcell">'+(l.total||'–')+'</td><td class="glcell">'+(l.gl?l.gl.toFixed(2):'–')+'</td>'+
-      '<td><button class="xbtn" data-del="'+l.id+'">✕</button></td></tr>';}).join('');
+      '<td class="l"><span class="nm">'+esc(l.name)+'</span><span class="tag">'+(l.sex==='M'?'M':'W')+'\u00b7'+(l.eq==='Classic'?'CL':'EQ')+'</span>'+(l.age?'<span class="tag">'+esc(l.age)+'</span>':'')+'</td>'+
+      '<td class="mono">'+(l.bw||'\u2013')+'</td><td class="mono">'+l.cls+'</td>'+
+      '<td class="mono">'+(l.sqd||'\u2013')+'</td><td class="mono">'+(l.bpd||'\u2013')+'</td><td class="mono">'+(l.dld||'\u2013')+'</td>'+
+      '<td class="totcell">'+tot+'</td><td class="glcell">'+(l.gl?l.gl.toFixed(2):'\u2013')+'</td>'+
+      '<td><button class="xbtn" data-del="'+l.id+'">\u2715</button></td></tr>';}).join('');
   out.innerHTML='<div class="tablewrap"><table>'+head+'<tbody>'+body+'</tbody></table></div>'+
-    '<div class="note">'+data.length+' lifter'+(data.length>1?'s':'')+' shown · GL points compare strength within the same sex &amp; equipment.'+(session&&session.role==='Admin'?' Tap a row to edit.':'')+'</div>';
+    '<div class="note">'+data.length+' '+(data.length>1?'lifters':'lifter')+' \u00b7 '+(gym?'gym maxes in lb (kg shown on total); GL uses the kg equivalent.':'competition bests in kg.')+(session&&session.role==='Admin'?' Tap a row to edit.':'')+'</div>';
 }
 $('rankOut').addEventListener('click',async e=>{
   if(!session||session.role!=='Admin')return;
@@ -456,11 +474,12 @@ $('rankOut').addEventListener('click',async e=>{
   document.querySelectorAll('#fSex button').forEach(b=>b.classList.toggle('on',b.dataset.v===l.sex));
   document.querySelectorAll('#fEq button').forEach(b=>b.classList.toggle('on',b.dataset.v===l.eq));
   const set=(id,v)=>$(id).value=(v||v===0)?v:'';
-  set('fName',l.name);set('fBw',l.bw);set('fAge',l.age);set('fSq',l.sq);set('fBp',l.bp);set('fDl',l.dl);
+  set('fName',l.name);set('fBw',l.bw);set('fAge',l.age);set('fSq',l.sq);set('fBp',l.bp);set('fDl',l.dl);set('fGsq',l.gsq);set('fGbp',l.gbp);set('fGdl',l.gdl);
   $('saveBtn').textContent='Update lifter';$('cancelEdit').style.display='block';
   window.scrollTo({top:0,behavior:'smooth'}); renderRank();
 });
 document.querySelectorAll('[data-sort]').forEach(p=>p.onclick=()=>{sortBy=p.dataset.sort;document.querySelectorAll('[data-sort]').forEach(x=>x.classList.toggle('on',x===p));renderRank();});
+document.querySelectorAll('#rankMode button').forEach(b=>b.onclick=()=>{document.querySelectorAll('#rankMode button').forEach(x=>x.classList.toggle('on',x===b));rankMode=b.dataset.v;renderRank();});
 document.querySelector('[data-fsex]').onclick=function(){fSex=fSex==='all'?'M':fSex==='M'?'F':'all';this.textContent=fSex==='all'?'All':fSex==='M'?'Men':'Women';this.classList.toggle('on',fSex!=='all');renderRank();};
 document.querySelector('[data-feq]').onclick=function(){fEq=fEq==='all'?'Classic':fEq==='Classic'?'Equipped':'all';this.textContent=fEq==='all'?'All gear':fEq;this.classList.toggle('on',fEq!=='all');renderRank();};
 
@@ -475,7 +494,7 @@ $('migrateBtn').onclick=async()=>{
   if(!local.length){toast('No local lifters found on this device.');return;}
   if(!confirm('Upload '+local.length+' lifter(s) saved on this device to the cloud?'))return;
   const btn=$('migrateBtn'); btn.disabled=true; let ok=0;
-  for(const l of local){ try{ await rpc('app_upsert_lifter',{p_actor:session.id,p_actor_pass:session.pw,p_id:null,p_name:l.name,p_sex:l.sex,p_equip:l.eq,p_bw:l.bw,p_age:l.age||null,p_sq:l.sq||0,p_bp:l.bp||0,p_dl:l.dl||0}); ok++; }catch(e){} }
+  for(const l of local){ try{ await rpc('app_upsert_lifter',{p_actor:session.id,p_actor_pass:session.pw,p_id:null,p_name:l.name,p_sex:l.sex,p_equip:l.eq,p_bw:l.bw,p_age:l.age||null,p_sq:l.sq||0,p_bp:l.bp||0,p_dl:l.dl||0,p_gsq:0,p_gbp:0,p_gdl:0}); ok++; }catch(e){} }
   await loadLifters(); renderRank(); btn.disabled=false; toast('Uploaded '+ok+' of '+local.length+' lifters');
 };
 
@@ -599,9 +618,27 @@ function renderProg(){const t=TEMPLATES[psel.value],tm=parseFloat($('pTm').value
 ['pTpl','pLift','pTm'].forEach(id=>$(id).addEventListener('input',renderProg));
 
 /* ===== loading ===== */
-function renderLoad(){const w=parseFloat($('loadW').value)||0;const bar=parseFloat($('loadBar').value);const cp=$('loadCollar').checked?5:0;
-  $('loadOut').innerHTML=barHTML(w,bar,cp);$('loadLb').textContent=w?('≈ '+Math.round(w*2.20462)+' lb'):'';}
-['loadW','loadBar','loadCollar'].forEach(id=>$(id).addEventListener('input',renderLoad));
+let loadMode='comp';
+function renderLoad(){
+  if(loadMode==='comp'){
+    const w=parseFloat($('loadW').value)||0,cp=$('loadCollar').checked?5:0;
+    $('loadLb').textContent=w?('\u2248 '+Math.round(w*2.20462)+' lb'):'\u2014';
+    $('loadOut').innerHTML=loadRender(w,20,cp,PLATES,'kg');
+  }else{
+    const w=parseFloat($('gymW').value)||0;
+    $('gymKg').textContent=w?('\u2248 '+(w/2.20462).toFixed(1)+' kg'):'\u2014';
+    $('loadOut').innerHTML=loadRender(w,45,0,GYM,'lb');
+  }
+}
+['loadW','loadCollar','gymW'].forEach(id=>$(id).addEventListener('input',renderLoad));
+document.querySelectorAll('#loadMode button').forEach(b=>b.onclick=()=>{
+  document.querySelectorAll('#loadMode button').forEach(x=>x.classList.toggle('on',x===b));
+  loadMode=b.dataset.v;
+  $('compCard').style.display=loadMode==='comp'?'':'none';
+  $('gymCard').style.display=loadMode==='gym'?'':'none';
+  $('loadTitle').textContent=loadMode==='comp'?'Competition loading':'Gym loading';
+  renderLoad();
+});
 
 /* ===== nav ===== */
 document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{const go=navTo(b.dataset.go);
