@@ -732,6 +732,7 @@ const PROGRAMS={
     ]
   }
 };
+PROGRAMS['primal-grown-gorilla']={name:'Primal Grown Gorilla (8-wk)',weeks:8,deload:4,refTM:{squat:390,bench:250,deadlift:524},note:'8-week peak. Working weights scale off training max (90% of 1RM), rounded to 5 lb. Week 4 is a deload.',days:JSON.parse(JSON.stringify(PROGRAMS['primal-infant'].days))};
 const PROG_KEYS=Object.keys(PROGRAMS);
 const round5=x=>Math.round(x/5)*5;
 let progAthlete=null, progProgram=null, progLogs=[], amUnit='lb';
@@ -768,7 +769,7 @@ function dayInfo(wkIdx,day){ const exs=day.ex.filter(e=>e.wk[wkIdx]); const req=
   let started=null; logs.forEach(l=>{const t=new Date(l.at).getTime(); if(started===null||t<started)started=t;});
   const expired=started!==null&&!allDone&&(Date.now()-started)>12*3600*1000;
   return {exs,req,done,allDone,started,expired}; }
-function weekUnlocked(prog,wkIdx){ if(wkIdx===0) return true; let c=0;
+function weekUnlocked(prog,wkIdx,bypass){ if(bypass) return true; if(wkIdx===0) return true; let c=0;
   prog.days.forEach(d=>{ if(dayInfo(wkIdx-1,d).allDone) c++; }); return c>=3; }
 
 function renderProg(){
@@ -822,7 +823,7 @@ async function loadAndRenderBoard(){ const bEl=$('progBoard'); if(!bEl) return;
   if(!progProgram||!my.some(a=>a.program===progProgram)) progProgram=my[0].program;
   await loadProgLogs(progAthlete,progProgram);
   const prog=activeProg();
-  if(progAthlete===session.id){ let reset=false;
+  if(progAthlete===session.id && session.role!=='Admin'){ let reset=false;
     for(let wi=0;wi<prog.weeks;wi++){ for(const d of prog.days){ if(dayInfo(wi,d).expired){ try{ await rpc('app_reset_day',{p_token:session.token,p_program:progProgram,p_week:wi+1,p_day:d.d}); reset=true; }catch(e){} } } }
     if(reset) await loadProgLogs(progAthlete,progProgram);
   }
@@ -830,25 +831,25 @@ async function loadAndRenderBoard(){ const bEl=$('progBoard'); if(!bEl) return;
 }
 function fmtReps(r){ return r==='AMRAP'?'AMRAP':r; }
 function renderBoard(){ const bEl=$('progBoard'), prog=activeProg(), a=asgn(progAthlete,progProgram);
-  const u=users.find(x=>x.id===progAthlete), nm=u?u.u:'', own=progAthlete===session.id, tm=curTMs(a,prog);
+  const u=users.find(x=>x.id===progAthlete), nm=u?u.u:'', own=progAthlete===session.id, bypass=own&&session.role==='Admin', tm=curTMs(a,prog);
   const my=assignmentsFor(progAthlete);
   let html='';
   if(my.length>1){ html+='<div class="seg" style="margin:2px 0 10px">'+my.map(x=>'<button data-prog="'+x.program+'" class="'+(x.program===progProgram?'on':'')+'">'+esc(PROGRAMS[x.program].name.split(' (')[0])+'</button>').join('')+'</div>'; }
-  html+='<div class="note" style="margin:2px 0 12px">'+esc(nm)+' \u00b7 Training max: SQ '+round5(tm.squat)+' \u00b7 BP '+round5(tm.bench)+' \u00b7 DL '+round5(tm.deadlift)+' lb'+(own?'':' \u00b7 view only')+'</div>';
+  html+='<div class="note" style="margin:2px 0 12px">'+esc(nm)+' \u00b7 Training max: SQ '+round5(tm.squat)+' \u00b7 BP '+round5(tm.bench)+' \u00b7 DL '+round5(tm.deadlift)+' lb'+(own?'':' \u00b7 view only')+(bypass?' \u00b7 admin: weeks unlocked':'')+'</div>';
   for(let wi=0;wi<prog.weeks;wi++){
-    const unlocked=weekUnlocked(prog,wi); let dc=0,dt=0; prog.days.forEach(d=>{ if(d.ex.some(e=>e.wk[wi])){ dt++; if(dayInfo(wi,d).allDone) dc++; } });
+    const unlocked=weekUnlocked(prog,wi,bypass); let dc=0,dt=0; prog.days.forEach(d=>{ if(d.ex.some(e=>e.wk[wi])){ dt++; if(dayInfo(wi,d).allDone) dc++; } });
     const dl=prog.deload===wi+1;
     html+='<div class="pwk"><div class="pwkhd"><span class="wn">Week '+(wi+1)+(dl?' \u00b7 Deload':'')+'</span><span class="focus">'+dc+'/'+dt+' days</span></div>';
     if(!unlocked){ html+='<div class="lockbox">Locked \u2014 complete 3 of 4 days in Week '+wi+' to unlock.</div></div>'; continue; }
-    prog.days.forEach(d=>{ html+=dayHTML(wi,d,tm,own,prog); });
+    prog.days.forEach(d=>{ html+=dayHTML(wi,d,tm,own,prog,bypass); });
     html+='</div>';
   }
   bEl.innerHTML=html;
 }
-function dayHTML(wi,day,tm,own,prog){ const di=dayInfo(wi,day); if(!di.exs.length) return '';
+function dayHTML(wi,day,tm,own,prog,bypass){ const di=dayInfo(wi,day); if(!di.exs.length) return '';
   const badge=di.allDone?'<span class="dbadge done">done</span>':'<span class="dbadge">'+di.done.size+'/'+di.req.length+'</span>';
   let h='<div class="pday"><div class="pdayhd">Day '+day.d+' \u2014 '+esc(day.title)+' '+badge+'</div>';
-  if(di.started!==null&&!di.allDone){ const left=12-(Date.now()-di.started)/3600000;
+  if(di.started!==null&&!di.allDone&&!bypass){ const left=12-(Date.now()-di.started)/3600000;
     h+='<div class="note" style="margin:0 0 8px;color:var(--teal)">'+(left>0?left.toFixed(1)+' h left to finish this day':'window expired \u2014 will reset')+'</div>'; }
   day.ex.forEach(ex=>{ const p=presc(ex,wi,tm,prog); if(!p) return; const lg=logOf(wi+1,day.d,ex.k);
     let detail;
