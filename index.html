@@ -229,7 +229,7 @@
     <h2 class="title">Eleiko loading</h2>
     <div class="card">
       <div class="row" style="margin-bottom:10px">
-        <div><label class="lbl">Target (kg)</label><input id="loadW" class="field mono" type="number" inputmode="decimal" value="180" /></div>
+        <div><label class="lbl">Target (kg)</label><input id="loadW" class="field mono" type="number" inputmode="decimal" value="180" /><div class="note" id="loadLb" style="margin-top:4px"></div></div>
         <div><label class="lbl">Bar</label><select id="loadBar" class="field"><option value="20">20 kg (men)</option><option value="15">15 kg (women)</option></select></div>
       </div>
       <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted)">
@@ -368,7 +368,7 @@ function barHTML(t,bar,cp){
   const ps=plates.reduce((a,p)=>a+p.kg,0);
   const warn=left>0?'<div class="leftover">'+left+' kg short of a clean load</div>':'';
   return bv+'<div class="perside">'+(chips||'<span class="chip" style="border-color:var(--line);color:var(--muted)">bar only</span>')+'</div>'+
-    '<div class="note">Per side '+ps+' kg · Bar '+bar+' + collars '+cp+' + plates '+(ps*2)+' = <b style="color:var(--text)">'+(bar+cp+ps*2)+' kg</b></div>'+warn;
+    '<div class="note">Per side '+ps+' kg · Bar '+bar+' + collars '+cp+' + plates '+(ps*2)+' = <b style="color:var(--text)">'+(bar+cp+ps*2)+' kg</b> <span style="color:var(--muted)">(≈ '+Math.round((bar+cp+ps*2)*2.20462)+' lb)</span></div>'+warn;
 }
 function miniBar(t,bar,cp){const plates=perSide(t,bar,cp).plates;
   return '<div style="display:flex;gap:2px;height:16px;align-items:flex-end;margin-top:4px">'+plates.map(p=>'<i style="display:block;height:'+(Math.round(p.h*0.15)+4)+'px;width:5px;border-radius:1px;background:'+p.c+';outline:'+(p.blk?'1px solid rgba(255,255,255,.3)':'none')+'"></i>').join('')+'</div>';}
@@ -564,14 +564,14 @@ function renderProg(){const t=TEMPLATES[psel.value],tm=parseFloat($('pTm').value
   $('pDesc').textContent=t.desc;
   $('progOut').innerHTML=t.weeks.map((w,i)=>{
     const lines=w.sets.map(s=>{const wt=round(tm*s.p);
-      return '<div class="setline"><div class="sx">'+s.n+' × '+s.r+'</div><div class="sw">'+wt+' kg '+miniBar(wt,20,5)+'</div><div class="sp">'+Math.round(s.p*100)+'%</div></div>';}).join('');
+      return '<div class="setline"><div class="sx">'+s.n+' × '+s.r+'</div><div class="sw">'+wt+' kg <span style="color:var(--muted);font-weight:500;font-size:11px">≈ '+Math.round(wt*2.20462)+' lb</span> '+miniBar(wt,20,5)+'</div><div class="sp">'+Math.round(s.p*100)+'%</div></div>';}).join('');
     return '<div class="weekcard"><div class="weekhd"><span class="wn">Week '+(i+1)+'</span><span class="focus">'+w.focus+'</span></div>'+lines+'</div>';}).join('')
     +'<div class="note">Percentages run off the training max (typically ~90–95% of a true 1RM). Weights round to 2.5 kg.</div>';}
 ['pTpl','pLift','pTm'].forEach(id=>$(id).addEventListener('input',renderProg));
 
 /* ===== loading ===== */
 function renderLoad(){const w=parseFloat($('loadW').value)||0;const bar=parseFloat($('loadBar').value);const cp=$('loadCollar').checked?5:0;
-  $('loadOut').innerHTML=barHTML(w,bar,cp);}
+  $('loadOut').innerHTML=barHTML(w,bar,cp);$('loadLb').textContent=w?('≈ '+Math.round(w*2.20462)+' lb'):'';}
 ['loadW','loadBar','loadCollar'].forEach(id=>$(id).addEventListener('input',renderLoad));
 
 /* ===== nav ===== */
