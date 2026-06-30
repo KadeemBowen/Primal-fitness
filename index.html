@@ -97,6 +97,22 @@
   .pstat{border:1px solid var(--line);border-radius:10px;padding:9px 6px;text-align:center;background:var(--panel2)}
   .pstat span{display:block;font-size:9px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:3px}
   .pstat b{font-family:'JetBrains Mono';font-size:16px;font-weight:700}
+  .asgnrow{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 0;border-top:1px solid var(--line)}
+  .pwk{border:1px solid var(--line);border-radius:14px;margin-bottom:12px;overflow:hidden}
+  .pwkhd{display:flex;justify-content:space-between;align-items:center;padding:11px 14px;background:var(--panel2)}
+  .pwkhd .wn{font-family:'Oswald';font-weight:600;letter-spacing:.02em}
+  .pwkhd .focus{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+  .lockbox{padding:14px;color:var(--muted);font-size:13px}
+  .pday{padding:10px 14px;border-top:1px solid var(--line)}
+  .pdayhd{font-weight:600;font-size:13px;margin-bottom:8px}
+  .dbadge{display:inline-block;font-size:10px;border:1px solid var(--line);border-radius:20px;padding:1px 8px;color:var(--muted);vertical-align:middle;margin-left:4px}
+  .dbadge.done{border-color:var(--teal);color:var(--teal)}
+  .pex{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:7px 0;border-top:1px solid rgba(255,255,255,.04)}
+  .pexname{font-size:13px;font-weight:500}
+  .presc{font-size:11px;color:var(--muted);font-family:'JetBrains Mono';margin-top:2px;font-weight:400}
+  .pexr{display:flex;align-items:center;gap:6px;white-space:nowrap}
+  .pin{width:62px!important;padding:6px 7px!important;margin:0!important;font-size:13px!important;text-align:center}
+  .okmark{color:var(--teal);font-size:12px;font-family:'JetBrains Mono'}
 
   .platewrap{display:flex;flex-direction:column;align-items:center;gap:14px;padding:6px 0 2px}
   .barview{display:flex;align-items:center;justify-content:center;min-height:104px;width:100%;overflow-x:auto}
@@ -232,16 +248,9 @@
       </div>
       <div id="e1Out" class="note"></div>
     </div>
-    <h2 class="title" style="margin-top:18px">Program builder</h2>
-    <div class="card">
-      <div class="fg">
-        <div class="full"><label class="lbl">Block template</label><select id="pTpl" class="field"></select></div>
-        <div><label class="lbl">Lift</label><select id="pLift" class="field"><option>Squat</option><option>Bench</option><option>Deadlift</option></select></div>
-        <div><label class="lbl">Training max (kg)</label><input id="pTm" class="field mono" type="number" inputmode="decimal" value="180" /></div>
-      </div>
-      <div class="note" id="pDesc"></div>
-    </div>
-    <div id="progOut"></div>
+    <h2 class="title" style="margin-top:18px">Primal Infant 8-Week Progression</h2>
+    <div id="asgnAdmin"></div>
+    <div id="progBoard"></div>
   </section>
 
   <section id="load" class="screen">
@@ -313,7 +322,7 @@ function toast(msg){const t=$('toast');t.textContent=msg;t.classList.add('show')
 
 /* ===== state (in-memory; no local persistence) ===== */
 let session=null;              // {id, username, role, pw}
-let lifters=[], users=[], profiles={};
+let lifters=[], users=[], profiles={}, assignments=[];
 let form={sex:'M',eq:'Classic'}, sortBy='gl', fSex='all', fEq='all', editId=null, rankMode='comp';
 
 /* ===== data loading ===== */
@@ -321,7 +330,7 @@ async function loadLifters(){ const lf=await sb('lifters?select=*');
   lifters=(lf||[]).map(l=>({id:l.id,name:l.name,sex:l.sex,eq:l.equip,bw:Number(l.bw)||0,age:l.age_cat||'',sq:Number(l.sq)||0,bp:Number(l.bp)||0,dl:Number(l.dl)||0,gsq:Number(l.gsq)||0,gbp:Number(l.gbp)||0,gdl:Number(l.gdl)||0})); }
 async function loadUsers(){ const us=await rpc('app_list_users',{}); users=(us||[]).map(u=>({id:u.id,u:u.username,role:u.role})); }
 async function loadProfiles(){ const pf=await sb('profiles?select=*'); profiles={}; (pf||[]).forEach(p=>profiles[p.user_id]={bio:p.bio,video:p.video,img:p.img}); }
-async function loadAll(){ await Promise.all([loadLifters(),loadUsers(),loadProfiles()]); }
+async function loadAll(){ await Promise.all([loadLifters(),loadUsers(),loadProfiles(),loadAssignments()]); }
 
 /* ===== auth ===== */
 $('liBtn').onclick=doLogin;
@@ -357,7 +366,7 @@ function applyAuth(){
   document.querySelector('nav [data-go="prog"]').style.display=spec?'none':'';
   $('addCard').style.display=admin?'':'none';
   $('migrateBtn').style.display=admin?'':'none';
-  navTo('rank'); renderRank(); if(admin) renderUsers();
+  navTo('rank'); renderRank(); if(admin) renderUsers(); renderProg();
 }
 const ROLE_SCREENS={Admin:['rank','profiles','prog','load','users'],Lifter:['rank','profiles','prog','load'],Spectate:['rank','profiles','load']};
 function navTo(go){
@@ -627,26 +636,180 @@ $('profilesOut').addEventListener('click',async e=>{
 });
 
 /* ===== programs ===== */
-const TEMPLATES={
-  linear:{name:'Linear base (4 wk)',desc:'Steady volume-to-intensity build off your training max. Good general prep 8+ weeks out.',
-    weeks:[{focus:'Volume',sets:[{p:.72,r:5,n:4}]},{focus:'Volume',sets:[{p:.78,r:4,n:4}]},{focus:'Intensity',sets:[{p:.84,r:3,n:4}]},{focus:'Intensity',sets:[{p:.90,r:2,n:3}]}]},
-  accum:{name:'5-week accumulation',desc:'Higher-volume block to build work capacity before a peak. Run off ~90% training max.',
-    weeks:[{focus:'Base',sets:[{p:.68,r:6,n:4}]},{focus:'Base',sets:[{p:.71,r:6,n:4}]},{focus:'Build',sets:[{p:.74,r:5,n:5}]},{focus:'Build',sets:[{p:.77,r:4,n:5}]},{focus:'Overreach',sets:[{p:.80,r:4,n:4}]}]},
-  peak:{name:'3-week peak',desc:'Sharpening block ~3.5 weeks out. Ends on an opener single, then deload into the platform.',
-    weeks:[{focus:'Heavy triples',sets:[{p:.82,r:3,n:4}]},{focus:'Heavy doubles',sets:[{p:.88,r:2,n:3}]},{focus:'Opener single',sets:[{p:.91,r:1,n:1},{p:.70,r:3,n:2}]}]},
-  rpe:{name:'Top single + back-off',desc:'RPE-style day: work to a heavy single, then volume back-offs. Nudge the single up weekly as RPE allows.',
-    weeks:[{focus:'~RPE 8 single',sets:[{p:.90,r:1,n:1},{p:.80,r:3,n:3}]}]}
+/* ===== Primal Infant 8-Week Progression ===== */
+const PROG={
+  refTM:{squat:390,bench:250,deadlift:524},
+  weeks:8,
+  days:[
+    {d:'A',title:'Squat Heavy + Bench Volume',ex:[
+      {k:'compsq',name:'Competition Squat',lift:'squat',drive:true,wk:[[4,4,315,7],[4,4,325,7.5],[4,4,335,7.5],[3,3,305,6],[4,3,345,8],[4,3,355,8],[3,2,365,8.5],[3,2,345,7]]},
+      {k:'compsq_bo',name:'Comp Squat (back-off)',lift:'squat',wk:[null,null,null,null,[3,2,315,7],[2,2,325,7.5],[2,2,315,7],[2,2,295,6.5]]},
+      {k:'pbench',name:'Pause Bench (1 sec)',lift:'bench',wk:[[4,5,180,7],[4,5,185,7.5],[4,4,195,8],[3,3,175,6],[4,3,200,7.5],[4,3,205,8],[3,2,210,8],[3,3,165,6]]},
+      {k:'pbench_bo',name:'Pause Bench (back-off)',lift:'bench',wk:[[3,6,160,7],[3,6,165,7],[3,5,175,7],[2,4,155,6],[3,4,180,7],[3,4,185,7],[2,3,190,7.5],[2,3,155,6]]},
+      {k:'cgbench',name:'Close-grip Bench',lift:'bench',wk:[[3,8,155,7],[3,8,160,7],[3,8,165,7.5],[2,8,145,6],[3,6,170,7.5],[3,6,175,7.5],null,null]},
+      {k:'rowsA',name:'Rows',lift:null,wk:[[4,8,'BW',7],[4,8,'BW',7],[4,8,'BW',7],[2,8,'BW',6],[3,8,'BW',7],[3,8,'BW',7],null,null]}
+    ]},
+    {d:'B',title:'Sumo Deadlift Heavy + Larsen Press',ex:[
+      {k:'sumodl',name:'Sumo Deadlift',lift:'deadlift',drive:true,wk:[[4,4,405,7],[4,3,420,7.5],[4,3,430,8],[3,3,385,6],[3,2,450,8],[3,2,465,8],[1,1,490,8.5],[3,3,350,6]]},
+      {k:'sumodl_bo',name:'Sumo DL (back-off)',lift:'deadlift',wk:[null,null,null,null,[2,2,415,7],[2,2,425,7],[1,2,455,7.5],null]},
+      {k:'blockpull',name:'Sumo Block Pulls (2 in)',lift:'deadlift',wk:[[3,3,415,7],[3,3,430,7.5],[3,3,440,8],[2,3,385,6],[3,2,460,8],[3,2,475,8],null,null]},
+      {k:'larsen',name:'Larsen Press',lift:'bench',wk:[[3,5,165,7],[3,5,170,7],[3,5,175,7],[2,4,155,6],[3,5,180,7],[3,5,185,7],[2,4,175,7],null]},
+      {k:'ohp',name:'OHP',lift:'bench',wk:[[4,6,95,7],[4,6,100,7],[4,6,105,7],[3,6,85,6],[3,6,110,7],[3,6,115,7],[2,6,95,6],null]},
+      {k:'pullupB',name:'Pull-ups',lift:null,wk:[[4,'AMRAP','BW',7],[4,'AMRAP','BW',7],[4,'AMRAP','BW',7],[2,'AMRAP','BW',6],[3,'AMRAP','BW',7],[3,'AMRAP','BW',7],[2,'AMRAP','BW',6],null]}
+    ]},
+    {d:'C',title:'Bench Heavy + Squat Volume',ex:[
+      {k:'compbench',name:'Comp Bench (pause + command)',lift:'bench',drive:true,wk:[[4,4,195,7],[4,4,200,7.5],[4,3,210,8],[3,3,190,6],[4,3,215,7.5],[4,3,220,8],[3,2,235,8],[1,1,220,7]]},
+      {k:'compbench_bo',name:'Comp Bench (back-off)',lift:'bench',wk:[[3,6,175,7],[3,5,185,7],[3,4,190,7],[2,3,175,6],[3,3,200,7],[3,3,205,7],[2,2,225,7.5],[2,3,195,6.5]]},
+      {k:'spoto',name:'Spoto Press',lift:'bench',wk:[[3,5,165,7],[3,5,170,7],[3,5,175,7],[2,4,155,6],[3,5,180,7.5],[3,5,185,7.5],[2,4,175,7],null]},
+      {k:'compsq_vol',name:'Comp Squat (volume)',lift:'squat',wk:[[3,5,285,7],[3,5,295,7],[3,5,305,7.5],[2,4,270,6],[3,4,315,7.5],[3,4,325,7.5],[2,3,305,7],null]},
+      {k:'pausesq',name:'Pause Squat (3 sec)',lift:'squat',wk:[[3,4,245,7],[3,4,255,7],[3,4,265,7.5],[2,3,235,6],[3,3,275,7.5],[3,3,280,7.5],[2,3,265,7],null]},
+      {k:'tricep',name:'Tricep work',lift:null,wk:[[3,12,null,7],[3,12,null,7],[3,12,null,7],[2,10,null,6],[3,12,null,7],[3,12,null,7],null,null]}
+    ]},
+    {d:'D',title:'Optional \u2014 Accessories + Weak Points',optional:true,ex:[
+      {k:'pausedsumo',name:'Paused Sumo (2 sec off floor)',lift:'deadlift',wk:[[3,3,320,7],[3,3,330,7],[3,3,340,7],[2,2,305,6],[3,2,350,7],[3,2,360,7],[2,2,370,7.5],null]},
+      {k:'rdl',name:'Romanian Deadlift',lift:'deadlift',wk:[[3,6,225,7],[3,6,235,7],[3,6,245,7.5],[2,5,205,6],[3,6,255,7.5],[3,6,265,7.5],[2,5,245,7],null]},
+      {k:'highbarsq',name:'High-bar Squat',lift:'squat',wk:[[4,6,265,7],[4,6,275,7],[4,6,285,7.5],[2,5,245,6],[3,6,295,7.5],[3,6,305,7.5],[2,5,275,7],null]},
+      {k:'pullupD',name:'Pull-ups',lift:null,wk:[[3,'AMRAP','BW',7],[3,'AMRAP','BW',7],[3,'AMRAP','BW',7],[2,'AMRAP','BW',6],[3,'AMRAP','BW',7],[3,'AMRAP','BW',7],[2,'AMRAP','BW',6],null]},
+      {k:'reardelt',name:'Rear delts + face pulls',lift:null,wk:[[3,15,null,null],[3,15,null,null],[3,15,null,null],[2,12,null,null],[3,15,null,null],[3,15,null,null],[2,12,null,null],null]},
+      {k:'core',name:'Core',lift:null,wk:[[3,12,null,null],[3,12,null,null],[3,12,null,null],[2,10,null,null],[3,12,null,null],[3,12,null,null],[2,10,null,null],null]}
+    ]}
+  ]
 };
-const psel=$('pTpl');
-Object.keys(TEMPLATES).forEach(k=>{const o=document.createElement('option');o.value=k;o.textContent=TEMPLATES[k].name;psel.appendChild(o);});
-function renderProg(){const t=TEMPLATES[psel.value],tm=parseFloat($('pTm').value)||0;
-  $('pDesc').textContent=t.desc;
-  $('progOut').innerHTML=t.weeks.map((w,i)=>{
-    const lines=w.sets.map(s=>{const wt=round(tm*s.p);
-      return '<div class="setline"><div class="sx">'+s.n+' × '+s.r+'</div><div class="sw">'+wt+' kg <span style="color:var(--muted);font-weight:500;font-size:11px">≈ '+Math.round(wt*2.20462)+' lb</span> '+miniBar(wt,20,5)+'</div><div class="sp">'+Math.round(s.p*100)+'%</div></div>';}).join('');
-    return '<div class="weekcard"><div class="weekhd"><span class="wn">Week '+(i+1)+'</span><span class="focus">'+w.focus+'</span></div>'+lines+'</div>';}).join('')
-    +'<div class="note">Percentages run off the training max (typically ~90–95% of a true 1RM). Weights round to 2.5 kg.</div>';}
-['pTpl','pLift','pTm'].forEach(id=>$(id).addEventListener('input',renderProg));
+const round5=x=>Math.round(x/5)*5;
+let progAthlete=null, progLogs=[], amUnit='lb';
+
+async function loadAssignments(){ try{ const a=await sb('assignments?program=eq.primal-infant&select=*');
+  assignments=(a||[]).map(x=>({user_id:x.user_id,sq:Number(x.sq_max)||0,bp:Number(x.bp_max)||0,dl:Number(x.dl_max)||0})); }catch(e){ assignments=[]; } }
+async function loadProgLogs(uid){ if(!uid){progLogs=[];return;}
+  try{ const l=await sb('program_logs?program=eq.primal-infant&user_id=eq.'+uid+'&select=*');
+    progLogs=(l||[]).map(x=>({week:x.week,day:x.day,ex:x.ex,weight:x.weight==null?null:Number(x.weight),reps:x.reps==null?null:Number(x.reps),at:x.completed_at})); }
+  catch(e){ progLogs=[]; } }
+
+function asgnFor(uid){ return assignments.find(a=>a.user_id===uid); }
+function curTMs(a){ const map=[['squat','sq','compsq'],['bench','bp','compbench'],['deadlift','dl','sumodl']],tm={};
+  map.forEach(function(m){ const lift=m[0],key=m[1],drive=m[2]; let one=a[key]||0;
+    progLogs.filter(l=>l.ex===drive&&l.weight).forEach(l=>{const e=l.weight*0.0333*(l.reps||1)+l.weight; if(e<one)one=e;});
+    tm[lift]=0.9*one; });
+  return tm; }
+function presc(ex,wkIdx,tm){ const e=ex.wk[wkIdx]; if(!e) return null;
+  const s=e[0],r=e[1],w=e[2],rpe=e[3];
+  if(w===null) return {s,r,rpe,type:'acc',wt:null};
+  if(w==='BW') return {s,r,rpe,type:'bw',wt:'BW'};
+  const pct=w/PROG.refTM[ex.lift]; return {s,r,rpe,type:'w',wt:round5(pct*(tm[ex.lift]||0))}; }
+function logOf(wk,day,k){ return progLogs.find(l=>l.week===wk&&l.day===day&&l.ex===k); }
+function dayInfo(wkIdx,day){ const exs=day.ex.filter(e=>e.wk[wkIdx]); const req=exs.map(e=>e.k);
+  const logs=progLogs.filter(l=>l.week===wkIdx+1&&l.day===day.d); const done=new Set(logs.map(l=>l.ex));
+  const allDone=req.length>0&&req.every(k=>done.has(k));
+  let started=null; logs.forEach(l=>{const t=new Date(l.at).getTime(); if(started===null||t<started)started=t;});
+  const expired=started!==null&&!allDone&&(Date.now()-started)>12*3600*1000;
+  return {exs,req,done,allDone,started,expired}; }
+function weekUnlocked(wkIdx){ if(wkIdx===0) return true; let c=0;
+  PROG.days.forEach(d=>{ if(dayInfo(wkIdx-1,d).allDone) c++; }); return c>=3; }
+
+function renderProg(){
+  const admin=session&&session.role==='Admin', aEl=$('asgnAdmin'), bEl=$('progBoard');
+  if(!aEl||!bEl) return;
+  if(!session){ aEl.innerHTML=''; bEl.innerHTML=''; return; }
+  if(admin){
+    const opts=users.map(u=>'<option value="'+u.id+'">'+esc(u.u)+'</option>').join('');
+    aEl.innerHTML='<div class="card">'
+      +'<div class="seg" id="amUnit" style="margin-bottom:10px"><button data-v="lb" class="'+(amUnit==='lb'?'on':'')+'">lb</button><button data-v="kg" class="'+(amUnit==='kg'?'on':'')+'">kg</button></div>'
+      +'<div class="full" style="margin-bottom:8px"><label class="lbl">Athlete</label><select id="amUser" class="field">'+opts+'</select></div>'
+      +'<div class="fg" style="margin-bottom:10px">'
+      +'<div><label class="lbl">Squat 1RM</label><input id="amSq" class="field mono" type="number" inputmode="decimal" /></div>'
+      +'<div><label class="lbl">Bench 1RM</label><input id="amBp" class="field mono" type="number" inputmode="decimal" /></div>'
+      +'<div><label class="lbl">Deadlift 1RM</label><input id="amDl" class="field mono" type="number" inputmode="decimal" /></div>'
+      +'</div>'
+      +'<div class="note" style="margin:-4px 0 10px">Training max is taken at 90% of 1RM; working weights round to the nearest 5 lb.</div>'
+      +'<button class="btn" id="amSave">Assign / update program</button>'
+      +'<div id="amList" style="margin-top:14px"></div>'
+      +'</div>';
+    renderAmList(); fillAmFromAssignment();
+    $('amUser').onchange=fillAmFromAssignment;
+    document.querySelectorAll('#amUnit button').forEach(b=>b.onclick=()=>{amUnit=b.dataset.v;document.querySelectorAll('#amUnit button').forEach(x=>x.classList.toggle('on',x===b));fillAmFromAssignment();});
+    $('amSave').onclick=saveAssign;
+  } else aEl.innerHTML='';
+  if(!admin) progAthlete=session.id;
+  loadAndRenderBoard();
+}
+function fillAmFromAssignment(){ const sel=$('amUser'); if(!sel) return; const a=asgnFor(sel.value);
+  const cv=v=>amUnit==='kg'?Math.round(v/2.20462):v;
+  $('amSq').value=a?cv(a.sq):''; $('amBp').value=a?cv(a.bp):''; $('amDl').value=a?cv(a.dl):''; }
+function renderAmList(){ const el=$('amList'); if(!el) return;
+  if(!assignments.length){ el.innerHTML='<div class="note">No athletes assigned yet.</div>'; return; }
+  el.innerHTML=assignments.map(a=>{const u=users.find(x=>x.id===a.user_id),nm=u?u.u:'(unknown)';
+    return '<div class="asgnrow"><div><b>'+esc(nm)+'</b><div class="note" style="margin:2px 0 0">SQ '+a.sq+' \u00b7 BP '+a.bp+' \u00b7 DL '+a.dl+' lb</div></div>'
+      +'<div style="white-space:nowrap"><button class="btn sm ghost" data-view="'+a.user_id+'">View</button> <button class="btn sm ghost" data-unas="'+a.user_id+'">Remove</button></div></div>';}).join(''); }
+async function saveAssign(){ const uid=$('amUser').value; if(!uid){toast('Pick an athlete');return;}
+  let sq=+$('amSq').value||0,bp=+$('amBp').value||0,dl=+$('amDl').value||0;
+  if(amUnit==='kg'){sq*=2.20462;bp*=2.20462;dl*=2.20462;}
+  try{ await rpc('app_assign_program',{p_token:session.token,p_user:uid,p_sq:Math.round(sq),p_bp:Math.round(bp),p_dl:Math.round(dl)});
+    await loadAssignments(); renderAmList(); progAthlete=uid; await loadAndRenderBoard(); toast('Program assigned'); }
+  catch(e){ toast(e.message); } }
+
+async function loadAndRenderBoard(){ const bEl=$('progBoard'); if(!bEl) return;
+  if(!progAthlete){ bEl.innerHTML='<div class="note" style="margin-top:6px">Select an athlete above to view their board.</div>'; return; }
+  await loadProgLogs(progAthlete);
+  if(progAthlete===session.id){ let reset=false;
+    for(let wi=0;wi<PROG.weeks;wi++){ for(const d of PROG.days){ if(dayInfo(wi,d).expired){ try{ await rpc('app_reset_day',{p_token:session.token,p_week:wi+1,p_day:d.d}); reset=true; }catch(e){} } } }
+    if(reset) await loadProgLogs(progAthlete);
+  }
+  renderBoard();
+}
+function fmtReps(r){ return r==='AMRAP'?'AMRAP':r; }
+function renderBoard(){ const bEl=$('progBoard'), a=asgnFor(progAthlete);
+  if(!a){ bEl.innerHTML='<div class="note" style="margin-top:6px">'+(progAthlete===session.id?'No program assigned to you yet \u2014 ask your coach to set it up.':'This athlete has no program.')+'</div>'; return; }
+  const u=users.find(x=>x.id===progAthlete), nm=u?u.u:'', own=progAthlete===session.id, tm=curTMs(a);
+  let html='<div class="note" style="margin:2px 0 12px">'+esc(nm)+' \u00b7 Training max: SQ '+round5(tm.squat)+' \u00b7 BP '+round5(tm.bench)+' \u00b7 DL '+round5(tm.deadlift)+' lb'+(own?'':' \u00b7 view only')+'</div>';
+  for(let wi=0;wi<PROG.weeks;wi++){
+    const unlocked=weekUnlocked(wi); let dc=0; PROG.days.forEach(d=>{ if(dayInfo(wi,d).allDone) dc++; });
+    html+='<div class="pwk"><div class="pwkhd"><span class="wn">Week '+(wi+1)+(wi===3?' \u00b7 Deload':'')+'</span><span class="focus">'+dc+'/4 days</span></div>';
+    if(!unlocked){ html+='<div class="lockbox">Locked \u2014 complete 3 of 4 days in Week '+wi+' to unlock.</div></div>'; continue; }
+    PROG.days.forEach(d=>{ html+=dayHTML(wi,d,tm,own); });
+    html+='</div>';
+  }
+  bEl.innerHTML=html;
+}
+function dayHTML(wi,day,tm,own){ const di=dayInfo(wi,day); if(!di.exs.length) return '';
+  const badge=di.allDone?'<span class="dbadge done">done</span>':'<span class="dbadge">'+di.done.size+'/'+di.req.length+'</span>';
+  let h='<div class="pday"><div class="pdayhd">Day '+day.d+' \u2014 '+esc(day.title)+' '+badge+'</div>';
+  if(di.started!==null&&!di.allDone){ const left=12-(Date.now()-di.started)/3600000;
+    h+='<div class="note" style="margin:0 0 8px;color:var(--teal)">'+(left>0?left.toFixed(1)+' h left to finish this day':'window expired \u2014 will reset')+'</div>'; }
+  day.ex.forEach(ex=>{ const p=presc(ex,wi,tm); if(!p) return; const lg=logOf(wi+1,day.d,ex.k);
+    const sub=p.type==='w'?(p.wt+' lb ('+Math.round(p.wt/2.20462)+' kg)'):(p.type==='bw'?'BW':'accessory');
+    const rpe=p.rpe!=null?' \u00b7 RPE '+p.rpe:'';
+    h+='<div class="pex"><div class="pexname">'+esc(ex.name)+'<div class="presc">'+p.s+' \u00d7 '+fmtReps(p.r)+' \u00b7 '+sub+rpe+'</div></div>';
+    if(lg){ const act=lg.weight!=null?(lg.weight+' lb \u00d7 '+(lg.reps||0)):((lg.reps||0)+' reps');
+      h+='<div class="pexr"><span class="okmark">\u2713 '+act+'</span>'+(own?' <button class="xbtn" data-undo="'+wi+'|'+day.d+'|'+ex.k+'">\u2715</button>':'')+'</div>';
+    } else if(own){ const wid='lw_'+wi+'_'+day.d+'_'+ex.k, rid='lr_'+wi+'_'+day.d+'_'+ex.k; let inp='';
+      if(p.type==='w') inp='<input id="'+wid+'" class="field mono pin" type="number" inputmode="decimal" value="'+p.wt+'" />';
+      inp+='<input id="'+rid+'" class="field mono pin" type="number" inputmode="numeric" value="'+(p.r==='AMRAP'?'':p.r)+'" placeholder="reps" />';
+      h+='<div class="pexr">'+inp+'<button class="btn sm" data-log="'+wi+'|'+day.d+'|'+ex.k+'|'+p.type+'">Done</button></div>';
+    } else h+='<div class="pexr"><span class="note">\u2014</span></div>';
+    h+='</div>';
+  });
+  h+='</div>'; return h;
+}
+
+document.addEventListener('click',async e=>{
+  const v=e.target.closest('[data-view]');
+  if(v){ progAthlete=v.dataset.view; await loadAndRenderBoard(); $('progBoard').scrollIntoView({behavior:'smooth'}); return; }
+  const un=e.target.closest('[data-unas]');
+  if(un){ if(!confirm("Remove this athlete's program and all their logs?")) return;
+    try{ await rpc('app_unassign_program',{p_token:session.token,p_user:un.dataset.unas}); await loadAssignments(); renderAmList();
+      if(progAthlete===un.dataset.unas) progAthlete=null; await loadAndRenderBoard(); toast('Removed'); }catch(err){toast(err.message);} return; }
+  const lg=e.target.closest('[data-log]');
+  if(lg){ const parts=lg.dataset.log.split('|'), wi=parts[0], day=parts[1], k=parts[2], type=parts[3];
+    const rid=$('lr_'+wi+'_'+day+'_'+k); let weight=null, reps=+rid.value||0;
+    if(type==='w'){ weight=+$('lw_'+wi+'_'+day+'_'+k).value||0; if(!weight||!reps){toast('Enter weight and reps');return;} }
+    else if(!reps){ toast('Enter reps'); return; }
+    try{ await rpc('app_log_exercise',{p_token:session.token,p_week:+wi+1,p_day:day,p_ex:k,p_weight:weight,p_reps:reps}); await loadAndRenderBoard(); }
+    catch(err){ toast(err.message); } return; }
+  const ud=e.target.closest('[data-undo]');
+  if(ud){ const parts=ud.dataset.undo.split('|'), wi=parts[0], day=parts[1], k=parts[2];
+    try{ await rpc('app_unlog_exercise',{p_token:session.token,p_week:+wi+1,p_day:day,p_ex:k}); await loadAndRenderBoard(); }
+    catch(err){ toast(err.message); } return; }
+});
 
 let e1Unit='kg';
 function renderE1(){
