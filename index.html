@@ -161,6 +161,13 @@
   .phero .pr{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-top:2px}
   .carnav{position:absolute;top:50%;transform:translateY(-50%);z-index:2;background:rgba(10,12,14,.55);border:1px solid var(--line);color:var(--teal);width:36px;height:36px;border-radius:50%;font-size:20px;line-height:1;cursor:pointer;display:grid;place-items:center}
   .carnav.prev{left:6px}.carnav.next{right:6px}
+  .phero{position:relative}
+  .phero.active::after{content:'';position:absolute;left:50%;top:104px;transform:translateX(-50%);width:118px;height:30px;border-radius:50%;background:radial-gradient(ellipse at center,rgba(45,212,191,.5),rgba(45,212,191,0) 70%);z-index:-1;pointer-events:none}
+  .phero .pmeta{font-size:10px;color:var(--teal);margin-top:3px;font-family:'JetBrains Mono';white-space:nowrap}
+  .pspot{max-width:430px;margin:6px auto 0;min-height:120px}
+  .spotname{font-family:'Oswald';font-weight:600;font-size:26px;text-align:center}
+  .spotrole{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;text-align:center;margin-top:2px}
+  .spotbio{margin-top:12px}
   .pbio{color:var(--text);font-size:14px;line-height:1.6;white-space:pre-wrap;text-align:left;width:100%;margin-top:12px}
   .videoembed{width:100%;aspect-ratio:16/9;border:0;border-radius:12px;margin-top:14px;background:#000}
   .backbtn{align-self:flex-start;margin-bottom:6px}
@@ -577,22 +584,40 @@ function ytId(u){if(!u)return null;const m=u.match(/(?:youtube\.com\/(?:watch\?v
 function videoHTML(url){if(!url)return '';const id=ytId(url);
   return id?'<iframe class="videoembed" src="https://www.youtube.com/embed/'+id+'" allowfullscreen></iframe>'
            :'<a class="btn full" style="margin-top:14px" href="'+esc(url)+'" target="_blank" rel="noopener">Watch video ↗</a>';}
+function lifterFor(u){ return lifters.find(x=>x.name&&x.name.trim().toLowerCase()===u.u.trim().toLowerCase()); }
+function compTotal(u){ const lf=lifterFor(u); return lf?((lf.sq||0)+(lf.bp||0)+(lf.dl||0)):-1; }
+function spotHTML(uid){ const u=users.find(x=>x.id===uid); if(!u) return ''; const p=profiles[u.id]||{}, lf=lifterFor(u);
+  let stats;
+  if(lf){ const ct=(lf.sq||0)+(lf.bp||0)+(lf.dl||0), cgl=gl(ct,lf.bw,lf.sex,lf.eq);
+    const tile=(l,v)=>'<div class="pstat"><span>'+l+'</span><b>'+v+'</b></div>';
+    stats='<div class="note" style="text-align:center;margin:14px 0 4px">Competition Best (kg)</div><div class="pstats">'
+      +tile('Squat',lf.sq||'-')+tile('Bench',lf.bp||'-')+tile('Deadlift',lf.dl||'-')+tile('Total',ct||'-')
+      +'<div class="pstat"><span>GL Points</span><b style="color:var(--teal)">'+(cgl?cgl.toFixed(2):'-')+'</b></div>'
+      +tile('Class',wclass(lf.bw,lf.sex))+'</div>';
+  } else stats='<div class="note" style="text-align:center;margin-top:14px">No competition data yet.</div>';
+  return '<div class="spotname">'+esc(u.u)+'</div><div class="spotrole">'+u.role+'</div>'+stats
+    +(p.bio?'<div class="pbio spotbio">'+esc(p.bio)+'</div>':'<div class="note" style="text-align:center;margin-top:12px">No bio yet.</div>')
+    +'<button class="btn full" style="margin-top:14px" data-open="'+u.id+'">View full profile</button>';
+}
 function initCarousel(){
   const car=$('pcar'); if(!car) return;
   const items=[].slice.call(car.querySelectorAll('.phero')); if(!items.length) return;
+  let lastActive=null;
   function update(){ const cc=car.scrollLeft+car.clientWidth/2; let best=items[0],bd=1e9;
     items.forEach(it=>{ const ic=it.offsetLeft+it.offsetWidth/2, d=Math.abs(ic-cc); if(d<bd){bd=d;best=it;} });
-    items.forEach(it=>it.classList.toggle('active',it===best)); }
-  if(!car._wired){ car.addEventListener('scroll',()=>requestAnimationFrame(update),{passive:true}); car._wired=true; }
-  const mine=items.find(it=>session&&it.dataset.open===session.id)||items[0];
-  car.scrollLeft=Math.max(0,mine.offsetLeft-(car.clientWidth-mine.offsetWidth)/2);
+    items.forEach(it=>it.classList.toggle('active',it===best));
+    const uid=best.dataset.open; if(uid!==lastActive){ lastActive=uid; const sp=$('pspot'); if(sp) sp.innerHTML=spotHTML(uid); } }
+  car._u=update;
+  if(!car._wired){ car.addEventListener('scroll',()=>requestAnimationFrame(car._u),{passive:true}); car._wired=true; }
+  car.scrollLeft=0;  // top-ranked sits far-left and centered via padding
   update();
 }
 function renderProfiles(){
   const out=$('profilesOut'),title=$('profTitle');
   if(pView.mode==='list'){ title.textContent='Athlete profiles';
-    out.innerHTML=users.length?'<div class="pcarwrap"><button class="carnav prev" data-scroll="-1">\u2039</button><div class="pcarousel" id="pcar">'+users.map(u=>{const p=profiles[u.id];
-      return '<div class="phero" data-open="'+u.id+'">'+avatarHTML(p,u.u)+'<div class="pn">'+esc(u.u)+'</div><div class="pr">'+u.role+'</div></div>';}).join('')+'</div><button class="carnav next" data-scroll="1">\u203a</button></div><div class="note" style="text-align:center;margin-top:12px">Swipe to browse \u00b7 tap to open</div>'
+    const ranked=users.slice().sort((a,b)=>compTotal(b)-compTotal(a));
+    out.innerHTML=users.length?'<div class="pcarwrap"><button class="carnav prev" data-scroll="-1">‹</button><div class="pcarousel" id="pcar">'+ranked.map(u=>{const p=profiles[u.id],lf=lifterFor(u),ct=lf?((lf.sq||0)+(lf.bp||0)+(lf.dl||0)):0;
+      return '<div class="phero" data-open="'+u.id+'">'+avatarHTML(p,u.u)+'<div class="pn">'+esc(u.u)+'</div><div class="pr">'+u.role+'</div><div class="pmeta">'+(lf?ct+' kg · '+wclass(lf.bw,lf.sex):'—')+'</div></div>';}).join('')+'</div><button class="carnav next" data-scroll="1">›</button></div><div id="pspot" class="pspot"></div>'
       :'<div class="empty">No athletes yet.</div>';
     if(users.length) requestAnimationFrame(initCarousel);
     return; }
