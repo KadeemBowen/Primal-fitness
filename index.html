@@ -150,6 +150,17 @@
   .pdetail{display:flex;flex-direction:column;align-items:center;text-align:center}
   .pdetail .avatar{width:120px;height:120px;font-size:40px}
   .pdetail .dn{font-family:'Oswald';font-weight:600;font-size:24px;margin-top:8px}
+  .pcarwrap{position:relative;margin:0 -16px}
+  .pcarousel{display:flex;gap:22px;overflow-x:auto;scroll-snap-type:x mandatory;padding:22px calc(50% - 64px);-webkit-overflow-scrolling:touch;scrollbar-width:none}
+  .pcarousel::-webkit-scrollbar{display:none}
+  .phero{flex:0 0 128px;width:128px;scroll-snap-align:center;text-align:center;cursor:pointer;opacity:.4;transform:scale(.82);transition:opacity .25s,transform .25s}
+  .phero.active{opacity:1;transform:scale(1)}
+  .phero .avatar{width:120px;height:120px;font-size:40px;margin:0 auto 10px}
+  .phero.active .avatar{box-shadow:0 0 0 3px var(--teal),0 0 28px rgba(45,212,191,.5)}
+  .phero .pn{font-weight:600;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:128px;margin:0 auto}
+  .phero .pr{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-top:2px}
+  .carnav{position:absolute;top:50%;transform:translateY(-50%);z-index:2;background:rgba(10,12,14,.55);border:1px solid var(--line);color:var(--teal);width:36px;height:36px;border-radius:50%;font-size:20px;line-height:1;cursor:pointer;display:grid;place-items:center}
+  .carnav.prev{left:6px}.carnav.next{right:6px}
   .pbio{color:var(--text);font-size:14px;line-height:1.6;white-space:pre-wrap;text-align:left;width:100%;margin-top:12px}
   .videoembed{width:100%;aspect-ratio:16/9;border:0;border-radius:12px;margin-top:14px;background:#000}
   .backbtn{align-self:flex-start;margin-bottom:6px}
@@ -566,12 +577,24 @@ function ytId(u){if(!u)return null;const m=u.match(/(?:youtube\.com\/(?:watch\?v
 function videoHTML(url){if(!url)return '';const id=ytId(url);
   return id?'<iframe class="videoembed" src="https://www.youtube.com/embed/'+id+'" allowfullscreen></iframe>'
            :'<a class="btn full" style="margin-top:14px" href="'+esc(url)+'" target="_blank" rel="noopener">Watch video ↗</a>';}
+function initCarousel(){
+  const car=$('pcar'); if(!car) return;
+  const items=[].slice.call(car.querySelectorAll('.phero')); if(!items.length) return;
+  function update(){ const cc=car.scrollLeft+car.clientWidth/2; let best=items[0],bd=1e9;
+    items.forEach(it=>{ const ic=it.offsetLeft+it.offsetWidth/2, d=Math.abs(ic-cc); if(d<bd){bd=d;best=it;} });
+    items.forEach(it=>it.classList.toggle('active',it===best)); }
+  if(!car._wired){ car.addEventListener('scroll',()=>requestAnimationFrame(update),{passive:true}); car._wired=true; }
+  const mine=items.find(it=>session&&it.dataset.open===session.id)||items[0];
+  car.scrollLeft=Math.max(0,mine.offsetLeft-(car.clientWidth-mine.offsetWidth)/2);
+  update();
+}
 function renderProfiles(){
   const out=$('profilesOut'),title=$('profTitle');
   if(pView.mode==='list'){ title.textContent='Athlete profiles';
-    out.innerHTML=users.length?'<div class="pgrid">'+users.map(u=>{const p=profiles[u.id];
-      return '<div class="pcard" data-open="'+u.id+'">'+avatarHTML(p,u.u)+'<div class="pn">'+esc(u.u)+'</div><div class="pr">'+u.role+'</div></div>';}).join('')+'</div>'
+    out.innerHTML=users.length?'<div class="pcarwrap"><button class="carnav prev" data-scroll="-1">\u2039</button><div class="pcarousel" id="pcar">'+users.map(u=>{const p=profiles[u.id];
+      return '<div class="phero" data-open="'+u.id+'">'+avatarHTML(p,u.u)+'<div class="pn">'+esc(u.u)+'</div><div class="pr">'+u.role+'</div></div>';}).join('')+'</div><button class="carnav next" data-scroll="1">\u203a</button></div><div class="note" style="text-align:center;margin-top:12px">Swipe to browse \u00b7 tap to open</div>'
       :'<div class="empty">No athletes yet.</div>';
+    if(users.length) requestAnimationFrame(initCarousel);
     return; }
   const u=users.find(x=>x.id===pView.uid); if(!u){pView={mode:'list',uid:null};return renderProfiles();}
   const p=profiles[u.id]||{}; const canEdit=session&&(session.role==='Admin'||session.id===u.id);
@@ -622,6 +645,7 @@ $('profilesOut').addEventListener('change',e=>{
 $('profilesOut').addEventListener('click',async e=>{
   const open=e.target.closest('[data-open]'),back=e.target.closest('[data-back]'),
         ed=e.target.closest('[data-edit]'),sv=e.target.closest('[data-save]'),cl=e.target.closest('[data-clear]');
+  const scr=e.target.closest('[data-scroll]'); if(scr){ const car=$('pcar'); if(car){ const it=car.querySelector('.phero'); const step=it?it.offsetWidth+22:150; car.scrollBy({left:(+scr.dataset.scroll)*step,behavior:'smooth'}); } return; }
   if(open){pView={mode:'view',uid:open.dataset.open};renderProfiles();return;}
   if(back){pView=back.dataset.back==='view'?{mode:'view',uid:pView.uid}:{mode:'list',uid:null};pendingImg=null;renderProfiles();return;}
   if(ed){pendingImg=null;pView={mode:'edit',uid:ed.dataset.edit};renderProfiles();return;}
