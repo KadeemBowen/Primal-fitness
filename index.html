@@ -733,6 +733,56 @@ const PROGRAMS={
   }
 };
 PROGRAMS['primal-grown-gorilla']={name:'Primal Grown Gorilla (8-wk)',weeks:8,deload:4,refTM:{squat:390,bench:250,deadlift:524},note:'8-week peak. Working weights scale off training max (90% of 1RM), rounded to 5 lb. Week 4 is a deload.',days:JSON.parse(JSON.stringify(PROGRAMS['primal-infant'].days))};
+PROGRAMS['primal-gorilla-fire']=(function(){
+  const l4=(s,r,ws)=>[[s,r,ws[0],null],[s,r,ws[1],null],[s,r,ws[2],null],[s,r,ws[3],null],null];
+  const w5=(s,r,w)=>[null,null,null,null,[s,r,w,null]];
+  const info=(k,name)=>({k,name,lift:null,t:'info',wk:[null,null,null,null,[1,1,null,null]]});
+  return {
+    name:'Primal Gorilla Through Fire (5-wk)', weeks:5, deload:0,
+    refTM:{squat:375,bench:245,deadlift:525},
+    note:'Mixed Smolov Jr \u2014 high-frequency squat & bench, deadlift kept light. 4 loading weeks + a peak/test week. Enter each 1RM so the training max equals the block max (e.g. 417 / 272 / 583 lb \u2192 TM 375 / 245 / 525). The source deadlift TM looked high \u2014 enter a realistic deadlift number so the test attempts come out sane.',
+    days:[
+      {d:'1',title:'Heavy Volume \u00b7 6\u00d76  (Wk5: peak triples)',ex:[
+        {k:'gsq6',name:'Competition Squat \u2014 6\u00d76',lift:'squat',t:'w',wk:l4(6,6,[265,275,285,295])},
+        {k:'gbn6',name:'Competition Bench 0-1-0 \u2014 6\u00d76',lift:'bench',t:'w',wk:l4(6,6,[170,175,180,185])},
+        {k:'gsqpk',name:'Competition Squat \u2014 peak triples',lift:'squat',t:'w',wk:w5(3,3,295)},
+        {k:'gbnpk',name:'Competition Bench 0-1-0 \u2014 peak triples',lift:'bench',t:'w',wk:w5(3,3,205)},
+        {k:'gdlpk',name:'Sumo Deadlift \u2014 peak',lift:'deadlift',t:'w',wk:w5(2,2,405)}
+      ]},
+      {d:'2',title:'Bench 7\u00d75 + Sumo  (Wk5: openers)',ex:[
+        {k:'gbn7',name:'Competition Bench 0-1-0 \u2014 7\u00d75',lift:'bench',t:'w',wk:l4(7,5,[185,190,195,200])},
+        {k:'gdlsumo',name:'Sumo Deadlift \u2014 4\u00d73',lift:'deadlift',t:'w',drive:true,wk:l4(4,3,[315,340,370,380])},
+        {k:'gdlpsumo',name:'Paused Sumo Deadlift \u2014 2\u00d73',lift:'deadlift',t:'w',wk:l4(2,3,[270,285,300,310])},
+        {k:'gsqo2',name:'Competition Squat \u2014 heavy doubles',lift:'squat',t:'w',wk:w5(3,2,315)},
+        {k:'gsqo1',name:'Competition Squat \u2014 top single',lift:'squat',t:'w',wk:w5(1,1,335)},
+        {k:'gbno2',name:'Competition Bench 0-1-0 \u2014 heavy doubles',lift:'bench',t:'w',wk:w5(3,2,205)},
+        {k:'gbno1',name:'Competition Bench 0-1-0 \u2014 top single',lift:'bench',t:'w',wk:w5(1,1,215)},
+        {k:'gdlo2',name:'Sumo Deadlift \u2014 doubles',lift:'deadlift',t:'w',wk:w5(2,2,405)},
+        {k:'gdlo1',name:'Sumo Deadlift \u2014 top single',lift:'deadlift',t:'w',wk:w5(1,1,455)}
+      ]},
+      {d:'3',title:'Squat 8\u00d74 + Bench  (Wk5: SBD TEST)',ex:[
+        {k:'gsq8',name:'Competition Squat \u2014 8\u00d74',lift:'squat',t:'w',wk:l4(8,4,[300,310,315,330])},
+        {k:'gsqp',name:'Paused Squat \u2014 3\u00d73',lift:'squat',t:'w',wk:l4(3,3,[265,270,280,285])},
+        {k:'gbn7b',name:'Competition Bench 0-1-0 \u2014 7\u00d74',lift:'bench',t:'w',wk:l4(7,4,[195,200,205,210])},
+        info('gwu','TEST DAY \u2014 warm-ups to opener: bar\u00d75, then 40 / 55 / 70 / 80 / 90% of opener for 5 / 3 / 2 / 1 / 1, then open.'),
+        {k:'gsqt1',name:'Squat \u2014 Opener',lift:'squat',t:'w',wk:w5(1,1,355)},
+        {k:'gsqt2',name:'Squat \u2014 2nd attempt',lift:'squat',t:'w',wk:w5(1,1,375)},
+        {k:'gsqt3',name:'Squat \u2014 3rd attempt',lift:'squat',t:'w',wk:w5(1,1,395)},
+        {k:'gbnt1',name:'Bench \u2014 Opener',lift:'bench',t:'w',wk:w5(1,1,235)},
+        {k:'gbnt2',name:'Bench \u2014 2nd attempt',lift:'bench',t:'w',wk:w5(1,1,245)},
+        {k:'gbnt3',name:'Bench \u2014 3rd attempt',lift:'bench',t:'w',wk:w5(1,1,255)},
+        {k:'gdlt1',name:'Deadlift \u2014 Opener',lift:'deadlift',t:'w',wk:w5(1,1,500)},
+        {k:'gdlt2',name:'Deadlift \u2014 2nd attempt',lift:'deadlift',t:'w',wk:w5(1,1,525)},
+        {k:'gdlt3',name:'Deadlift \u2014 3rd attempt',lift:'deadlift',t:'w',wk:w5(1,1,550)},
+        info('gpot','Potential day max \u2248 107\u2013110% of training max \u2014 only chase the 3rd if the opener and 2nd move fast.')
+      ]},
+      {d:'4',title:'Squat 9\u00d73 + Bench 6\u00d73',ex:[
+        {k:'gsq3',name:'Competition Squat \u2014 9\u00d73',lift:'squat',t:'w',drive:true,wk:l4(9,3,[320,330,340,345])},
+        {k:'gbn3',name:'Competition Bench 0-1-0 \u2014 6\u00d73',lift:'bench',t:'w',drive:true,wk:l4(6,3,[200,205,210,215])}
+      ]}
+    ]
+  };
+})();
 const PROG_KEYS=Object.keys(PROGRAMS);
 const round5=x=>Math.round(x/5)*5;
 let progAthlete=null, progProgram=null, progLogs=[], amUnit='lb';
@@ -760,10 +810,11 @@ function curTMs(a,prog){ const tm={}, lifts=[['squat','sq'],['bench','bp'],['dea
 function presc(ex,wkIdx,tm,prog){ const e=ex.wk[wkIdx]; if(!e) return null;
   const s=e[0],r=e[1],w=e[2],rpe=e[3];
   let type=ex.t||(w===null?'acc':(w==='BW'?'bw':'w')), wt=null;
+  if(type==='info') return {type:'info'};
   if(type==='w'){ wt=round5((w/prog.refTM[ex.lift])*(tm[ex.lift]||0)); }
   return {s,r,rpe,type,wt}; }
 function logOf(wk,day,k){ return progLogs.find(l=>l.week===wk&&l.day===day&&l.ex===k); }
-function dayInfo(wkIdx,day){ const exs=day.ex.filter(e=>e.wk[wkIdx]); const req=exs.map(e=>e.k);
+function dayInfo(wkIdx,day){ const exs=day.ex.filter(e=>e.wk[wkIdx]); const req=exs.filter(e=>e.t!=='info').map(e=>e.k);
   const logs=progLogs.filter(l=>l.week===wkIdx+1&&l.day===day.d); const done=new Set(logs.map(l=>l.ex));
   const allDone=req.length>0&&req.every(k=>done.has(k));
   let started=null; logs.forEach(l=>{const t=new Date(l.at).getTime(); if(started===null||t<started)started=t;});
@@ -851,7 +902,9 @@ function dayHTML(wi,day,tm,own,prog,bypass){ const di=dayInfo(wi,day); if(!di.ex
   let h='<div class="pday"><div class="pdayhd">Day '+day.d+' \u2014 '+esc(day.title)+' '+badge+'</div>';
   if(di.started!==null&&!di.allDone&&!bypass){ const left=12-(Date.now()-di.started)/3600000;
     h+='<div class="note" style="margin:0 0 8px;color:var(--teal)">'+(left>0?left.toFixed(1)+' h left to finish this day':'window expired \u2014 will reset')+'</div>'; }
-  day.ex.forEach(ex=>{ const p=presc(ex,wi,tm,prog); if(!p) return; const lg=logOf(wi+1,day.d,ex.k);
+  day.ex.forEach(ex=>{ const p=presc(ex,wi,tm,prog); if(!p) return;
+    if(p.type==='info'){ h+='<div class="pex" style="display:block"><div class="presc" style="font-style:italic">'+esc(ex.name)+'</div></div>'; return; }
+    const lg=logOf(wi+1,day.d,ex.k);
     let detail;
     if(p.type==='w') detail=p.wt+' lb ('+Math.round(p.wt/2.20462)+' kg)'+(p.rpe!=null?' \u00b7 RPE '+p.rpe:'');
     else if(p.type==='bw') detail='BW'+(p.rpe!=null?' \u00b7 RPE '+p.rpe:'');
