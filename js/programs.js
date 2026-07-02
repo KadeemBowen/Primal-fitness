@@ -203,7 +203,7 @@ function renderProg(){
       +'<div><label class="lbl">Deadlift 1RM</label><input id="amDl" class="field mono" type="number" inputmode="decimal" /></div>'
       +'</div>'
       +'<div class="note" id="amNote" style="margin:-4px 0 10px"></div>'
-      +'<button class="btn" id="amSave">Assign / update program</button>'
+      +'<button class="btn" id="amSave">Assign / Update Program</button>'
       +'<div id="amList" style="margin-top:14px"></div>'
       +'</div>';
     renderAmList(); fillAmFromAssignment(); amNote();

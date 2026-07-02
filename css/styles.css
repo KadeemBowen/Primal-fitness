@@ -50,6 +50,12 @@
   .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:13px;margin-bottom:11px}
   .empty{text-align:center;color:var(--muted);padding:30px 16px;border:1px dashed var(--line);border-radius:14px;font-size:14px}
 
+  .fold-hd{cursor:pointer;display:flex;align-items:center;user-select:none}
+  .fold-hd::after{content:'\25BE';margin-left:auto;margin-right:2px;color:var(--muted);font-size:11px;display:inline-block;transition:transform .18s}
+  .fold.collapsed .fold-hd::after{transform:rotate(-90deg)}
+  .fold.collapsed .fold-body{display:none}
+  body:not(.role-Admin) #asgnFold{display:none}
+
   .fg{display:grid;grid-template-columns:1fr 1fr;gap:9px}.fg .full{grid-column:1/3}
   .seg{display:flex;background:var(--panel2);border:1px solid var(--line);border-radius:10px;overflow:hidden}
   .seg button{flex:1;background:none;border:none;padding:11px 6px;color:var(--muted);font-weight:600;cursor:pointer;font-size:14px}

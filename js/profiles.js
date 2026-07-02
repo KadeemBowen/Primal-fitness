@@ -34,6 +34,14 @@ function initCarousel(){
   car.scrollLeft=0;  // top-ranked sits far-left and centered via padding
   update();
 }
+function carGo(dir){  // move to prev/next hero, looping past the ends
+  const car=$('pcar'); if(!car) return;
+  const items=[].slice.call(car.querySelectorAll('.phero')); if(!items.length) return;
+  let idx=items.findIndex(it=>it.classList.contains('active')); if(idx<0) idx=0;
+  const t=items[(idx+dir+items.length)%items.length];
+  const left=t.offsetLeft-(car.clientWidth-t.offsetWidth)/2;
+  car.scrollTo({left:Math.max(0,left),behavior:'smooth'});
+}
 function renderProfiles(){
   const out=$('profilesOut'),title=$('profTitle');
   if(pView.mode==='list'){ title.textContent='Athlete profiles';
@@ -92,7 +100,7 @@ $('profilesOut').addEventListener('change',e=>{
 $('profilesOut').addEventListener('click',async e=>{
   const open=e.target.closest('[data-open]'),back=e.target.closest('[data-back]'),
         ed=e.target.closest('[data-edit]'),sv=e.target.closest('[data-save]'),cl=e.target.closest('[data-clear]');
-  const scr=e.target.closest('[data-scroll]'); if(scr){ const car=$('pcar'); if(car){ const it=car.querySelector('.phero'); const step=it?it.offsetWidth+22:150; car.scrollBy({left:(+scr.dataset.scroll)*step,behavior:'smooth'}); } return; }
+  const scr=e.target.closest('[data-scroll]'); if(scr){ carGo(+scr.dataset.scroll); return; }
   if(open){pView={mode:'view',uid:open.dataset.open};renderProfiles();return;}
   if(back){pView=back.dataset.back==='view'?{mode:'view',uid:pView.uid}:{mode:'list',uid:null};pendingImg=null;renderProfiles();return;}
   if(ed){pendingImg=null;pView={mode:'edit',uid:ed.dataset.edit};renderProfiles();return;}

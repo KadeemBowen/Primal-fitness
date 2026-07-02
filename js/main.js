@@ -1,3 +1,6 @@
+/* ===== collapsible sections ===== */
+document.addEventListener('click',e=>{const hd=e.target.closest('.fold-hd');if(hd){const f=hd.closest('.fold');if(f)f.classList.toggle('collapsed');}});
+
 /* ===== nav ===== */
 document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{const go=navTo(b.dataset.go);
   if(go==='profiles'){pView={mode:'list',uid:null};renderProfiles();}

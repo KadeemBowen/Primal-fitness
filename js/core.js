@@ -60,7 +60,6 @@ function applyAuth(){
   document.querySelector('nav [data-go="users"]').style.display=admin?'':'none';
   document.querySelector('nav [data-go="prog"]').style.display=spec?'none':'';
   $('addCard').style.display=admin?'':'none';
-  $('migrateBtn').style.display=admin?'':'none';
   navTo('rank'); renderRank(); if(admin) renderUsers(); renderProg();
 }
 const ROLE_SCREENS={Admin:['rank','profiles','prog','load','users'],Lifter:['rank','profiles','prog','load'],Spectate:['rank','profiles','load']};

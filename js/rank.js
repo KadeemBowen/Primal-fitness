@@ -58,25 +58,17 @@ $('rankOut').addEventListener('click',async e=>{
   const set=(id,v)=>$(id).value=(v||v===0)?v:'';
   set('fName',l.name);set('fBw',l.bw);set('fAge',l.age);set('fSq',l.sq);set('fBp',l.bp);set('fDl',l.dl);set('fGsq',l.gsq);set('fGbp',l.gbp);set('fGdl',l.gdl);
   $('saveBtn').textContent='Update lifter';$('cancelEdit').style.display='block';
+  $('addCard').classList.remove('collapsed');
   window.scrollTo({top:0,behavior:'smooth'}); renderRank();
 });
 document.querySelectorAll('[data-sort]').forEach(p=>p.onclick=()=>{sortBy=p.dataset.sort;document.querySelectorAll('[data-sort]').forEach(x=>x.classList.toggle('on',x===p));renderRank();});
 document.querySelectorAll('#rankMode button').forEach(b=>b.onclick=()=>{document.querySelectorAll('#rankMode button').forEach(x=>x.classList.toggle('on',x===b));rankMode=b.dataset.v;renderRank();});
 document.querySelector('[data-fsex]').onclick=function(){fSex=fSex==='all'?'M':fSex==='M'?'F':'all';this.textContent=fSex==='all'?'All':fSex==='M'?'Men':'Women';this.classList.toggle('on',fSex!=='all');renderRank();};
-document.querySelector('[data-feq]').onclick=function(){fEq=fEq==='all'?'Classic':fEq==='Classic'?'Equipped':'all';this.textContent=fEq==='all'?'All gear':fEq;this.classList.toggle('on',fEq!=='all');renderRank();};
+document.querySelector('[data-feq]').onclick=function(){fEq=fEq==='all'?'Classic':fEq==='Classic'?'Equipped':'all';this.textContent=fEq==='all'?'All Gear':fEq;this.classList.toggle('on',fEq!=='all');renderRank();};
 
 $('expCsv').onclick=()=>{const data=rows();if(!data.length)return;
   const head=['Rank','Name','Sex','Equip','BW','Class','Squat','Bench','Deadlift','Total','GLPoints'];
   const lines=data.map((l,i)=>[i+1,l.name,l.sex,l.eq,l.bw,l.cls,l.sq,l.bp,l.dl,l.total,l.gl.toFixed(2)].map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(','));
   const b=new Blob([[head.join(','),...lines].join('\n')],{type:'text/csv'});const u=URL.createObjectURL(b);
   const a=document.createElement('a');a.href=u;a.download='primal-fitness-rankings.csv';a.click();URL.revokeObjectURL(u);};
-
-$('migrateBtn').onclick=async()=>{
-  let local=[]; try{local=JSON.parse(localStorage.getItem('gaplf:lifters')||'[]');}catch(e){}
-  if(!local.length){toast('No local lifters found on this device.');return;}
-  if(!confirm('Upload '+local.length+' lifter(s) saved on this device to the cloud?'))return;
-  const btn=$('migrateBtn'); btn.disabled=true; let ok=0;
-  for(const l of local){ try{ await rpc('app_upsert_lifter',{p_token:session.token,p_id:null,p_name:l.name,p_sex:l.sex,p_equip:l.eq,p_bw:l.bw,p_age:l.age||null,p_sq:l.sq||0,p_bp:l.bp||0,p_dl:l.dl||0,p_gsq:0,p_gbp:0,p_gdl:0}); ok++; }catch(e){} }
-  await loadLifters(); renderRank(); btn.disabled=false; toast('Uploaded '+ok+' of '+local.length+' lifters');
-};
 
