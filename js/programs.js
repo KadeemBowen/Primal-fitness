@@ -204,7 +204,6 @@ function renderProg(){
       +'</div>'
       +'<div class="note" id="amNote" style="margin:-4px 0 10px"></div>'
       +'<button class="btn" id="amSave">Assign / Update Program</button>'
-      +'<div id="amList" style="margin-top:14px"></div>'
       +'</div>';
     renderAmList(); fillAmFromAssignment(); amNote();
     $('amUser').onchange=fillAmFromAssignment; $('amProg').onchange=()=>{fillAmFromAssignment();amNote();};
@@ -246,6 +245,7 @@ async function loadAndRenderBoard(){ const bEl=$('progBoard'); if(!bEl) return;
 function fmtReps(r){ return r==='AMRAP'?'AMRAP':r; }
 function renderBoard(){ const bEl=$('progBoard'), prog=activeProg(), a=asgn(progAthlete,progProgram);
   const u=users.find(x=>x.id===progAthlete), nm=u?u.u:'', own=progAthlete===session.id, bypass=own&&session.role==='Admin', tm=curTMs(a,prog);
+  const adminView=session.role==='Admin';   // admins can collapse each week
   const my=assignmentsFor(progAthlete);
   let html='';
   if(my.length>1){ html+='<div class="seg" style="margin:2px 0 10px">'+my.map(x=>'<button data-prog="'+x.program+'" class="'+(x.program===progProgram?'on':'')+'">'+esc(PROGRAMS[x.program].name.split(' (')[0])+'</button>').join('')+'</div>'; }
@@ -253,10 +253,11 @@ function renderBoard(){ const bEl=$('progBoard'), prog=activeProg(), a=asgn(prog
   for(let wi=0;wi<prog.weeks;wi++){
     const unlocked=weekUnlocked(prog,wi,bypass); let dc=0,dt=0; prog.days.forEach(d=>{ if(d.ex.some(e=>e.wk[wi])){ dt++; if(dayInfo(wi,d).allDone) dc++; } });
     const dl=prog.deload===wi+1;
-    html+='<div class="pwk"><div class="pwkhd"><span class="wn">Week '+(wi+1)+(dl?' \u00b7 Deload':'')+'</span><span class="focus">'+dc+'/'+dt+' days</span></div>';
-    if(!unlocked){ html+='<div class="lockbox">Locked \u2014 complete 3 of 4 days in Week '+wi+' to unlock.</div></div>'; continue; }
+    html+='<div class="pwk'+(adminView?' wkfold collapsed':'')+'"><div class="pwkhd'+(adminView?' wktoggle':'')+'"><span class="wn">Week '+(wi+1)+(dl?' \u00b7 Deload':'')+'</span><span class="focus">'+dc+'/'+dt+' days</span>'+(adminView?'<span class="wkchev">\u25be</span>':'')+'</div>';
+    if(!unlocked){ html+=(adminView?'<div class="wkbody">':'')+'<div class="lockbox">Locked \u2014 complete 3 of 4 days in Week '+wi+' to unlock.</div>'+(adminView?'</div>':'')+'</div>'; continue; }
+    html+=(adminView?'<div class="wkbody">':'');
     prog.days.forEach(d=>{ html+=dayHTML(wi,d,tm,own,prog,bypass); });
-    html+='</div>';
+    html+=(adminView?'</div>':'')+'</div>';
   }
   bEl.innerHTML=html;
 }
@@ -287,6 +288,8 @@ function dayHTML(wi,day,tm,own,prog,bypass){ const di=dayInfo(wi,day); if(!di.ex
 }
 
 document.addEventListener('click',async e=>{
+  const wt=e.target.closest('.pwkhd.wktoggle');
+  if(wt){ const pw=wt.closest('.pwk'); if(pw) pw.classList.toggle('collapsed'); return; }
   const pg=e.target.closest('[data-prog]');
   if(pg){ progProgram=pg.dataset.prog; await loadAndRenderBoard(); return; }
   const v=e.target.closest('[data-view]');
