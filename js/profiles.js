@@ -8,6 +8,10 @@ function videoHTML(url){if(!url)return '';const id=ytId(url);
            :'<a class="btn full" style="margin-top:14px" href="'+esc(url)+'" target="_blank" rel="noopener">Watch video ↗</a>';}
 function lifterFor(u){ return lifters.find(x=>x.name&&x.name.trim().toLowerCase()===u.u.trim().toLowerCase()); }
 function compTotal(u){ const lf=lifterFor(u); return lf?((lf.sq||0)+(lf.bp||0)+(lf.dl||0)):-1; }
+function hasProfileInfo(u){ const p=profiles[u.id]||{}, lf=lifterFor(u);
+  const comp=lf&&((lf.sq||0)+(lf.bp||0)+(lf.dl||0))>0;
+  const gym=lf&&((lf.gsq||0)+(lf.gbp||0)+(lf.gdl||0))>0;
+  return !!(comp||gym||(p.bio&&p.bio.trim())||(p.video&&p.video.trim())); }
 function spotHTML(uid){ const u=users.find(x=>x.id===uid); if(!u) return ''; const p=profiles[u.id]||{}, lf=lifterFor(u);
   let stats;
   if(lf){ const ct=(lf.sq||0)+(lf.bp||0)+(lf.dl||0), cgl=gl(ct,lf.bw,lf.sex,lf.eq);
@@ -45,11 +49,12 @@ function carGo(dir){  // move to prev/next hero, looping past the ends
 function renderProfiles(){
   const out=$('profilesOut'),title=$('profTitle');
   if(pView.mode==='list'){ title.textContent='Athlete profiles';
-    const ranked=users.slice().sort((a,b)=>compTotal(b)-compTotal(a));
-    out.innerHTML=users.length?'<div class="pcarwrap"><button class="carnav prev" data-scroll="-1">‹</button><div class="pcarousel" id="pcar">'+ranked.map(u=>{const p=profiles[u.id],lf=lifterFor(u),ct=lf?((lf.sq||0)+(lf.bp||0)+(lf.dl||0)):0;
+    const shown=users.filter(hasProfileInfo);
+    const ranked=shown.slice().sort((a,b)=>compTotal(b)-compTotal(a));
+    out.innerHTML=shown.length?'<div class="pcarwrap"><button class="carnav prev" data-scroll="-1">‹</button><div class="pcarousel" id="pcar">'+ranked.map(u=>{const p=profiles[u.id],lf=lifterFor(u),ct=lf?((lf.sq||0)+(lf.bp||0)+(lf.dl||0)):0;
       return '<div class="phero" data-open="'+u.id+'">'+avatarHTML(p,u.u)+'<div class="pn">'+esc(u.u)+'</div><div class="pr">'+u.role+'</div><div class="pmeta">'+(lf?ct+' kg · '+wclass(lf.bw,lf.sex):'—')+'</div></div>';}).join('')+'</div><button class="carnav next" data-scroll="1">›</button></div><div id="pspot" class="pspot"></div>'
-      :'<div class="empty">No athletes yet.</div>';
-    if(users.length) requestAnimationFrame(initCarousel);
+      :'<div class="empty">No athlete profiles yet.</div>';
+    if(shown.length) requestAnimationFrame(initCarousel);
     return; }
   const u=users.find(x=>x.id===pView.uid); if(!u){pView={mode:'list',uid:null};return renderProfiles();}
   const p=profiles[u.id]||{}; const canEdit=session&&(session.role==='Admin'||session.id===u.id);
