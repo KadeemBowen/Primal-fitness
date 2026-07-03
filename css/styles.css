@@ -51,7 +51,9 @@
   .empty{text-align:center;color:var(--muted);padding:30px 16px;border:1px dashed var(--line);border-radius:14px;font-size:14px}
 
   .fold-hd{cursor:pointer;display:flex;align-items:center;user-select:none}
-  .fold-hd::after{content:'\25BE';margin-left:auto;margin-right:2px;color:var(--muted);font-size:11px;display:inline-block;transition:transform .18s}
+  .title.fold-hd{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:13px 14px;margin:0 0 10px;color:var(--text)}
+  .fold-hd:active{transform:translateY(1px)}
+  .fold-hd::after{content:'\25BE';margin-left:auto;margin-right:2px;color:var(--muted);font-size:13px;display:inline-block;transition:transform .18s}
   .fold.collapsed .fold-hd::after{transform:rotate(-90deg)}
   .fold.collapsed .fold-body{display:none}
   body:not(.role-Admin) #asgnFold,body:not(.role-Admin) #usersProgFold{display:none}

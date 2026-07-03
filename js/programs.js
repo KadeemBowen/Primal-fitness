@@ -149,6 +149,7 @@ PROGRAMS['primal-gorilla-fire']=(function(){
 const PROG_KEYS=Object.keys(PROGRAMS);
 const round5=x=>Math.round(x/5)*5;
 let progAthlete=null, progProgram=null, progLogs=[], amUnit='lb';
+let expandedWeeks=new Set();   // which week indices the admin has opened (kept across board re-renders)
 
 async function loadAssignments(){ try{ const a=await sb('assignments?select=*');
   assignments=(a||[]).filter(x=>PROGRAMS[x.program]).map(x=>({user_id:x.user_id,program:x.program,sq:Number(x.sq_max)||0,bp:Number(x.bp_max)||0,dl:Number(x.dl_max)||0})); }catch(e){ assignments=[]; } }
@@ -189,6 +190,7 @@ function weekUnlocked(prog,wkIdx,bypass){ if(bypass) return true; if(wkIdx===0) 
 function renderProg(){
   const admin=session&&session.role==='Admin', aEl=$('asgnAdmin'), bEl=$('progBoard');
   if(!aEl||!bEl) return;
+  expandedWeeks.clear();   // entering the tab / fresh render starts with weeks collapsed
   if(!session){ aEl.innerHTML=''; bEl.innerHTML=''; return; }
   if(admin){
     const pOpts=PROG_KEYS.map(k=>'<option value="'+k+'">'+esc(PROGRAMS[k].name)+'</option>').join('');
@@ -253,7 +255,7 @@ function renderBoard(){ const bEl=$('progBoard'), prog=activeProg(), a=asgn(prog
   for(let wi=0;wi<prog.weeks;wi++){
     const unlocked=weekUnlocked(prog,wi,bypass); let dc=0,dt=0; prog.days.forEach(d=>{ if(d.ex.some(e=>e.wk[wi])){ dt++; if(dayInfo(wi,d).allDone) dc++; } });
     const dl=prog.deload===wi+1;
-    html+='<div class="pwk'+(adminView?' wkfold collapsed':'')+'"><div class="pwkhd'+(adminView?' wktoggle':'')+'"><span class="wn">Week '+(wi+1)+(dl?' \u00b7 Deload':'')+'</span><span class="focus">'+dc+'/'+dt+' days</span>'+(adminView?'<span class="wkchev">\u25be</span>':'')+'</div>';
+    html+='<div class="pwk'+(adminView?(' wkfold'+(expandedWeeks.has(wi)?'':' collapsed')):'')+'" data-wk="'+wi+'"><div class="pwkhd'+(adminView?' wktoggle':'')+'"><span class="wn">Week '+(wi+1)+(dl?' \u00b7 Deload':'')+'</span><span class="focus">'+dc+'/'+dt+' days</span>'+(adminView?'<span class="wkchev">\u25be</span>':'')+'</div>';
     if(!unlocked){ html+=(adminView?'<div class="wkbody">':'')+'<div class="lockbox">Locked \u2014 complete 3 of 4 days in Week '+wi+' to unlock.</div>'+(adminView?'</div>':'')+'</div>'; continue; }
     html+=(adminView?'<div class="wkbody">':'');
     prog.days.forEach(d=>{ html+=dayHTML(wi,d,tm,own,prog,bypass); });
@@ -289,11 +291,11 @@ function dayHTML(wi,day,tm,own,prog,bypass){ const di=dayInfo(wi,day); if(!di.ex
 
 document.addEventListener('click',async e=>{
   const wt=e.target.closest('.pwkhd.wktoggle');
-  if(wt){ const pw=wt.closest('.pwk'); if(pw) pw.classList.toggle('collapsed'); return; }
+  if(wt){ const pw=wt.closest('.pwk'); if(pw){ const wi=+pw.dataset.wk; if(pw.classList.toggle('collapsed')) expandedWeeks.delete(wi); else expandedWeeks.add(wi); } return; }
   const pg=e.target.closest('[data-prog]');
-  if(pg){ progProgram=pg.dataset.prog; await loadAndRenderBoard(); return; }
+  if(pg){ progProgram=pg.dataset.prog; expandedWeeks.clear(); await loadAndRenderBoard(); return; }
   const v=e.target.closest('[data-view]');
-  if(v){ const pr=v.dataset.view.split('|'); progAthlete=pr[0]; progProgram=pr[1]; await loadAndRenderBoard(); $('progBoard').scrollIntoView({behavior:'smooth'}); return; }
+  if(v){ const pr=v.dataset.view.split('|'); progAthlete=pr[0]; progProgram=pr[1]; expandedWeeks.clear(); await loadAndRenderBoard(); $('progBoard').scrollIntoView({behavior:'smooth'}); return; }
   const un=e.target.closest('[data-unas]');
   if(un){ if(!confirm("Remove this program and all of the athlete's logs for it?")) return; const pr=un.dataset.unas.split('|');
     try{ await rpc('app_unassign_program',{p_token:session.token,p_user:pr[0],p_program:pr[1]}); await loadAssignments(); renderAmList();
