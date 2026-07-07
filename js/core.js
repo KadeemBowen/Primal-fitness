@@ -51,12 +51,13 @@ $('logoutBtn').onclick=async()=>{ try{ if(session&&session.token) await rpc('app
   document.body.classList.remove('authed','role-Admin','role-Lifter','role-Spectate');
   $('liUser').value=''; };
 
+function roleLabel(r){ return r==='Spectate'?'Spectator':r; }   // display name; stored value stays 'Spectate'
 function applyAuth(){
   document.body.classList.add('authed');
   document.body.classList.remove('role-Admin','role-Lifter','role-Spectate');
   document.body.classList.add('role-'+session.role);
   const admin=session.role==='Admin', spec=session.role==='Spectate';
-  $('whoName').textContent=session.username+' · '+session.role;
+  $('whoName').textContent=session.username+' · '+roleLabel(session.role);
   document.querySelector('nav [data-go="users"]').style.display=admin?'':'none';
   document.querySelector('nav [data-go="prog"]').style.display=spec?'none':'';
   $('addCard').style.display=admin?'':'none';

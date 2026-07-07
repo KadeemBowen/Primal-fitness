@@ -7,7 +7,7 @@ function renderUsers(){
   $('usersOut').innerHTML=users.map(u=>{
     const isAdmin=u.role==='Admin', open=mgrOpen===u.id&&!isAdmin;
     let h='<div class="urow"><div class="uinfo"><span class="nm">'+esc(u.u)+'</span>'+(u.id===session.id?'<span class="tag">you</span>':'')+'</div>'+
-      '<select class="field rolesel" data-role="'+u.id+'">'+['Admin','Lifter','Spectate'].map(r=>'<option '+(r===u.role?'selected':'')+'>'+r+'</option>').join('')+'</select>'+
+      '<select class="field rolesel" data-role="'+u.id+'">'+['Admin','Lifter','Spectate'].map(r=>'<option value="'+r+'"'+(r===u.role?' selected':'')+'>'+roleLabel(r)+'</option>').join('')+'</select>'+
       // admins are staff, not clients: no notifications/payments — just a password reset
       (isAdmin
         ? '<button class="btn sm ghost" data-reset="'+u.id+'">Reset PW</button>'
@@ -20,9 +20,12 @@ function renderUsers(){
         '<textarea class="field" id="ntf_'+u.id+'" rows="2" placeholder="Message to pop up for this user…">'+esc(n.message||'')+'</textarea>'+
         '<label class="mgrtoggle"><input type="checkbox" id="ntfon_'+u.id+'"'+(n.active?' checked':'')+'> Show this notification to the user'+(n.active&&n.dismissed?' <span class="tag">dismissed</span>':'')+'</label>'+
         '<button class="btn sm" data-ntsave="'+u.id+'">Save notification</button>'+
-        '<label class="lbl" style="margin-top:16px">Payments '+PAY_YEAR+'</label>'+
-        '<div class="paygrid">'+MON.map((mm,i)=>'<button class="paycell'+(ps.has(i+1)?' on':'')+'" data-pay="'+u.id+'|'+(i+1)+'">'+mm+'</button>').join('')+'</div>'+
-        '<div class="note">Tap a month to mark it paid / unpaid.</div>'+
+        // payments are for paying clients only (Lifters), not Spectators
+        (u.role==='Lifter'
+          ? '<label class="lbl" style="margin-top:16px">Payments '+PAY_YEAR+'</label>'+
+            '<div class="paygrid">'+MON.map((mm,i)=>'<button class="paycell'+(ps.has(i+1)?' on':'')+'" data-pay="'+u.id+'|'+(i+1)+'">'+mm+'</button>').join('')+'</div>'+
+            '<div class="note">Tap a month to mark it paid / unpaid.</div>'
+          : '')+
         '<button class="btn sm ghost" data-reset="'+u.id+'" style="margin-top:12px">Reset password</button>'+
       '</div>';
     }

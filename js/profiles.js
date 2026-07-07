@@ -21,7 +21,7 @@ function spotHTML(uid){ const u=users.find(x=>x.id===uid); if(!u) return ''; con
       +'<div class="pstat"><span>GL Points</span><b style="color:var(--teal)">'+(cgl?cgl.toFixed(2):'-')+'</b></div>'
       +tile('Class',wclass(lf.bw,lf.sex))+'</div>';
   } else stats='<div class="note" style="text-align:center;margin-top:14px">No competition data yet.</div>';
-  return '<div class="spotname">'+esc(u.u)+'</div><div class="spotrole">'+u.role+'</div>'+stats
+  return '<div class="spotname">'+esc(u.u)+'</div><div class="spotrole">'+roleLabel(u.role)+'</div>'+stats
     +(p.bio?'<div class="pbio spotbio">'+esc(p.bio)+'</div>':'<div class="note" style="text-align:center;margin-top:12px">No bio yet.</div>')
     +'<button class="btn full" style="margin-top:14px" data-open="'+u.id+'">View full profile</button>';
 }
@@ -52,7 +52,7 @@ function renderProfiles(){
     const shown=users.filter(hasProfileInfo);
     const ranked=shown.slice().sort((a,b)=>compTotal(b)-compTotal(a));
     out.innerHTML=shown.length?'<div class="pcarwrap"><button class="carnav prev" data-scroll="-1">‹</button><div class="pcarousel" id="pcar">'+ranked.map(u=>{const p=profiles[u.id],lf=lifterFor(u),ct=lf?((lf.sq||0)+(lf.bp||0)+(lf.dl||0)):0;
-      return '<div class="phero" data-open="'+u.id+'">'+avatarHTML(p,u.u)+'<div class="pn">'+esc(u.u)+'</div><div class="pr">'+u.role+'</div><div class="pmeta">'+(lf?ct+' kg · '+wclass(lf.bw,lf.sex):'—')+'</div></div>';}).join('')+'</div><button class="carnav next" data-scroll="1">›</button></div><div id="pspot" class="pspot"></div>'
+      return '<div class="phero" data-open="'+u.id+'">'+avatarHTML(p,u.u)+'<div class="pn">'+esc(u.u)+'</div><div class="pr">'+roleLabel(u.role)+'</div><div class="pmeta">'+(lf?ct+' kg · '+wclass(lf.bw,lf.sex):'—')+'</div></div>';}).join('')+'</div><button class="carnav next" data-scroll="1">›</button></div><div id="pspot" class="pspot"></div>'
       :'<div class="empty">No athlete profiles yet.</div>';
     if(shown.length) requestAnimationFrame(initCarousel);
     return; }
@@ -85,7 +85,7 @@ function renderProfiles(){
   title.textContent='Profile';
   out.innerHTML='<button class="btn sm ghost backbtn" data-back="list">‹ All profiles</button>'+
     '<div class="card pdetail">'+avatarHTML(p,u.u)+'<div class="dn">'+esc(u.u)+'</div>'+
-    '<div class="pr" style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em">'+u.role+'</div>'+stats+
+    '<div class="pr" style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em">'+roleLabel(u.role)+'</div>'+stats+
     (p.bio?'<div class="pbio">'+esc(p.bio)+'</div>':'<div class="note" style="margin-top:12px">No bio yet.</div>')+
     videoHTML(p.video)+
     (canEdit?'<button class="btn full" style="margin-top:16px" data-edit="'+u.id+'">Edit profile</button>':'')+
