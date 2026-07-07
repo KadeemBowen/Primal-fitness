@@ -38,7 +38,7 @@ function nextPopup(){
 
 /* ---- run on app open (login / session restore) ---- */
 function runAlerts(){
-  if(!session) return;
+  if(!session || session.role==='Admin') return;   // admins are staff: no notification/payment popups
   if(myNotification && myNotification.active && !myNotification.dismissed && (myNotification.message||'').trim()){
     queuePopup({title:'Message from your coach', body:myNotification.message, tone:'info', icon:'💬', ok:'Dismiss',
       onOk:async()=>{ try{ await rpc('app_dismiss_notification',{p_token:session.token}); if(myNotification) myNotification.dismissed=true; }catch(e){} }});

@@ -5,10 +5,13 @@ function notifFor(uid){ return allNotifications.find(n=>n.user_id===uid)||{messa
 function paidMonths(uid){ return new Set(allPayments.filter(p=>p.user_id===uid&&p.paid).map(p=>p.month)); }
 function renderUsers(){
   $('usersOut').innerHTML=users.map(u=>{
-    const open=mgrOpen===u.id;
+    const isAdmin=u.role==='Admin', open=mgrOpen===u.id&&!isAdmin;
     let h='<div class="urow"><div class="uinfo"><span class="nm">'+esc(u.u)+'</span>'+(u.id===session.id?'<span class="tag">you</span>':'')+'</div>'+
       '<select class="field rolesel" data-role="'+u.id+'">'+['Admin','Lifter','Spectate'].map(r=>'<option '+(r===u.role?'selected':'')+'>'+r+'</option>').join('')+'</select>'+
-      '<button class="btn sm ghost" data-mgr="'+u.id+'">'+(open?'Close':'Manage')+'</button>'+
+      // admins are staff, not clients: no notifications/payments — just a password reset
+      (isAdmin
+        ? '<button class="btn sm ghost" data-reset="'+u.id+'">Reset PW</button>'
+        : '<button class="btn sm ghost" data-mgr="'+u.id+'">'+(open?'Close':'Manage')+'</button>')+
       '<button class="xbtn" data-udel="'+u.id+'">✕</button></div>';
     if(open){
       const n=notifFor(u.id), ps=paidMonths(u.id);
