@@ -84,7 +84,7 @@ const PROGRAMS={
         {k:'pausesq',name:'Pause Squat (3 sec)',lift:'squat',t:'w',wk:[[3,4,245,7],[3,4,255,7],[3,4,265,7.5],[2,3,235,6],[3,3,275,7.5],[3,3,280,7.5],[2,3,265,7],null]},
         {k:'tricep',name:'Tricep work',lift:null,t:'acc',wk:[[3,12,null,7],[3,12,null,7],[3,12,null,7],[2,10,null,6],[3,12,null,7],[3,12,null,7],null,null]}
       ]},
-      {d:'D',title:'Optional \u2014 Accessories + Weak Points',ex:[
+      {d:'D',title:'Accessories & Weak Points (Optional)',ex:[
         {k:'pausedsumo',name:'Paused Sumo (2 sec off floor)',lift:'deadlift',t:'w',wk:[[3,3,320,7],[3,3,330,7],[3,3,340,7],[2,2,305,6],[3,2,350,7],[3,2,360,7],[2,2,370,7.5],null]},
         {k:'rdl',name:'Romanian Deadlift',lift:'deadlift',t:'w',wk:[[3,6,225,7],[3,6,235,7],[3,6,245,7.5],[2,5,205,6],[3,6,255,7.5],[3,6,265,7.5],[2,5,245,7],null]},
         {k:'highbarsq',name:'High-bar Squat',lift:'squat',t:'w',wk:[[4,6,265,7],[4,6,275,7],[4,6,285,7.5],[2,5,245,6],[3,6,295,7.5],[3,6,305,7.5],[2,5,275,7],null]},
