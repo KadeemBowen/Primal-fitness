@@ -146,10 +146,43 @@ PROGRAMS['primal-gorilla-fire']=(function(){
     ]
   };
 })();
-const PROG_KEYS=Object.keys(PROGRAMS);
+const HARDCODED_KEYS=Object.keys(PROGRAMS);   // built-in programs (structure not editable)
+let PROG_KEYS=Object.keys(PROGRAMS);
 const round5=x=>Math.round(x/5)*5;
 let progAthlete=null, progProgram=null, progLogs=[], amUnit='lb';
 let expandedWeeks=new Set();   // which week indices the admin has opened (kept across board re-renders)
+let customPrograms=[];         // rows from custom_programs
+let exerciseMeta=[];           // rows from exercise_meta (name/video overrides for built-ins)
+
+// Turn a saved custom-program row into a runnable PROGRAMS entry (weights are % of 1RM).
+function customToProg(row){
+  const weeks=Math.max(1,+row.weeks||1), data=row.data||{}, days=data.days||[];
+  return { name:row.name||'Untitled', weeks:weeks, deload:0, pct:true, custom:true,
+    refTM:{squat:100,bench:100,deadlift:100},
+    days: days.map((d,di)=>({ d:'d'+(d.id!=null?d.id:di), title:d.title||('Day '+(di+1)),
+      ex:(d.ex||[]).map((e,ei)=>{ const lift=e.lift||null, key='x'+(e.id!=null?e.id:(di+'_'+ei));
+        return { k:key, name:e.name||'Exercise', lift:lift, video:e.video||'', t:lift?'w':'acc',
+          wk: Array.from({length:weeks},(_,wi)=>{
+            if(lift){ const p=e.pcts&&e.pcts[wi]; return (p==null||p==='')?null:[(+e.sets||1),(e.reps||''),(+p),null]; }
+            return [(+e.sets||1),(e.reps||''),null,(e.rpe||null)];
+          }) }; }) })) };
+}
+function mergeCustomPrograms(){
+  Object.keys(PROGRAMS).forEach(k=>{ if(HARDCODED_KEYS.indexOf(k)<0) delete PROGRAMS[k]; });
+  customPrograms.forEach(row=>{ PROGRAMS['custom:'+row.id]=customToProg(row); });
+  PROG_KEYS=Object.keys(PROGRAMS);
+}
+function applyExerciseMeta(){
+  exerciseMeta.forEach(m=>{ const prog=PROGRAMS[m.program]; if(!prog) return;
+    prog.days.forEach(d=>d.ex.forEach(e=>{ if(e.k===m.ex_key){
+      if(m.name&&m.name.trim()) e.name=m.name;
+      e.video=m.video||''; } })); });
+}
+async function loadCustomPrograms(){
+  try{ customPrograms=await sb('custom_programs?select=*')||[]; }catch(e){ customPrograms=[]; }
+  try{ exerciseMeta=await sb('exercise_meta?select=*')||[]; }catch(e){ exerciseMeta=[]; }
+  mergeCustomPrograms(); applyExerciseMeta();
+}
 
 async function loadAssignments(){ try{ const a=await sb('assignments?select=*');
   assignments=(a||[]).filter(x=>PROGRAMS[x.program]).map(x=>({user_id:x.user_id,program:x.program,sq:Number(x.sq_max)||0,bp:Number(x.bp_max)||0,dl:Number(x.dl_max)||0})); }catch(e){ assignments=[]; } }
@@ -163,13 +196,16 @@ function asgn(uid,program){ return assignments.find(a=>a.user_id===uid&&a.progra
 function activeProg(){ return PROGRAMS[progProgram]; }
 
 function curTMs(a,prog){ const tm={}, lifts=[['squat','sq'],['bench','bp'],['deadlift','dl']];
-  lifts.forEach(function(L){ const lift=L[0],key=L[1]; let one=a[key]||0;
-    let drive=null; prog.days.forEach(d=>d.ex.forEach(e=>{ if(e.drive&&e.lift===lift) drive=e; }));
-    if(drive){ progLogs.filter(l=>l.ex===drive.k&&l.weight!=null).sort((x,y)=>new Date(x.at)-new Date(y.at)).forEach(l=>{
-      const row=drive.wk[l.week-1]; if(!row) return; const w=row[2]; if(w==null||w==='BW') return;
-      const Wp=round5((w/prog.refTM[lift])*0.9*one);
-      if(l.weight<Wp){ const impl=l.weight*0.0333*(l.reps||1)+l.weight; if(impl<one) one=impl; } }); }
-    tm[lift]=0.9*one; });
+  lifts.forEach(function(L){ const lift=L[0],key=L[1]; let one=(a&&a[key])||0;
+    if(!prog.pct){   // built-in programs: training max = 90% of 1RM, with autoregulation
+      let drive=null; prog.days.forEach(d=>d.ex.forEach(e=>{ if(e.drive&&e.lift===lift) drive=e; }));
+      if(drive){ progLogs.filter(l=>l.ex===drive.k&&l.weight!=null).sort((x,y)=>new Date(x.at)-new Date(y.at)).forEach(l=>{
+        const row=drive.wk[l.week-1]; if(!row) return; const w=row[2]; if(w==null||w==='BW') return;
+        const Wp=round5((w/prog.refTM[lift])*0.9*one);
+        if(l.weight<Wp){ const impl=l.weight*0.0333*(l.reps||1)+l.weight; if(impl<one) one=impl; } }); }
+    }
+    tm[lift]=prog.pct?one:0.9*one;   // custom programs: % is of the raw 1RM
+  });
   return tm; }
 function presc(ex,wkIdx,tm,prog){ const e=ex.wk[wkIdx]; if(!e) return null;
   const s=e[0],r=e[1],w=e[2],rpe=e[3];
@@ -184,8 +220,9 @@ function dayInfo(wkIdx,day){ const exs=day.ex.filter(e=>e.wk[wkIdx]); const req=
   let started=null; logs.forEach(l=>{const t=new Date(l.at).getTime(); if(started===null||t<started)started=t;});
   const expired=started!==null&&!allDone&&(Date.now()-started)>12*3600*1000;
   return {exs,req,done,allDone,started,expired}; }
-function weekUnlocked(prog,wkIdx,bypass){ if(bypass) return true; if(wkIdx===0) return true; let c=0;
-  prog.days.forEach(d=>{ if(dayInfo(wkIdx-1,d).allDone) c++; }); return c>=3; }
+function weekUnlocked(prog,wkIdx,bypass){ if(bypass) return true; if(wkIdx===0) return true;
+  let total=0,c=0; prog.days.forEach(d=>{ if(d.ex.some(e=>e.wk[wkIdx-1])){ total++; if(dayInfo(wkIdx-1,d).allDone) c++; } });
+  return c>=Math.min(3,total||1); }
 
 function renderProg(){
   const admin=session&&session.role==='Admin', aEl=$('asgnAdmin'), bEl=$('progBoard');
@@ -272,10 +309,10 @@ function dayHTML(wi,day,tm,own,prog,bypass){ const di=dayInfo(wi,day); if(!di.ex
     if(p.type==='info'){ h+='<div class="pex" style="display:block"><div class="presc" style="font-style:italic">'+esc(ex.name)+'</div></div>'; return; }
     const lg=logOf(wi+1,day.d,ex.k);
     let detail;
-    if(p.type==='w') detail=p.wt+' lb ('+Math.round(p.wt/2.20462)+' kg)'+(p.rpe!=null?' \u00b7 RPE '+p.rpe:'');
+    if(p.type==='w') detail=p.wt+' lb ('+Math.round(p.wt/2.20462)+' kg)'+(prog.pct&&ex.wk[wi]?' \u00b7 '+ex.wk[wi][2]+'% 1RM':'')+(p.rpe!=null?' \u00b7 RPE '+p.rpe:'');
     else if(p.type==='bw') detail='BW'+(p.rpe!=null?' \u00b7 RPE '+p.rpe:'');
     else detail=(p.rpe!=null?'RPE '+p.rpe:'by feel');
-    h+='<div class="pex"><div class="pexname">'+esc(ex.name)+'<div class="presc">'+p.s+' \u00d7 '+fmtReps(p.r)+' \u00b7 '+detail+'</div></div>';
+    h+='<div class="pex"><div class="pexname">'+esc(ex.name)+(ex.video?' <a class="exvid" href="'+esc(ex.video)+'" target="_blank" rel="noopener">\u25b6</a>':'')+'<div class="presc">'+p.s+' \u00d7 '+fmtReps(p.r)+' \u00b7 '+detail+'</div></div>';
     if(lg){ const act=lg.weight!=null?(lg.weight+' lb \u00d7 '+(lg.reps||0)):((lg.reps||0)+' reps');
       h+='<div class="pexr"><span class="okmark">\u2713 '+act+'</span>'+(own?' <button class="xbtn" data-undo="'+wi+'|'+day.d+'|'+ex.k+'">\u2715</button>':'')+'</div>';
     } else if(own){ const wid='lw_'+wi+'_'+day.d+'_'+ex.k, rid='lr_'+wi+'_'+day.d+'_'+ex.k;

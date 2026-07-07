@@ -25,7 +25,8 @@ async function loadLifters(){ const lf=await sb('lifters?select=*');
   lifters=(lf||[]).map(l=>({id:l.id,name:l.name,sex:l.sex,eq:l.equip,bw:Number(l.bw)||0,age:l.age_cat||'',sq:Number(l.sq)||0,bp:Number(l.bp)||0,dl:Number(l.dl)||0,gsq:Number(l.gsq)||0,gbp:Number(l.gbp)||0,gdl:Number(l.gdl)||0})); }
 async function loadUsers(){ const us=await rpc('app_list_users',{}); users=(us||[]).map(u=>({id:u.id,u:u.username,role:u.role})); }
 async function loadProfiles(){ const pf=await sb('profiles?select=*'); profiles={}; (pf||[]).forEach(p=>profiles[p.user_id]={bio:p.bio,video:p.video,img:p.img}); }
-async function loadAll(){ await Promise.all([loadLifters(),loadUsers(),loadProfiles(),loadAssignments(),loadMyAlerts(),loadAdminAlerts()]); }
+async function loadAll(){ if(typeof loadCustomPrograms==='function') await loadCustomPrograms();   // merge custom programs before assignments filter
+  await Promise.all([loadLifters(),loadUsers(),loadProfiles(),loadAssignments(),loadMyAlerts(),loadAdminAlerts()]); }
 
 /* ===== auth ===== */
 $('liBtn').onclick=doLogin;
@@ -59,11 +60,12 @@ function applyAuth(){
   const admin=session.role==='Admin', spec=session.role==='Spectate';
   $('whoName').textContent=session.username+' · '+roleLabel(session.role);
   document.querySelector('nav [data-go="users"]').style.display=admin?'':'none';
+  document.querySelector('nav [data-go="build"]').style.display=admin?'':'none';
   document.querySelector('nav [data-go="prog"]').style.display=spec?'none':'';
   $('addCard').style.display=admin?'':'none';
-  navTo('rank'); renderRank(); if(admin) renderUsers(); renderProg();
+  navTo('rank'); renderRank(); if(admin) renderUsers(); if(admin&&typeof renderBuild==='function') renderBuild(); renderProg();
 }
-const ROLE_SCREENS={Admin:['rank','profiles','prog','load','users'],Lifter:['rank','profiles','prog','load'],Spectate:['rank','profiles','load']};
+const ROLE_SCREENS={Admin:['rank','profiles','prog','load','users','build'],Lifter:['rank','profiles','prog','load'],Spectate:['rank','profiles','load']};
 function navTo(go){
   if(!session) return 'rank';
   const allowed=ROLE_SCREENS[session.role]||['rank'];

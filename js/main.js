@@ -4,7 +4,7 @@ document.addEventListener('click',e=>{const hd=e.target.closest('.fold-hd');if(h
 /* ===== nav ===== */
 document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{const go=navTo(b.dataset.go);
   if(go==='profiles'){pView={mode:'list',uid:null};renderProfiles();}
-  if(go==='prog'){renderProg();renderE1();}if(go==='load')renderLoad();if(go==='users')renderUsers();});
+  if(go==='prog'){renderProg();renderE1();}if(go==='load')renderLoad();if(go==='users')renderUsers();if(go==='build')renderBuild();});
 
 /* ===== init (no stored session — login required each visit) ===== */
 (async()=>{
