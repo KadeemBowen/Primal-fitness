@@ -173,6 +173,15 @@
   .videoembed{width:100%;aspect-ratio:16/9;border:0;border-radius:12px;margin-top:14px;background:#000}
   .backbtn{align-self:flex-start;margin-bottom:6px}
 
+  .celebrate{position:fixed;inset:0;z-index:300;pointer-events:none;overflow:hidden}
+  .celebrate i{position:absolute;top:-24px;width:9px;height:15px;border-radius:2px;opacity:0;animation:confetti linear forwards}
+  @keyframes confetti{0%{opacity:0;transform:translate(0,0) rotate(0)}8%{opacity:1}90%{opacity:1}100%{opacity:0;transform:translate(var(--sway),108vh) rotate(var(--rot))}}
+  .celebrate-badge{position:absolute;left:50%;top:40%;transform:translate(-50%,-50%) scale(.5);display:flex;flex-direction:column;align-items:center;gap:6px;font-size:44px;background:var(--panel);border:1px solid var(--teal);border-radius:18px;padding:20px 30px;box-shadow:0 12px 44px rgba(0,0,0,.55),0 0 34px rgba(0,224,198,.4);animation:cpop .5s cubic-bezier(.2,1.5,.4,1) forwards,cout .45s ease 2.5s forwards}
+  .celebrate-badge span{font-family:'Oswald';font-weight:700;font-size:17px;letter-spacing:.05em;text-transform:uppercase;color:var(--text)}
+  @keyframes cpop{to{transform:translate(-50%,-50%) scale(1)}}
+  @keyframes cout{to{opacity:0;transform:translate(-50%,-54%) scale(.92)}}
+  @media (prefers-reduced-motion:reduce){.celebrate i{display:none}}
+
   .toast{position:fixed;left:50%;bottom:84px;transform:translateX(-50%);background:#1c2129;border:1px solid var(--line);color:var(--text);padding:10px 16px;border-radius:10px;font-size:13px;z-index:200;opacity:0;transition:opacity .2s;pointer-events:none;max-width:90%}
   .toast.show{opacity:1}
 

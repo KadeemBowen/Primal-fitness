@@ -289,6 +289,19 @@ function dayHTML(wi,day,tm,own,prog,bypass){ const di=dayInfo(wi,day); if(!di.ex
   h+='</div>'; return h;
 }
 
+function celebrate(msg){
+  const wrap=document.createElement('div'); wrap.className='celebrate';
+  const colors=['#00e0c6','#f3c000','#ff3b46','#2f6fed','#1f9d4d','#e9eef4'];
+  let conf='';
+  for(let i=0;i<52;i++){
+    const left=Math.random()*100, delay=Math.random()*0.5, dur=1.9+Math.random()*1.3;
+    const c=colors[i%colors.length], rot=(Math.random()*720-360), sway=(Math.random()*2-1)*90;
+    conf+='<i style="left:'+left+'%;background:'+c+';animation-delay:'+delay.toFixed(2)+'s;animation-duration:'+dur.toFixed(2)+'s;--rot:'+rot.toFixed(0)+'deg;--sway:'+sway.toFixed(0)+'px"></i>';
+  }
+  wrap.innerHTML='<div class="celebrate-badge">🎉<span>'+esc(msg||'Workout Complete!')+'</span></div>'+conf;
+  document.body.appendChild(wrap);
+  setTimeout(()=>wrap.remove(),3200);
+}
 document.addEventListener('click',async e=>{
   const wt=e.target.closest('.pwkhd.wktoggle');
   if(wt){ const pw=wt.closest('.pwk'); if(pw){ const wi=+pw.dataset.wk; if(pw.classList.toggle('collapsed')) expandedWeeks.delete(wi); else expandedWeeks.add(wi); } return; }
@@ -305,7 +318,10 @@ document.addEventListener('click',async e=>{
     const rid=$('lr_'+wi+'_'+day+'_'+k); let weight=null, reps=+rid.value||0;
     if(type==='w'||type==='rpe'){ weight=+$('lw_'+wi+'_'+day+'_'+k).value||0; if(!weight||!reps){toast('Enter weight and reps');return;} }
     else if(!reps){ toast('Enter reps'); return; }
-    try{ await rpc('app_log_exercise',{p_token:session.token,p_program:progProgram,p_week:+wi+1,p_day:day,p_ex:k,p_weight:weight,p_reps:reps}); await loadAndRenderBoard(); }
+    try{ const wasDone=(()=>{const d=activeProg()&&activeProg().days.find(x=>x.d===day);return d?dayInfo(+wi,d).allDone:false;})();
+      await rpc('app_log_exercise',{p_token:session.token,p_program:progProgram,p_week:+wi+1,p_day:day,p_ex:k,p_weight:weight,p_reps:reps}); await loadAndRenderBoard();
+      const dObj=activeProg()&&activeProg().days.find(x=>x.d===day);
+      if(dObj&&!wasDone&&dayInfo(+wi,dObj).allDone) celebrate('Workout Complete!'); }
     catch(err){ toast(err.message); } return; }
   const ud=e.target.closest('[data-undo]');
   if(ud){ const p=ud.dataset.undo.split('|'), wi=p[0], day=p[1], k=p[2];
