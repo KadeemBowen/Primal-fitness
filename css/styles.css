@@ -182,6 +182,24 @@
   @keyframes cout{to{opacity:0;transform:translate(-50%,-54%) scale(.92)}}
   @media (prefers-reduced-motion:reduce){.celebrate i{display:none}}
 
+  .popupwrap{position:fixed;inset:0;z-index:400;display:flex;align-items:center;justify-content:center;padding:24px;background:rgba(5,7,10,.66);animation:fade .16s ease}
+  .popupcard{width:100%;max-width:360px;background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:24px 22px;text-align:center;animation:cpop .28s cubic-bezier(.2,1.3,.4,1) both}
+  .popupcard.info{border-color:var(--teal)}
+  .popupcard.warn{border-color:var(--gold)}
+  .popupcard.danger{border-color:var(--no)}
+  .popupicon{font-size:38px;line-height:1;margin-bottom:8px}
+  .popuptitle{font-family:'Oswald';font-weight:700;letter-spacing:.03em;font-size:19px;text-transform:uppercase;margin-bottom:8px}
+  .popupcard.warn .popuptitle{color:var(--gold)}
+  .popupcard.danger .popuptitle{color:var(--no)}
+  .popupbody{color:var(--muted);font-size:14px;line-height:1.6;white-space:pre-wrap;margin-bottom:18px}
+
+  .mgrpanel{border:1px solid var(--teal);border-radius:11px;background:var(--panel2);padding:12px;margin:-2px 0 10px}
+  .mgrtoggle{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted);margin:8px 0}
+  .mgrtoggle input{width:16px;height:16px}
+  .paygrid{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin-top:6px}
+  .paycell{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:9px 2px;font-size:12px;font-weight:600;color:var(--muted);cursor:pointer}
+  .paycell.on{background:var(--teal);border-color:var(--teal);color:#02211d}
+
   .toast{position:fixed;left:50%;bottom:84px;transform:translateX(-50%);background:#1c2129;border:1px solid var(--line);color:var(--text);padding:10px 16px;border-radius:10px;font-size:13px;z-index:200;opacity:0;transition:opacity .2s;pointer-events:none;max-width:90%}
   .toast.show{opacity:1}
 

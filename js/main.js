@@ -11,7 +11,7 @@ document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{const go=navTo
   const s=loadStoredSession();
   if(s&&s.token){
     try{ const r=await rpc('app_session',{p_token:s.token});
-      if(r&&r.length){ session={id:r[0].id,username:r[0].username,role:r[0].role,token:s.token}; await loadAll(); applyAuth(); }
+      if(r&&r.length){ session={id:r[0].id,username:r[0].username,role:r[0].role,token:s.token}; await loadAll(); applyAuth(); if(typeof runAlerts==='function') runAlerts(); }
       else clearStoredSession();
     }catch(e){}
   }

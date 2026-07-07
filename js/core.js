@@ -25,7 +25,7 @@ async function loadLifters(){ const lf=await sb('lifters?select=*');
   lifters=(lf||[]).map(l=>({id:l.id,name:l.name,sex:l.sex,eq:l.equip,bw:Number(l.bw)||0,age:l.age_cat||'',sq:Number(l.sq)||0,bp:Number(l.bp)||0,dl:Number(l.dl)||0,gsq:Number(l.gsq)||0,gbp:Number(l.gbp)||0,gdl:Number(l.gdl)||0})); }
 async function loadUsers(){ const us=await rpc('app_list_users',{}); users=(us||[]).map(u=>({id:u.id,u:u.username,role:u.role})); }
 async function loadProfiles(){ const pf=await sb('profiles?select=*'); profiles={}; (pf||[]).forEach(p=>profiles[p.user_id]={bio:p.bio,video:p.video,img:p.img}); }
-async function loadAll(){ await Promise.all([loadLifters(),loadUsers(),loadProfiles(),loadAssignments()]); }
+async function loadAll(){ await Promise.all([loadLifters(),loadUsers(),loadProfiles(),loadAssignments(),loadMyAlerts(),loadAdminAlerts()]); }
 
 /* ===== auth ===== */
 $('liBtn').onclick=doLogin;
@@ -42,7 +42,7 @@ async function doLogin(){
     if(!res||!res.length){ err.textContent='Wrong username or password.'; return; }
     session={id:res[0].id,username:res[0].username,role:res[0].role,token:res[0].token};saveSession(session);
     $('liPass').value='';
-    await loadAll(); applyAuth();
+    await loadAll(); applyAuth(); if(typeof runAlerts==='function') runAlerts();
   }catch(e){ err.textContent='Could not reach the server — check your connection.'; }
   finally{ btn.disabled=false; btn.textContent='Sign in'; }
 }
