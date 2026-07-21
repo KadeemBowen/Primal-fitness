@@ -151,6 +151,15 @@ let PROG_KEYS=Object.keys(PROGRAMS);
 const round5=x=>Math.round(x/5)*5;
 let progAthlete=null, progProgram=null, progLogs=[], amUnit='lb';
 let expandedWeeks=new Set();   // which week indices the admin has opened (kept across board re-renders)
+let editingLog=null;           // "wi|day|ex" of the log entry an admin is currently editing
+// Log/unlog: for the athlete's own board use the self functions; when an admin
+// edits another athlete's board, target that athlete via the admin functions.
+function logExercise(a){ return progAthlete===session.id
+  ? rpc('app_log_exercise',{p_token:session.token,p_program:a.program,p_week:a.week,p_day:a.day,p_ex:a.ex,p_weight:a.weight,p_reps:a.reps})
+  : rpc('app_admin_log_exercise',{p_token:session.token,p_user:progAthlete,p_program:a.program,p_week:a.week,p_day:a.day,p_ex:a.ex,p_weight:a.weight,p_reps:a.reps}); }
+function unlogExercise(a){ return progAthlete===session.id
+  ? rpc('app_unlog_exercise',{p_token:session.token,p_program:a.program,p_week:a.week,p_day:a.day,p_ex:a.ex})
+  : rpc('app_admin_unlog_exercise',{p_token:session.token,p_user:progAthlete,p_program:a.program,p_week:a.week,p_day:a.day,p_ex:a.ex}); }
 let customPrograms=[];         // rows from custom_programs
 let exerciseMeta=[];           // rows from exercise_meta (name/video overrides for built-ins)
 
@@ -268,7 +277,7 @@ async function saveAssign(){ const uid=$('amUser').value, program=$('amProg').va
     await loadAssignments(); renderAmList(); progAthlete=uid; progProgram=program; await loadAndRenderBoard(); toast('Program assigned'); }
   catch(e){ toast(e.message); } }
 
-async function loadAndRenderBoard(){ const bEl=$('progBoard'); if(!bEl) return;
+async function loadAndRenderBoard(){ const bEl=$('progBoard'); if(!bEl) return; editingLog=null;
   if(!progAthlete){ bEl.innerHTML='<div class="note" style="margin-top:6px">Select an athlete above to view their board.</div>'; return; }
   const my=assignmentsFor(progAthlete);
   if(!my.length){ bEl.innerHTML='<div class="note" style="margin-top:6px">'+(progAthlete===session.id?'No program assigned to you yet \u2014 ask your coach to set it up.':'This athlete has no program.')+'</div>'; return; }
@@ -285,22 +294,24 @@ function fmtReps(r){ return r==='AMRAP'?'AMRAP':r; }
 function renderBoard(){ const bEl=$('progBoard'), prog=activeProg(), a=asgn(progAthlete,progProgram);
   const u=users.find(x=>x.id===progAthlete), nm=u?u.u:'', own=progAthlete===session.id, bypass=own&&session.role==='Admin', tm=curTMs(a,prog);
   const adminView=session.role==='Admin';   // admins can collapse each week
+  const canEdit=own||adminView;              // admins can log/edit any athlete's entries
   const my=assignmentsFor(progAthlete);
   let html='';
   if(my.length>1){ html+='<div class="seg" style="margin:2px 0 10px">'+my.map(x=>'<button data-prog="'+x.program+'" class="'+(x.program===progProgram?'on':'')+'">'+esc(PROGRAMS[x.program].name.split(' (')[0])+'</button>').join('')+'</div>'; }
-  html+='<div class="note" style="margin:2px 0 12px">'+esc(nm)+' \u00b7 Training max: SQ '+round5(tm.squat)+' \u00b7 BP '+round5(tm.bench)+' \u00b7 DL '+round5(tm.deadlift)+' lb'+(own?'':' \u00b7 view only')+(bypass?' \u00b7 admin: weeks unlocked':'')+'</div>';
+  html+='<div class="note" style="margin:2px 0 12px">'+esc(nm)+' \u00b7 Training max: SQ '+round5(tm.squat)+' \u00b7 BP '+round5(tm.bench)+' \u00b7 DL '+round5(tm.deadlift)+' lb'+(own?'':(adminView?' \u00b7 admin edit':' \u00b7 view only'))+(bypass?' \u00b7 weeks unlocked':'')+'</div>';
   for(let wi=0;wi<prog.weeks;wi++){
     const unlocked=weekUnlocked(prog,wi,bypass); let dc=0,dt=0; prog.days.forEach(d=>{ if(d.ex.some(e=>e.wk[wi])){ dt++; if(dayInfo(wi,d).allDone) dc++; } });
     const dl=prog.deload===wi+1;
     html+='<div class="pwk'+(adminView?(' wkfold'+(expandedWeeks.has(wi)?'':' collapsed')):'')+'" data-wk="'+wi+'"><div class="pwkhd'+(adminView?' wktoggle':'')+'"><span class="wn">Week '+(wi+1)+(dl?' \u00b7 Deload':'')+'</span><span class="focus">'+dc+'/'+dt+' days</span>'+(adminView?'<span class="wkchev">\u25be</span>':'')+'</div>';
     if(!unlocked){ html+=(adminView?'<div class="wkbody">':'')+'<div class="lockbox">Locked \u2014 complete 3 of 4 days in Week '+wi+' to unlock.</div>'+(adminView?'</div>':'')+'</div>'; continue; }
     html+=(adminView?'<div class="wkbody">':'');
-    prog.days.forEach(d=>{ html+=dayHTML(wi,d,tm,own,prog,bypass); });
+    prog.days.forEach(d=>{ html+=dayHTML(wi,d,tm,canEdit,prog,bypass); });
     html+=(adminView?'</div>':'')+'</div>';
   }
   bEl.innerHTML=html;
 }
-function dayHTML(wi,day,tm,own,prog,bypass){ const di=dayInfo(wi,day); if(!di.exs.length) return '';
+function dayHTML(wi,day,tm,edit,prog,bypass){ const di=dayInfo(wi,day); if(!di.exs.length) return '';
+  const admin=!!(session&&session.role==='Admin');
   const badge=di.allDone?'<span class="dbadge done">done</span>':'<span class="dbadge">'+di.done.size+'/'+di.req.length+'</span>';
   let h='<div class="pday"><div class="pdayhd">Day '+day.d+' \u2014 '+esc(day.title)+' '+badge+'</div>';
   if(di.started!==null&&!di.allDone&&!bypass){ const left=12-(Date.now()-di.started)/3600000;
@@ -308,18 +319,21 @@ function dayHTML(wi,day,tm,own,prog,bypass){ const di=dayInfo(wi,day); if(!di.ex
   day.ex.forEach(ex=>{ const p=presc(ex,wi,tm,prog); if(!p) return;
     if(p.type==='info'){ h+='<div class="pex" style="display:block"><div class="presc" style="font-style:italic">'+esc(ex.name)+'</div></div>'; return; }
     const lg=logOf(wi+1,day.d,ex.k);
+    const key=wi+'|'+day.d+'|'+ex.k, editingThis=admin&&lg&&editingLog===key;
     let detail;
     if(p.type==='w') detail=p.wt+' lb ('+Math.round(p.wt/2.20462)+' kg)'+(prog.pct&&ex.wk[wi]?' \u00b7 '+ex.wk[wi][2]+'% 1RM':'')+(p.rpe!=null?' \u00b7 RPE '+p.rpe:'');
     else if(p.type==='bw') detail='BW'+(p.rpe!=null?' \u00b7 RPE '+p.rpe:'');
     else detail=(p.rpe!=null?'RPE '+p.rpe:'by feel');
     h+='<div class="pex"><div class="pexname">'+esc(ex.name)+(ex.video?' <a class="exvid" href="'+esc(ex.video)+'" target="_blank" rel="noopener">\u25b6</a>':'')+'<div class="presc">'+p.s+' \u00d7 '+fmtReps(p.r)+' \u00b7 '+detail+'</div></div>';
-    if(lg){ const act=lg.weight!=null?(lg.weight+' lb \u00d7 '+(lg.reps||0)):((lg.reps||0)+' reps');
-      h+='<div class="pexr"><span class="okmark">\u2713 '+act+'</span>'+(own?' <button class="xbtn" data-undo="'+wi+'|'+day.d+'|'+ex.k+'">\u2715</button>':'')+'</div>';
-    } else if(own){ const wid='lw_'+wi+'_'+day.d+'_'+ex.k, rid='lr_'+wi+'_'+day.d+'_'+ex.k;
+    if(lg&&!editingThis){ const act=lg.weight!=null?(lg.weight+' lb \u00d7 '+(lg.reps||0)):((lg.reps||0)+' reps');
+      h+='<div class="pexr"><span class="okmark">\u2713 '+act+'</span>'+(admin?' <button class="btn sm ghost editbtn" data-editlog="'+key+'">Edit</button>':'')+(edit?' <button class="xbtn" data-undo="'+key+'">\u2715</button>':'')+'</div>';
+    } else if(edit){ const wid='lw_'+wi+'_'+day.d+'_'+ex.k, rid='lr_'+wi+'_'+day.d+'_'+ex.k;
       const showW=(p.type==='w'||p.type==='rpe'); let inp='';
-      if(showW) inp='<input id="'+wid+'" class="field mono pin" type="number" inputmode="decimal" value="'+(p.type==='w'?p.wt:'')+'" placeholder="lb" />';
-      inp+='<input id="'+rid+'" class="field mono pin" type="number" inputmode="numeric" value="'+(typeof p.r==='number'?p.r:'')+'" placeholder="reps" />';
-      h+='<div class="pexr">'+inp+'<button class="btn sm" data-log="'+wi+'|'+day.d+'|'+ex.k+'|'+p.type+'">Done</button></div>';
+      const wv=editingThis?(lg.weight!=null?lg.weight:''):(p.type==='w'?p.wt:'');
+      const rv=editingThis?(lg.reps!=null?lg.reps:''):(typeof p.r==='number'?p.r:'');
+      if(showW) inp='<input id="'+wid+'" class="field mono pin" type="number" inputmode="decimal" value="'+wv+'" placeholder="lb" />';
+      inp+='<input id="'+rid+'" class="field mono pin" type="number" inputmode="numeric" value="'+rv+'" placeholder="reps" />';
+      h+='<div class="pexr">'+inp+'<button class="btn sm" data-log="'+key+'|'+p.type+'">'+(editingThis?'Save':'Done')+'</button>'+(editingThis?' <button class="btn sm ghost" data-canceledit="1">Cancel</button>':'')+'</div>';
     } else h+='<div class="pexr"><span class="note">\u2014</span></div>';
     h+='</div>';
   });
@@ -350,19 +364,24 @@ document.addEventListener('click',async e=>{
   if(un){ if(!confirm("Remove this program and all of the athlete's logs for it?")) return; const pr=un.dataset.unas.split('|');
     try{ await rpc('app_unassign_program',{p_token:session.token,p_user:pr[0],p_program:pr[1]}); await loadAssignments(); renderAmList();
       if(progAthlete===pr[0]&&progProgram===pr[1]) progProgram=null; await loadAndRenderBoard(); toast('Removed'); }catch(err){toast(err.message);} return; }
+  const el=e.target.closest('[data-editlog]');
+  if(el){ editingLog=el.dataset.editlog; renderBoard(); return; }
+  if(e.target.closest('[data-canceledit]')){ editingLog=null; renderBoard(); return; }
   const lg=e.target.closest('[data-log]');
   if(lg){ const p=lg.dataset.log.split('|'), wi=p[0], day=p[1], k=p[2], type=p[3];
     const rid=$('lr_'+wi+'_'+day+'_'+k); let weight=null, reps=+rid.value||0;
     if(type==='w'||type==='rpe'){ weight=+$('lw_'+wi+'_'+day+'_'+k).value||0; if(!weight||!reps){toast('Enter weight and reps');return;} }
     else if(!reps){ toast('Enter reps'); return; }
     try{ const wasDone=(()=>{const d=activeProg()&&activeProg().days.find(x=>x.d===day);return d?dayInfo(+wi,d).allDone:false;})();
-      await rpc('app_log_exercise',{p_token:session.token,p_program:progProgram,p_week:+wi+1,p_day:day,p_ex:k,p_weight:weight,p_reps:reps}); await loadAndRenderBoard();
+      if(logOf(+wi+1,day,k)) await unlogExercise({program:progProgram,week:+wi+1,day:day,ex:k});   // overwrite when editing
+      await logExercise({program:progProgram,week:+wi+1,day:day,ex:k,weight:weight,reps:reps});
+      editingLog=null; await loadAndRenderBoard();
       const dObj=activeProg()&&activeProg().days.find(x=>x.d===day);
       if(dObj&&!wasDone&&dayInfo(+wi,dObj).allDone) celebrate('Workout Complete!'); }
     catch(err){ toast(err.message); } return; }
   const ud=e.target.closest('[data-undo]');
   if(ud){ const p=ud.dataset.undo.split('|'), wi=p[0], day=p[1], k=p[2];
-    try{ await rpc('app_unlog_exercise',{p_token:session.token,p_program:progProgram,p_week:+wi+1,p_day:day,p_ex:k}); await loadAndRenderBoard(); }
+    try{ await unlogExercise({program:progProgram,week:+wi+1,day:day,ex:k}); await loadAndRenderBoard(); }
     catch(err){ toast(err.message); } return; }
 });
 let e1Unit='kg';
