@@ -17,3 +17,6 @@ document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{const go=navTo
   }
   renderLoad(); renderProg(); renderE1();
 })();
+
+/* ===== installable app (PWA): register the service worker ===== */
+if('serviceWorker' in navigator){ window.addEventListener('load',()=>{ navigator.serviceWorker.register('sw.js').catch(()=>{}); }); }
