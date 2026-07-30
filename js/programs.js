@@ -146,6 +146,90 @@ PROGRAMS['primal-gorilla-fire']=(function(){
     ]
   };
 })();
+
+/* ===== Female-focused hypertrophy programs (weights are % of 1RM where a barbell lift is used) ===== */
+(function(){
+  const W=4;
+  const A =(k,name,s,r,rpe)=>({k,name,lift:null,t:'rpe',wk:Array.from({length:W},()=>[s,r,null,rpe])});   // weighted, logged by RPE
+  const BW=(k,name,s,r)   =>({k,name,lift:null,t:'acc',wk:Array.from({length:W},()=>[s,r,null,null])});    // bodyweight / reps only
+  const I =(k,name)       =>({k,name,lift:null,t:'info',wk:Array.from({length:W},()=>[1,1,null,null])});    // note / cardio, not logged
+  const L =(k,name,lift,s,pcts,reps)=>({k,name,lift,t:'w',wk:pcts.map((p,i)=>[s,reps[i],p,null])});         // barbell, % of 1RM per week
+
+  PROGRAMS['female-glute-quad']={
+    name:'Female Glute & Quad Hypertrophy', weeks:W, deload:0, pct:true, refTM:{squat:100,bench:100,deadlift:100},
+    note:'Glute & quad focused hypertrophy, 4 days/week. Back squat and deadlift run off % of 1RM; the rest is by RPE - add a rep or a little weight each week.',
+    days:[
+      {d:'1',title:'Glutes (hip-dominant)',ex:[
+        A('gq_hipthrust','Barbell Hip Thrust',4,'8-10',8),
+        A('gq_rdl','Romanian Deadlift',3,'10',8),
+        A('gq_bss','Bulgarian Split Squat',3,'10/leg',8),
+        A('gq_kickback','Cable Glute Kickback',3,'15/leg',9),
+        BW('gq_abd1','Hip Abduction (machine or band)',3,'20'),
+        I('gq_walk','Optional: 10 min incline treadmill walk')
+      ]},
+      {d:'2',title:'Upper Body',ex:[
+        A('gq_bench','DB Bench Press',3,'10-12',8),
+        A('gq_pulldown','Lat Pulldown',3,'10-12',8),
+        A('gq_row','Seated Cable Row',3,'12',8),
+        A('gq_ohp','DB Shoulder Press',3,'12',8),
+        A('gq_lat','Lateral Raise',3,'15',9),
+        A('gq_arms','Bicep Curl + Triceps Pushdown (superset)',3,'12',8)
+      ]},
+      {d:'3',title:'Quads (knee-dominant)',ex:[
+        L('gq_squat','Back Squat','squat',4,[70,72.5,75,77.5],['8','8','6','6']),
+        A('gq_legpress','Leg Press',3,'12-15',9),
+        A('gq_lunge','Walking Lunge',3,'12/leg',8),
+        A('gq_legext','Leg Extension',3,'15',9),
+        A('gq_calf','Standing Calf Raise',4,'15',9)
+      ]},
+      {d:'4',title:'Glutes & Hamstrings + Core',ex:[
+        L('gq_dl','Sumo / Trap-Bar Deadlift','deadlift',3,[65,67.5,70,72.5],['8','8','8','6']),
+        A('gq_bridge','Barbell Glute Bridge',3,'12',8),
+        A('gq_legcurl','Seated Leg Curl',4,'12',9),
+        A('gq_pull','Cable Pull-Through',3,'15',8),
+        BW('gq_abd2','Hip Abduction',3,'20'),
+        BW('gq_core','Hanging Leg Raise or Plank',3,'12')
+      ]}
+    ]
+  };
+
+  PROGRAMS['female-home-cardio']={
+    name:'At-Home Cardio & Hypertrophy', weeks:W, deload:0, pct:true, refTM:{squat:100,bench:100,deadlift:100},
+    note:'At-home dumbbell & bodyweight hypertrophy with a cardio finisher each day, 4 days/week. All work by RPE/reps - progress by adding reps or a little weight each week.',
+    days:[
+      {d:'1',title:'Lower (Glute/Quad) + Cardio',ex:[
+        A('hc_goblet','Goblet Squat',4,'12',8),
+        A('hc_rdl','DB Romanian Deadlift',3,'12',8),
+        A('hc_lunge','Reverse Lunge',3,'12/leg',8),
+        BW('hc_bridge','Glute Bridge (DB on hips)',3,'20'),
+        BW('hc_band','Banded Lateral Walk',3,'20 steps'),
+        I('hc_cardio1','Cardio finisher 8 min: 40s work / 20s rest - high knees, squat jumps, mountain climbers')
+      ]},
+      {d:'2',title:'Upper + Core',ex:[
+        A('hc_press','DB Floor / Bench Press',3,'12',8),
+        A('hc_row','One-Arm DB Row',3,'12/arm',8),
+        A('hc_ohp','DB Shoulder Press',3,'12',8),
+        A('hc_lat','Lateral Raise / Band Pull-Apart',3,'15',9),
+        A('hc_arms','DB Curl + Overhead Triceps',3,'12',8),
+        I('hc_core','Core circuit (3 rounds): plank, bicycle crunch, dead bug')
+      ]},
+      {d:'3',title:'Glute Focus + Cardio',ex:[
+        A('hc_hipthrust','Hip Thrust (DB or feet-elevated bodyweight)',4,'15',8),
+        A('hc_bss','Bulgarian Split Squat (DB)',3,'10/leg',8),
+        BW('hc_stepup','Step-Ups (chair or bench)',3,'12/leg'),
+        A('hc_kickback','Banded Glute Kickback',3,'15/leg',9),
+        I('hc_cardio3','Cardio 10 min: steady jog-in-place / jump rope, or 6 rounds 30s on / 30s off')
+      ]},
+      {d:'4',title:'Full-Body Conditioning',ex:[
+        A('hc_thruster','DB Thruster (squat-to-press)',4,'12',8),
+        A('hc_dl','DB Deadlift',3,'12',8),
+        BW('hc_pushup','Push-ups (knee or full)',3,'AMRAP'),
+        A('hc_lunge2','Walking Lunge',3,'12/leg',8),
+        I('hc_finish','Finisher (3 rounds): 30s jumping jacks, 30s squat pulses, 30s mountain climbers, 30s rest')
+      ]}
+    ]
+  };
+})();
 const HARDCODED_KEYS=Object.keys(PROGRAMS);   // built-in programs (structure not editable)
 let PROG_KEYS=Object.keys(PROGRAMS);
 const round5=x=>Math.round(x/5)*5;
@@ -303,7 +387,7 @@ function renderBoard(){ const bEl=$('progBoard'), prog=activeProg(), a=asgn(prog
     const unlocked=weekUnlocked(prog,wi,bypass); let dc=0,dt=0; prog.days.forEach(d=>{ if(d.ex.some(e=>e.wk[wi])){ dt++; if(dayInfo(wi,d).allDone) dc++; } });
     const dl=prog.deload===wi+1;
     html+='<div class="pwk'+(adminView?(' wkfold'+(expandedWeeks.has(wi)?'':' collapsed')):'')+'" data-wk="'+wi+'"><div class="pwkhd'+(adminView?' wktoggle':'')+'"><span class="wn">Week '+(wi+1)+(dl?' \u00b7 Deload':'')+'</span><span class="focus">'+dc+'/'+dt+' days</span>'+(adminView?'<span class="wkchev">\u25be</span>':'')+'</div>';
-    if(!unlocked){ html+=(adminView?'<div class="wkbody">':'')+'<div class="lockbox">Locked \u2014 complete 3 of 4 days in Week '+wi+' to unlock.</div>'+(adminView?'</div>':'')+'</div>'; continue; }
+    if(!unlocked){ html+=(adminView?'<div class="wkbody">':'')+'<div class="lockbox">Locked - complete the previous week to unlock.</div>'+(adminView?'</div>':'')+'</div>'; continue; }
     html+=(adminView?'<div class="wkbody">':'');
     prog.days.forEach(d=>{ html+=dayHTML(wi,d,tm,canEdit,prog,bypass); });
     html+=(adminView?'</div>':'')+'</div>';
@@ -313,9 +397,9 @@ function renderBoard(){ const bEl=$('progBoard'), prog=activeProg(), a=asgn(prog
 function dayHTML(wi,day,tm,edit,prog,bypass){ const di=dayInfo(wi,day); if(!di.exs.length) return '';
   const admin=!!(session&&session.role==='Admin');
   const badge=di.allDone?'<span class="dbadge done">done</span>':'<span class="dbadge">'+di.done.size+'/'+di.req.length+'</span>';
-  let h='<div class="pday"><div class="pdayhd">Day '+day.d+' \u2014 '+esc(day.title)+' '+badge+'</div>';
+  let h='<div class="pday"><div class="pdayhd">Day '+day.d+' - '+esc(day.title)+' '+badge+'</div>';
   if(di.started!==null&&!di.allDone&&!bypass){ const left=12-(Date.now()-di.started)/3600000;
-    h+='<div class="note" style="margin:0 0 8px;color:var(--teal)">'+(left>0?left.toFixed(1)+' h left to finish this day':'window expired \u2014 will reset')+'</div>'; }
+    h+='<div class="note" style="margin:0 0 8px;color:var(--teal)">'+(left>0?left.toFixed(1)+' h left to finish this day':'window expired - will reset')+'</div>'; }
   day.ex.forEach(ex=>{ const p=presc(ex,wi,tm,prog); if(!p) return;
     if(p.type==='info'){ h+='<div class="pex" style="display:block"><div class="presc" style="font-style:italic">'+esc(ex.name)+'</div></div>'; return; }
     const lg=logOf(wi+1,day.d,ex.k);
