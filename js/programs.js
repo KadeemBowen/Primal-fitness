@@ -13,11 +13,24 @@ function mainTriple(prefix,name,lift){
 const a3=(s,r,rpe)=>[[s,r,null,rpe],[s,r,null,rpe],[s,r,null,rpe],null];          // accessory, same 3 wks then deload-out
 const a3v=(s,r,s3,r3,rpe)=>[[s,r,null,rpe],[s,r,null,rpe],[s3,r3,null,rpe],null];  // accessory with a wk-3 variation
 
+// Test-week helpers (used by Primal Foundation Week 5)
+const _tGoal=(k,name,lift)=>({k,name,lift,t:'goal',wk:[null,null,null,null,[1,1,null,null]]});
+const _tWarm=(k,name,lift,goalK,pct,r)=>({k,name,lift,t:'warmup',goalK,pct,wk:[null,null,null,null,[1,r,pct,null]]});
+const _tDay=(d,title,prefix,lift,liftName)=>({d,title,ex:[
+  _tGoal(prefix+'goal',liftName+' \u2014 Goal weight',lift),
+  _tWarm(prefix+'w1',liftName+' \u2014 Warm-up 1 (40%)',lift,prefix+'goal',0.40,5),
+  _tWarm(prefix+'w2',liftName+' \u2014 Warm-up 2 (60%)',lift,prefix+'goal',0.60,3),
+  _tWarm(prefix+'w3',liftName+' \u2014 Warm-up 3 (75%)',lift,prefix+'goal',0.75,2),
+  _tWarm(prefix+'w4',liftName+' \u2014 Warm-up 4 (85%)',lift,prefix+'goal',0.85,1),
+  _tWarm(prefix+'w5',liftName+' \u2014 Warm-up 5 (92%)',lift,prefix+'goal',0.92,1),
+  _tWarm(prefix+'top',liftName+' \u2014 Max attempt',lift,prefix+'goal',1.00,1)
+]});
+
 const PROGRAMS={
   'primal-foundation':{
-    name:'Primal Foundation (4-wk base)',
-    weeks:4, deload:4, refTM:{squat:100,bench:100,deadlift:100},
-    note:'Base block. Mains run off training max (90% of 1RM). Week 4 is a deload \u2014 light mains only. Best AMRAP from Week 3 sets the maxes for Primal Infant.',
+    name:'Primal Foundation (4-wk base + test)',
+    weeks:5, deload:4, test:5, refTM:{squat:100,bench:100,deadlift:100},
+    note:'Base block. Mains run off training max (90% of 1RM). Week 4 is a deload \u2014 light mains only. Week 5 is a TEST WEEK \u2014 enter your goal for each lift on its day and the app will suggest warm-ups. Best AMRAP from Week 3 sets the maxes for Primal Infant.',
     days:[
       {d:'1',title:'Bench Focus',ex:[
         ...mainTriple('fbp','Bench Press','bench'),
@@ -52,7 +65,10 @@ const PROGRAMS={
         {k:'pullupF',name:'Pull-ups (superset)',lift:null,t:'bw',wk:[[3,'5+','BW',null],[3,'5+','BW',null],[3,'5+','BW',null],null]},
         {k:'shrugs',name:'Shrugs (superset)',lift:null,t:'rpe',wk:a3(3,'15-20','9')},
         {k:'cablerow',name:'Machine / Cable Row',lift:null,t:'rpe',wk:a3(3,12,'7-8')}
-      ]}
+      ]},
+      _tDay('5','Test Week \u2014 Bench Max','ftbn','bench','Bench Press'),
+      _tDay('6','Test Week \u2014 Squat Max','ftsq','squat','Competition Squat'),
+      _tDay('7','Test Week \u2014 Deadlift Max','ftdl','deadlift','Competition Deadlift')
     ]
   },
   'primal-infant':{
@@ -304,6 +320,13 @@ function presc(ex,wkIdx,tm,prog){ const e=ex.wk[wkIdx]; if(!e) return null;
   const s=e[0],r=e[1],w=e[2],rpe=e[3];
   let type=ex.t||(w===null?'acc':(w==='BW'?'bw':'w')), wt=null;
   if(type==='info') return {type:'info'};
+  if(type==='goal') return {type:'goal',s,r,rpe};
+  if(type==='warmup'){
+    const goalLog=progLogs.find(l=>l.week===wkIdx+1&&l.ex===ex.goalK&&l.weight!=null);
+    if(!goalLog) return {type:'warmup',locked:true,s,r,pct:ex.pct};
+    const wt=round5((ex.pct||0)*goalLog.weight);
+    return {type:'warmup',s,r,wt,pct:ex.pct,goal:goalLog.weight};
+  }
   if(type==='w'){ wt=round5((w/prog.refTM[ex.lift])*(tm[ex.lift]||0)); }
   return {s,r,rpe,type,wt}; }
 function logOf(wk,day,k){ return progLogs.find(l=>l.week===wk&&l.day===day&&l.ex===k); }
@@ -311,7 +334,11 @@ function dayInfo(wkIdx,day){ const exs=day.ex.filter(e=>e.wk[wkIdx]); const req=
   const logs=progLogs.filter(l=>l.week===wkIdx+1&&l.day===day.d); const done=new Set(logs.map(l=>l.ex));
   const allDone=req.length>0&&req.every(k=>done.has(k));
   let started=null; logs.forEach(l=>{const t=new Date(l.at).getTime(); if(started===null||t<started)started=t;});
-  const expired=started!==null&&!allDone&&(Date.now()-started)>12*3600*1000;
+  // Only auto-reset days that were barely started (<50% of required exercises logged).
+  // This protects mostly-complete days from being wiped if the required list changes or a log went missing.
+  const doneReq=req.filter(k=>done.has(k)).length;
+  const scarce=req.length===0||(doneReq/req.length)<0.5;
+  const expired=started!==null&&!allDone&&scarce&&(Date.now()-started)>12*3600*1000;
   return {exs,req,done,allDone,started,expired}; }
 function weekUnlocked(prog,wkIdx,bypass){ if(bypass) return true; if(wkIdx===0) return true;
   let total=0,c=0; prog.days.forEach(d=>{ if(d.ex.some(e=>e.wk[wkIdx-1])){ total++; if(dayInfo(wkIdx-1,d).allDone) c++; } });
@@ -385,25 +412,60 @@ function renderBoard(){ const bEl=$('progBoard'), prog=activeProg(), a=asgn(prog
   html+='<div class="note" style="margin:2px 0 12px">'+esc(nm)+' \u00b7 Training max: SQ '+round5(tm.squat)+' \u00b7 BP '+round5(tm.bench)+' \u00b7 DL '+round5(tm.deadlift)+' lb'+(own?'':(adminView?' \u00b7 admin edit':' \u00b7 view only'))+(bypass?' \u00b7 weeks unlocked':'')+'</div>';
   for(let wi=0;wi<prog.weeks;wi++){
     const unlocked=weekUnlocked(prog,wi,bypass); let dc=0,dt=0; prog.days.forEach(d=>{ if(d.ex.some(e=>e.wk[wi])){ dt++; if(dayInfo(wi,d).allDone) dc++; } });
-    const dl=prog.deload===wi+1;
-    html+='<div class="pwk'+(adminView?(' wkfold'+(expandedWeeks.has(wi)?'':' collapsed')):'')+'" data-wk="'+wi+'"><div class="pwkhd'+(adminView?' wktoggle':'')+'"><span class="wn">Week '+(wi+1)+(dl?' \u00b7 Deload':'')+'</span><span class="focus">'+dc+'/'+dt+' days</span>'+(adminView?'<span class="wkchev">\u25be</span>':'')+'</div>';
+    const dl=prog.deload===wi+1, tst=prog.test===wi+1;
+    html+='<div class="pwk'+(adminView?(' wkfold'+(expandedWeeks.has(wi)?'':' collapsed')):'')+'" data-wk="'+wi+'"><div class="pwkhd'+(adminView?' wktoggle':'')+'"><span class="wn">Week '+(wi+1)+(dl?' \u00b7 Deload':'')+(tst?' \u00b7 TEST WEEK':'')+'</span><span class="focus">'+dc+'/'+dt+' days</span>'+(adminView?'<span class="wkchev">\u25be</span>':'')+'</div>';
     if(!unlocked){ html+=(adminView?'<div class="wkbody">':'')+'<div class="lockbox">Locked - complete the previous week to unlock.</div>'+(adminView?'</div>':'')+'</div>'; continue; }
     html+=(adminView?'<div class="wkbody">':'');
-    prog.days.forEach(d=>{ html+=dayHTML(wi,d,tm,canEdit,prog,bypass); });
+    prog.days.forEach(d=>{ html+=dayHTML(wi,d,tm,canEdit,prog,bypass,a); });
     html+=(adminView?'</div>':'')+'</div>';
   }
   bEl.innerHTML=html;
 }
-function dayHTML(wi,day,tm,edit,prog,bypass){ const di=dayInfo(wi,day); if(!di.exs.length) return '';
+function dayHTML(wi,day,tm,edit,prog,bypass,a){ const di=dayInfo(wi,day); if(!di.exs.length) return '';
   const admin=!!(session&&session.role==='Admin');
   const badge=di.allDone?'<span class="dbadge done">done</span>':'<span class="dbadge">'+di.done.size+'/'+di.req.length+'</span>';
   let h='<div class="pday"><div class="pdayhd">Day '+day.d+' - '+esc(day.title)+' '+badge+'</div>';
   if(di.started!==null&&!di.allDone&&!bypass){ const left=12-(Date.now()-di.started)/3600000;
     h+='<div class="note" style="margin:0 0 8px;color:var(--teal)">'+(left>0?left.toFixed(1)+' h left to finish this day':'window expired - will reset')+'</div>'; }
+  const asgKey={squat:'sq',bench:'bp',deadlift:'dl'};
   day.ex.forEach(ex=>{ const p=presc(ex,wi,tm,prog); if(!p) return;
     if(p.type==='info'){ h+='<div class="pex" style="display:block"><div class="presc" style="font-style:italic">'+esc(ex.name)+'</div></div>'; return; }
     const lg=logOf(wi+1,day.d,ex.k);
     const key=wi+'|'+day.d+'|'+ex.k, editingThis=admin&&lg&&editingLog===key;
+    // ---- Test-week: goal weight input ----
+    if(p.type==='goal'){
+      const progMax=(ex.lift&&a)?a[asgKey[ex.lift]]:null;
+      const hint=progMax?' <span class="note" style="font-weight:400">\u00b7 Program 1RM: '+progMax+' lb</span>':'';
+      h+='<div class="pex"><div class="pexname">'+esc(ex.name)+hint+'<div class="presc">Enter your goal for today \u2014 warm-ups below will scale to it.</div></div>';
+      if(lg&&!editingThis){
+        h+='<div class="pexr"><span class="okmark">\ud83c\udfaf Goal: '+lg.weight+' lb</span>'+(admin?' <button class="btn sm ghost editbtn" data-editlog="'+key+'">Edit</button>':'')+(edit?' <button class="xbtn" data-undo="'+key+'">\u2715</button>':'')+'</div>';
+      } else if(edit){
+        const wid='lw_'+wi+'_'+day.d+'_'+ex.k;
+        const wv=editingThis?(lg.weight!=null?lg.weight:''):(progMax||'');
+        h+='<div class="pexr"><input id="'+wid+'" class="field mono pin" type="number" inputmode="decimal" value="'+wv+'" placeholder="goal lb" /><button class="btn sm" data-log="'+key+'|goal">'+(editingThis?'Save':'Set goal')+'</button>'+(editingThis?' <button class="btn sm ghost" data-canceledit="1">Cancel</button>':'')+'</div>';
+      } else h+='<div class="pexr"><span class="note">\u2014</span></div>';
+      h+='</div>';
+      return;
+    }
+    // ---- Test-week: warm-up / attempt (scaled off logged goal) ----
+    if(p.type==='warmup'){
+      if(p.locked){
+        h+='<div class="pex"><div class="pexname">'+esc(ex.name)+'<div class="presc">Set the goal weight above to unlock</div></div><div class="pexr"><span class="note">\ud83d\udd12 locked</span></div></div>';
+        return;
+      }
+      const pctTxt=p.pct===1?'goal':(Math.round(p.pct*100)+'% of goal');
+      const detail=p.wt+' lb ('+Math.round(p.wt/2.20462)+' kg) \u00b7 '+pctTxt;
+      h+='<div class="pex"><div class="pexname">'+esc(ex.name)+'<div class="presc">'+p.s+' \u00d7 '+fmtReps(p.r)+' \u00b7 '+detail+'</div></div>';
+      if(lg&&!editingThis){ const act=lg.weight!=null?(lg.weight+' lb \u00d7 '+(lg.reps||0)):((lg.reps||0)+' reps');
+        h+='<div class="pexr"><span class="okmark">\u2713 '+act+'</span>'+(admin?' <button class="btn sm ghost editbtn" data-editlog="'+key+'">Edit</button>':'')+(edit?' <button class="xbtn" data-undo="'+key+'">\u2715</button>':'')+'</div>';
+      } else if(edit){ const wid='lw_'+wi+'_'+day.d+'_'+ex.k, rid='lr_'+wi+'_'+day.d+'_'+ex.k;
+        const wv=editingThis?(lg.weight!=null?lg.weight:''):p.wt;
+        const rv=editingThis?(lg.reps!=null?lg.reps:''):(typeof p.r==='number'?p.r:'');
+        h+='<div class="pexr"><input id="'+wid+'" class="field mono pin" type="number" inputmode="decimal" value="'+wv+'" placeholder="lb" /><input id="'+rid+'" class="field mono pin" type="number" inputmode="numeric" value="'+rv+'" placeholder="reps" /><button class="btn sm" data-log="'+key+'|warmup">'+(editingThis?'Save':'Done')+'</button>'+(editingThis?' <button class="btn sm ghost" data-canceledit="1">Cancel</button>':'')+'</div>';
+      } else h+='<div class="pexr"><span class="note">\u2014</span></div>';
+      h+='</div>';
+      return;
+    }
     let detail;
     if(p.type==='w') detail=p.wt+' lb ('+Math.round(p.wt/2.20462)+' kg)'+(prog.pct&&ex.wk[wi]?' \u00b7 '+ex.wk[wi][2]+'% 1RM':'')+(p.rpe!=null?' \u00b7 RPE '+p.rpe:'');
     else if(p.type==='bw') detail='BW'+(p.rpe!=null?' \u00b7 RPE '+p.rpe:'');
@@ -453,8 +515,9 @@ document.addEventListener('click',async e=>{
   if(e.target.closest('[data-canceledit]')){ editingLog=null; renderBoard(); return; }
   const lg=e.target.closest('[data-log]');
   if(lg){ const p=lg.dataset.log.split('|'), wi=p[0], day=p[1], k=p[2], type=p[3];
-    const rid=$('lr_'+wi+'_'+day+'_'+k); let weight=null, reps=+rid.value||0;
-    if(type==='w'||type==='rpe'){ weight=+$('lw_'+wi+'_'+day+'_'+k).value||0; if(!weight||!reps){toast('Enter weight and reps');return;} }
+    const rid=$('lr_'+wi+'_'+day+'_'+k); let weight=null, reps=rid?(+rid.value||0):0;
+    if(type==='goal'){ weight=+$('lw_'+wi+'_'+day+'_'+k).value||0; if(!weight){toast('Enter goal weight');return;} reps=1; }
+    else if(type==='w'||type==='rpe'||type==='warmup'){ weight=+$('lw_'+wi+'_'+day+'_'+k).value||0; if(!weight||!reps){toast('Enter weight and reps');return;} }
     else if(!reps){ toast('Enter reps'); return; }
     try{ const wasDone=(()=>{const d=activeProg()&&activeProg().days.find(x=>x.d===day);return d?dayInfo(+wi,d).allDone:false;})();
       if(logOf(+wi+1,day,k)) await unlogExercise({program:progProgram,week:+wi+1,day:day,ex:k});   // overwrite when editing
