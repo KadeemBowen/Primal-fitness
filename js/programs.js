@@ -111,7 +111,6 @@ const PROGRAMS={
     ]
   }
 };
-PROGRAMS['primal-grown-gorilla']={name:'Primal Grown Gorilla (8-wk)',weeks:8,deload:4,refTM:{squat:390,bench:250,deadlift:524},note:'8-week peak. Working weights scale off training max (90% of 1RM), rounded to 5 lb. Week 4 is a deload.',days:JSON.parse(JSON.stringify(PROGRAMS['primal-infant'].days))};
 PROGRAMS['primal-gorilla-fire']=(function(){
   const l4=(s,r,ws)=>[[s,r,ws[0],null],[s,r,ws[1],null],[s,r,ws[2],null],[s,r,ws[3],null],null];
   const w5=(s,r,w)=>[null,null,null,null,[s,r,w,null]];
