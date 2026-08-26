@@ -251,6 +251,7 @@ let PROG_KEYS=Object.keys(PROGRAMS);
 const round5=x=>Math.round(x/5)*5;
 let progAthlete=null, progProgram=null, progLogs=[], amUnit='lb';
 let expandedWeeks=new Set();   // which week indices the admin has opened (kept across board re-renders)
+let amOpen=null;               // athlete ids expanded in "Users & their programs" (null = seed with your own)
 let editingLog=null;           // "wi|day|ex" of the log entry an admin is currently editing
 // Log/unlog: for the athlete's own board use the self functions; when an admin
 // edits another athlete's board, target that athlete via the admin functions.
@@ -348,6 +349,7 @@ function renderProg(){
   const admin=session&&session.role==='Admin', aEl=$('asgnAdmin'), bEl=$('progBoard');
   if(!aEl||!bEl) return;
   expandedWeeks.clear();   // entering the tab / fresh render starts with weeks collapsed
+  amOpen=null;             // and with only your own programs expanded
   if(!session){ aEl.innerHTML=''; bEl.innerHTML=''; return; }
   if(admin){
     const pOpts=PROG_KEYS.map(k=>'<option value="'+k+'">'+esc(PROGRAMS[k].name)+'</option>').join('');
@@ -383,18 +385,25 @@ function renderAmList(){ const el=$('amList'); if(!el) return;
   assignments.forEach(a=>{ let g=groups.find(x=>x.uid===a.user_id);
     if(!g){ const u=users.find(x=>x.id===a.user_id); groups.push(g={uid:a.user_id,nm:u?u.u:'(unknown)',progs:[]}); }
     g.progs.push(a); });
-  groups.sort((a,b)=>a.nm.localeCompare(b.nm));
-  el.innerHTML=groups.map(g=>'<div class="asgnuser"><div class="asgnname">'+esc(g.nm)
-      +(g.progs.length>1?'<span class="tag">'+g.progs.length+' programs</span>':'')+'</div>'
+  const me=session?session.id:null;
+  // your own programs sit on top and start open; everyone else stays collapsed until tapped
+  if(amOpen===null){ amOpen=new Set(); if(me) amOpen.add(me); }
+  groups.sort((a,b)=>(a.uid===me?-1:b.uid===me?1:a.nm.localeCompare(b.nm)));
+  el.innerHTML=groups.map(g=>'<div class="asgnuser'+(amOpen.has(g.uid)?'':' collapsed')+'" data-amuser="'+g.uid+'">'
+    +'<div class="asgnname">'+esc(g.nm)+(g.uid===me?'<span class="tag">you</span>':'')
+      +(g.progs.length>1?'<span class="tag">'+g.progs.length+' programs</span>':'')+'<span class="amchev">▾</span></div>'
+    +'<div class="asgnprogs">'
     +g.progs.map(a=>{const pn=(PROGRAMS[a.program]||{}).name||a.program;
       return '<div class="asgnrow"><div><b>'+esc(pn)+'</b><div class="note" style="margin:2px 0 0">SQ '+a.sq+' \u00b7 BP '+a.bp+' \u00b7 DL '+a.dl+' lb</div></div>'
         +'<div style="white-space:nowrap"><button class="btn sm ghost" data-view="'+a.user_id+'|'+a.program+'">View</button> <button class="btn sm ghost" data-unas="'+a.user_id+'|'+a.program+'">Remove</button></div></div>';}).join('')
-    +'</div>').join(''); }
+    +'</div></div>').join(''); }
 async function saveAssign(){ const uid=$('amUser').value, program=$('amProg').value; if(!uid){toast('Pick an athlete');return;}
   let sq=+$('amSq').value||0,bp=+$('amBp').value||0,dl=+$('amDl').value||0;
   if(amUnit==='kg'){sq*=2.20462;bp*=2.20462;dl*=2.20462;}
   try{ await rpc('app_assign_program',{p_token:session.token,p_user:uid,p_program:program,p_sq:Math.round(sq),p_bp:Math.round(bp),p_dl:Math.round(dl)});
-    await loadAssignments(); renderAmList(); progAthlete=uid; progProgram=program; await loadAndRenderBoard(); toast('Program assigned'); }
+    await loadAssignments();
+    if(amOpen) amOpen.add(uid);   // expand the athlete you just assigned
+    renderAmList(); progAthlete=uid; progProgram=program; await loadAndRenderBoard(); toast('Program assigned'); }
   catch(e){ toast(e.message); } }
 
 async function loadAndRenderBoard(){ const bEl=$('progBoard'); if(!bEl) return; editingLog=null;
@@ -511,6 +520,9 @@ function celebrate(msg){
 document.addEventListener('click',async e=>{
   const wt=e.target.closest('.pwkhd.wktoggle');
   if(wt){ const pw=wt.closest('.pwk'); if(pw){ const wi=+pw.dataset.wk; if(pw.classList.toggle('collapsed')) expandedWeeks.delete(wi); else expandedWeeks.add(wi); } return; }
+  const an=e.target.closest('.asgnname');
+  if(an){ const box=an.closest('[data-amuser]'); if(box){ const uid=box.dataset.amuser;
+    if(box.classList.toggle('collapsed')) amOpen.delete(uid); else amOpen.add(uid); } return; }
   const pg=e.target.closest('[data-prog]');
   if(pg){ progProgram=pg.dataset.prog; expandedWeeks.clear(); await loadAndRenderBoard(); return; }
   const v=e.target.closest('[data-view]');
