@@ -378,9 +378,18 @@ function fillAmFromAssignment(){ const su=$('amUser'),sp=$('amProg'); if(!su||!s
   $('amSq').value=a?cv(a.sq):''; $('amBp').value=a?cv(a.bp):''; $('amDl').value=a?cv(a.dl):''; }
 function renderAmList(){ const el=$('amList'); if(!el) return;
   if(!assignments.length){ el.innerHTML='<div class="note">No athletes assigned yet.</div>'; return; }
-  el.innerHTML=assignments.map(a=>{const u=users.find(x=>x.id===a.user_id),nm=u?u.u:'(unknown)',pn=(PROGRAMS[a.program]||{}).name||a.program;
-    return '<div class="asgnrow"><div><b>'+esc(nm)+'</b><div class="note" style="margin:2px 0 0">'+esc(pn)+' \u00b7 SQ '+a.sq+' \u00b7 BP '+a.bp+' \u00b7 DL '+a.dl+' lb</div></div>'
-      +'<div style="white-space:nowrap"><button class="btn sm ghost" data-view="'+a.user_id+'|'+a.program+'">View</button> <button class="btn sm ghost" data-unas="'+a.user_id+'|'+a.program+'">Remove</button></div></div>';}).join(''); }
+  // Group by athlete: one row per assignment made a lifter with two programs look like two users.
+  const groups=[];
+  assignments.forEach(a=>{ let g=groups.find(x=>x.uid===a.user_id);
+    if(!g){ const u=users.find(x=>x.id===a.user_id); groups.push(g={uid:a.user_id,nm:u?u.u:'(unknown)',progs:[]}); }
+    g.progs.push(a); });
+  groups.sort((a,b)=>a.nm.localeCompare(b.nm));
+  el.innerHTML=groups.map(g=>'<div class="asgnuser"><div class="asgnname">'+esc(g.nm)
+      +(g.progs.length>1?'<span class="tag">'+g.progs.length+' programs</span>':'')+'</div>'
+    +g.progs.map(a=>{const pn=(PROGRAMS[a.program]||{}).name||a.program;
+      return '<div class="asgnrow"><div><b>'+esc(pn)+'</b><div class="note" style="margin:2px 0 0">SQ '+a.sq+' \u00b7 BP '+a.bp+' \u00b7 DL '+a.dl+' lb</div></div>'
+        +'<div style="white-space:nowrap"><button class="btn sm ghost" data-view="'+a.user_id+'|'+a.program+'">View</button> <button class="btn sm ghost" data-unas="'+a.user_id+'|'+a.program+'">Remove</button></div></div>';}).join('')
+    +'</div>').join(''); }
 async function saveAssign(){ const uid=$('amUser').value, program=$('amProg').value; if(!uid){toast('Pick an athlete');return;}
   let sq=+$('amSq').value||0,bp=+$('amBp').value||0,dl=+$('amDl').value||0;
   if(amUnit==='kg'){sq*=2.20462;bp*=2.20462;dl*=2.20462;}
