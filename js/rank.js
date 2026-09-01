@@ -59,7 +59,8 @@ $('rankOut').addEventListener('click',async e=>{
   set('fName',l.name);set('fBw',l.bw);set('fAge',l.age);set('fSq',l.sq);set('fBp',l.bp);set('fDl',l.dl);set('fGsq',l.gsq);set('fGbp',l.gbp);set('fGdl',l.gdl);
   $('saveBtn').textContent='Update lifter';$('cancelEdit').style.display='block';
   $('addCard').classList.remove('collapsed');
-  window.scrollTo({top:0,behavior:'smooth'}); renderRank();
+  // <main> is the scroll container now, not the window
+  document.querySelector('main').scrollTo({top:0,behavior:'smooth'}); renderRank();
 });
 document.querySelectorAll('[data-sort]').forEach(p=>p.onclick=()=>{sortBy=p.dataset.sort;document.querySelectorAll('[data-sort]').forEach(x=>x.classList.toggle('on',x===p));renderRank();});
 document.querySelectorAll('#rankMode button').forEach(b=>b.onclick=()=>{document.querySelectorAll('#rankMode button').forEach(x=>x.classList.toggle('on',x===b));rankMode=b.dataset.v;renderRank();});
