@@ -162,6 +162,122 @@ PROGRAMS['primal-gorilla-fire']=(function(){
   };
 })();
 
+/* ===== Meet prep: Silverback (deadlift build) -> Peak (meet peak) =====
+   Both blocks are pct:true — every main-lift number below is a PERCENT of the e1RM entered
+   on the assignment, not a weight. Re-assign with fresh e1RMs after each test and the whole
+   block re-prices itself. Meet/mock days scale off the goal you enter on the day instead. */
+PROGRAMS['primal-silverback']=(function(){
+  const A =(s,r,rpe)=>[[s,r,null,rpe],[s,r,null,rpe],[s,r,null,rpe],[s,r,null,rpe]];   // accessory, all 4 wks
+  const A3=(s,r,rpe)=>[[s,r,null,rpe],[s,r,null,rpe],[s,r,null,rpe],null];             // accessory, drops out wk 4
+  return {
+    name:'Primal Silverback (4-wk deadlift build)',
+    weeks:4, deload:0, pct:true,
+    refTM:{squat:100,bench:100,deadlift:100},
+    note:'Oct 5 – Nov 1. Bridge block between Gorilla Through Fire and the meet peak — the pull is the project, squat and bench are held and nudged. Every main lift is a PERCENT of the e1RM you enter, so assign this with the numbers you finish the Gorilla test week on and it prices itself. Wk 1 is deliberately light — you are still paying off Gorilla.',
+    days:[
+      {d:'1',title:'Squat Heavy + Bench Volume',ex:[
+        {k:'svsq',name:'Competition Squat — top set',lift:'squat',t:'w',wk:[[1,5,75,7],[1,5,78,7.5],[1,3,84,8],[1,3,88,8]]},
+        {k:'svsqbo',name:'Competition Squat — back-off',lift:'squat',t:'w',wk:[[3,5,70,7],[3,5,72,7],[3,4,78,7.5],[2,3,82,7.5]]},
+        {k:'svbnv',name:'Competition Bench 0-1-0 (volume)',lift:'bench',t:'w',wk:[[4,6,65,7],[4,6,68,7],[4,5,72,7.5],[3,4,75,7.5]]},
+        {k:'svrow',name:'Barbell Row',lift:null,t:'rpe',wk:A(4,8,'7-8')},
+        {k:'svlegcurl',name:'Leg Curl',lift:null,t:'rpe',wk:A(3,10,'8')},
+        {k:'svcore',name:'Weighted Core',lift:null,t:'acc',wk:A(3,12,null)}
+      ]},
+      {d:'2',title:'Deadlift Heavy + Bench Heavy',ex:[
+        {k:'svdl',name:'Competition Deadlift — top set',lift:'deadlift',t:'w',wk:[[1,3,78,7],[1,3,82,8],[1,2,88,8],[1,1,93,8.5]]},
+        {k:'svdlbo',name:'Competition Deadlift — back-off',lift:'deadlift',t:'w',wk:[[3,3,72,7],[3,3,75,7.5],[3,2,80,7.5],[2,2,83,7.5]]},
+        {k:'svbn',name:'Competition Bench 0-1-0 — top set',lift:'bench',t:'w',wk:[[1,5,75,7],[1,5,78,7.5],[1,3,85,8],[1,3,89,8]]},
+        {k:'svbnbo',name:'Competition Bench — back-off',lift:'bench',t:'w',wk:[[3,5,70,7],[3,5,73,7],[3,4,77,7.5],[2,3,81,7.5]]},
+        {k:'svpull',name:'Pull-ups',lift:null,t:'bw',wk:[[3,'AMRAP','BW',8],[3,'AMRAP','BW',8],[3,'AMRAP','BW',8],[2,'AMRAP','BW',7]]},
+        {k:'svtri',name:'Tricep extension',lift:null,t:'rpe',wk:A(3,12,'8')}
+      ]},
+      {d:'3',title:'Squat Volume + Bench Variation',ex:[
+        {k:'svsqv',name:'Competition Squat (volume)',lift:'squat',t:'w',wk:[[4,5,65,7],[4,5,68,7],[4,4,72,7.5],[3,3,75,7]]},
+        {k:'svpsq',name:'Pause Squat (3 sec)',lift:'squat',t:'w',wk:[[3,3,60,7],[3,3,62,7],[3,3,65,7.5],null]},
+        {k:'svspoto',name:'Spoto / Larsen Press',lift:'bench',t:'w',wk:[[3,5,65,7],[3,5,68,7],[3,5,70,7.5],[3,4,72,7.5]]},
+        {k:'svcg',name:'Close-grip Bench',lift:'bench',t:'w',wk:[[3,8,62,7],[3,8,64,7],[3,6,67,7.5],null]},
+        {k:'svlegpress',name:'Leg Press',lift:null,t:'rpe',wk:A3(4,'12-15','8-9')},
+        {k:'svlat',name:'Lat Pulldown',lift:null,t:'rpe',wk:A(3,10,'8')}
+      ]},
+      {d:'4',title:'Deadlift Variation & Weak Points',ex:[
+        {k:'svdef',name:'Deficit Deadlift (1.5 in)',lift:'deadlift',t:'w',wk:[[3,4,62,7],[3,4,65,7.5],[3,3,68,8],null]},
+        {k:'svpdl',name:'Paused Deadlift (2 sec below knee)',lift:'deadlift',t:'w',wk:[null,null,null,[3,2,72,7]]},
+        {k:'svrdl',name:'Romanian Deadlift',lift:'deadlift',t:'w',wk:[[3,8,48,7],[3,8,50,7],[3,6,53,7.5],[2,8,46,6]]},
+        {k:'svohp',name:'Overhead Press',lift:null,t:'rpe',wk:[[4,6,null,'7'],[4,6,null,'7'],[3,6,null,'7-8'],[3,6,null,'7']]},
+        {k:'svrow2',name:'Chest-supported Row',lift:null,t:'rpe',wk:A(4,10,'8')},
+        {k:'svreardelt',name:'Rear delts + face pulls',lift:null,t:'acc',wk:A(3,15,null)},
+        {k:'svabs',name:'Weighted Core',lift:null,t:'rpe',wk:A(3,10,'8')}
+      ]}
+    ]
+  };
+})();
+PROGRAMS['primal-peak']=(function(){
+  // Rows that only run in some weeks (0-indexed): only([1,3],row) = weeks 2 and 4.
+  const only=(wks,row)=>[0,1,2,3].map(i=>wks.indexOf(i)>=0?row.slice():null);
+  const info=(k,name,wks)=>({k,name,lift:null,t:'info',wk:only(wks,[1,1,null,null])});
+  // A full platform run for one lift: enter the 3rd-attempt goal, everything else scales off it.
+  // Same keys serve the Wk-2 mock meet and the Wk-4 meet - goals are looked up per week.
+  const meet=(pfx,lift,label,wks)=>[
+    {k:pfx+'g', name:label+' — 3rd attempt goal',    lift:lift,t:'goal',                        wk:only(wks,[1,1,null,null])},
+    {k:pfx+'w1',name:label+' — Warm-up 1 (40%)',     lift:lift,t:'warmup',goalK:pfx+'g',pct:0.40,wk:only(wks,[1,5,0.40,null])},
+    {k:pfx+'w2',name:label+' — Warm-up 2 (55%)',     lift:lift,t:'warmup',goalK:pfx+'g',pct:0.55,wk:only(wks,[1,3,0.55,null])},
+    {k:pfx+'w3',name:label+' — Warm-up 3 (68%)',     lift:lift,t:'warmup',goalK:pfx+'g',pct:0.68,wk:only(wks,[1,2,0.68,null])},
+    {k:pfx+'w4',name:label+' — Warm-up 4 (78%)',     lift:lift,t:'warmup',goalK:pfx+'g',pct:0.78,wk:only(wks,[1,1,0.78,null])},
+    {k:pfx+'a1',name:label+' — OPENER (90%)',        lift:lift,t:'warmup',goalK:pfx+'g',pct:0.90,wk:only(wks,[1,1,0.90,null])},
+    {k:pfx+'a2',name:label+' — 2nd attempt (96%)',   lift:lift,t:'warmup',goalK:pfx+'g',pct:0.96,wk:only(wks,[1,1,0.96,null])},
+    {k:pfx+'a3',name:label+' — 3rd attempt (goal)',  lift:lift,t:'warmup',goalK:pfx+'g',pct:1.00,wk:only(wks,[1,1,1.00,null])}
+  ];
+  const MEET=[1,3];   // weeks 2 (mock) and 4 (meet)
+  return {
+    name:'Primal Peak (4-wk meet peak)',
+    weeks:4, deload:0, test:4, pct:true,
+    refTM:{squat:100,bench:100,deadlift:100},
+    note:'Nov 2 – Nov 29, meet Sunday Nov 29. Every main lift is a PERCENT of the e1RM you enter — assign this with the numbers you finish Silverback on. Wk 1 heavy triples · Wk 2 peak singles + MOCK MEET Sat Nov 14 · Wk 3 openers · Wk 4 taper then compete. Day 3 is the platform day every week. On mock and meet day enter your 3rd-attempt goal and the app prices the warm-ups and all three attempts off it. Nothing after Nov 14 adds fitness — no hero singles in the taper.',
+    days:[
+      {d:'1',title:'Squat Heavy + Bench Volume  (Mon)',ex:[
+        {k:'pksq',name:'Competition Squat',lift:'squat',t:'w',wk:[[4,3,83,7.5],[2,2,85,8],[3,2,80,7],[2,2,60,5]]},
+        {k:'pkbnv',name:'Competition Bench 0-1-0 (volume, commands)',lift:'bench',t:'w',wk:[[4,4,77,7.5],[3,2,85,8],[3,3,75,7],[2,3,60,5]]},
+        {k:'pkrow',name:'Row of choice',lift:null,t:'rpe',wk:[[4,8,null,'7-8'],[3,8,null,'7'],[3,10,null,'6'],null]},
+        {k:'pkcore',name:'Core',lift:null,t:'acc',wk:[[3,12,null,null],[3,12,null,null],[2,12,null,null],null]},
+        info('pkt4','Taper week — these are speed touches. Fast and easy, then walk away.',[3])
+      ]},
+      {d:'2',title:'Deadlift + Bench Heavy  (Wed / Tue in meet week)',ex:[
+        {k:'pkdl',name:'Competition Deadlift',lift:'deadlift',t:'w',wk:[[3,3,83,7.5],[2,3,65,6],[2,2,80,7.5],[2,2,55,5]]},
+        {k:'pkbn',name:'Competition Bench 0-1-0 — heavy',lift:'bench',t:'w',wk:[[4,3,83,7.5],[3,3,70,6],[3,3,77,7],[1,3,55,5]]},
+        {k:'pkohp',name:'Overhead Press',lift:null,t:'rpe',wk:[[3,6,null,'7'],[3,6,null,'6'],[2,6,null,'6'],null]},
+        {k:'pkpull',name:'Pull-ups',lift:null,t:'bw',wk:[[3,'AMRAP','BW',7],[2,'AMRAP','BW',6],[2,'AMRAP','BW',6],null]},
+        info('pkw2','Light and fast — the mock meet is Saturday. Do not chase weight today.',[1]),
+        info('pkw4','Last session before the meet. Tue Nov 24, then rest Wed–Sat.',[3])
+      ]},
+      {d:'3',title:'Platform Day  (Wk1 technique · Wk2 MOCK MEET · Wk3 openers · Wk4 MEET)',ex:[
+        // --- Week 1: technique / commands ---
+        {k:'pksq3',name:'Competition Squat — technique triples',lift:'squat',t:'w',wk:[[3,3,78,7],null,null,null]},
+        {k:'pkbn3',name:'Competition Bench 0-1-0 — commands',lift:'bench',t:'w',wk:[[3,4,73,7],null,null,null]},
+        {k:'pkpsq',name:'Pause Squat (3 sec)',lift:'squat',t:'w',wk:[[3,3,65,7],null,null,null]},
+        // --- Week 3: opener rehearsal ---
+        info('pko0','Openers only. Weights you could triple. If an opener grinds, lower the meet opener — that is what today is for.',[2]),
+        {k:'pkosq',name:'Squat — Opener single',lift:'squat',t:'w',wk:[null,null,[1,1,90,7],null]},
+        {k:'pkobn',name:'Bench — Opener single',lift:'bench',t:'w',wk:[null,null,[1,1,90,7],null]},
+        {k:'pkobn2',name:'Bench — 2nd attempt single',lift:'bench',t:'w',wk:[null,null,[1,1,96,8],null]},
+        {k:'pkodl',name:'Deadlift — Opener single',lift:'deadlift',t:'w',wk:[null,null,[1,1,90,7],null]},
+        // --- Weeks 2 & 4: full platform run ---
+        info('pkm2','MOCK MEET · Sat Nov 14 — run it live: singlet, belt, commands, meet timing, squat then bench then deadlift. This is what sets your real openers.',[1]),
+        info('pkm4','MEET DAY · Sun Nov 29. Openers are locked from the mock — do not raise them in the warm-up room.',[3]),
+        ...meet('pmsq','squat','Squat',MEET),
+        ...meet('pmbn','bench','Bench',MEET),
+        ...meet('pmdl','deadlift','Deadlift',MEET),
+        info('pkm5','Take the 3rd only if the 2nd moved without a grind. A total on the board beats a bomb-out.',MEET)
+      ]},
+      {d:'4',title:'Accessories & Recovery (optional)',ex:[
+        {k:'pkrow2',name:'Chest-supported Row',lift:null,t:'rpe',wk:[[4,10,null,'8'],[3,10,null,'7'],[3,10,null,'7'],null]},
+        {k:'pkrd',name:'Rear delts + face pulls',lift:null,t:'acc',wk:[[3,15,null,null],[3,15,null,null],[3,15,null,null],null]},
+        {k:'pkham',name:'Leg Curl / Back Extension',lift:null,t:'rpe',wk:[[3,12,null,'7-8'],[3,12,null,'7'],[2,12,null,'6'],null]},
+        {k:'pkarms',name:'Arms (curl + triceps)',lift:null,t:'rpe',wk:[[3,12,null,'8'],[3,12,null,'7'],[2,12,null,'6'],null]}
+      ]}
+    ]
+  };
+})();
+
 /* ===== Female-focused hypertrophy programs (weights are % of 1RM where a barbell lift is used) ===== */
 (function(){
   const W=4;
