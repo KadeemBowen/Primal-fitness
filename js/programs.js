@@ -537,8 +537,8 @@ async function loadAndRenderBoard(){ const bEl=$('progBoard'); if(!bEl) return; 
 function fmtReps(r){ return r==='AMRAP'?'AMRAP':r; }
 function renderBoard(){ const bEl=$('progBoard'), prog=activeProg(), a=asgn(progAthlete,progProgram);
   const u=users.find(x=>x.id===progAthlete), nm=u?u.u:'', own=progAthlete===session.id, bypass=own&&session.role==='Admin', tm=curTMs(a,prog);
-  const adminView=session.role==='Admin';   // admins can collapse each week
-  const canEdit=own||adminView;              // admins can log/edit any athlete's entries
+  const adminView=session.role==='Admin';   // admins can log/edit any athlete's board
+  const canEdit=own||adminView;              // everyone folds their own weeks; only admins edit others'
   const my=assignmentsFor(progAthlete);
   let html='';
   if(my.length>1){ html+='<div class="seg" style="margin:2px 0 10px">'+my.map(x=>'<button data-prog="'+x.program+'" class="'+(x.program===progProgram?'on':'')+'">'+esc(PROGRAMS[x.program].name.split(' (')[0])+'</button>').join('')+'</div>'; }
@@ -546,11 +546,11 @@ function renderBoard(){ const bEl=$('progBoard'), prog=activeProg(), a=asgn(prog
   for(let wi=0;wi<prog.weeks;wi++){
     const unlocked=weekUnlocked(prog,wi,bypass); let dc=0,dt=0; prog.days.forEach(d=>{ if(d.ex.some(e=>e.wk[wi])){ dt++; if(dayInfo(wi,d).allDone) dc++; } });
     const dl=prog.deload===wi+1, tst=prog.test===wi+1;
-    html+='<div class="pwk'+(adminView?(' wkfold'+(expandedWeeks.has(wi)?'':' collapsed')):'')+'" data-wk="'+wi+'"><div class="pwkhd'+(adminView?' wktoggle':'')+'"><span class="wn">Week '+(wi+1)+(dl?' \u00b7 Deload':'')+(tst?' \u00b7 TEST WEEK':'')+'</span><span class="focus">'+dc+'/'+dt+' days</span>'+(adminView?'<span class="wkchev">\u25be</span>':'')+'</div>';
-    if(!unlocked){ html+=(adminView?'<div class="wkbody">':'')+'<div class="lockbox">Locked - complete the previous week to unlock.</div>'+(adminView?'</div>':'')+'</div>'; continue; }
-    html+=(adminView?'<div class="wkbody">':'');
+    html+='<div class="pwk wkfold'+(expandedWeeks.has(wi)?'':' collapsed')+'" data-wk="'+wi+'"><div class="pwkhd wktoggle"><span class="wn">Week '+(wi+1)+(dl?' \u00b7 Deload':'')+(tst?' \u00b7 TEST WEEK':'')+'</span><span class="focus">'+dc+'/'+dt+' days</span><span class="wkchev">\u25be</span></div>';
+    if(!unlocked){ html+='<div class="wkbody"><div class="lockbox">Locked - complete the previous week to unlock.</div></div></div>'; continue; }
+    html+='<div class="wkbody">';
     prog.days.forEach(d=>{ html+=dayHTML(wi,d,tm,canEdit,prog,bypass,a); });
-    html+=(adminView?'</div>':'')+'</div>';
+    html+='</div></div>';
   }
   bEl.innerHTML=html;
 }
