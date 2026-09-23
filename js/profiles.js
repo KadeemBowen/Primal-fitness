@@ -7,6 +7,37 @@ function videoHTML(url){if(!url)return '';const id=ytId(url);
   return id?'<iframe class="videoembed" src="https://www.youtube.com/embed/'+id+'" allowfullscreen></iframe>'
            :'<a class="btn full" style="margin-top:14px" href="'+esc(url)+'" target="_blank" rel="noopener">Watch video ↗</a>';}
 function lifterFor(u){ return lifters.find(x=>x.name&&x.name.trim().toLowerCase()===u.u.trim().toLowerCase()); }
+
+/* ===== Local records + qualifying total, for the lifter's class and its neighbours ===== */
+const kg1=v=>(v==null?'-':(Math.round(v*10)/10).toString());
+function standardsHTML(lf){
+  const band=wclassBand(lf.bw,lf.sex); if(!band.length) return '';
+  const rows=band.map(b=>Object.assign({},b,standards[lf.sex+'|'+b.cls]||{}));
+  if(!rows.some(r=>r.sq!=null||r.bp!=null||r.dl!=null||r.total!=null||r.qual!=null)){
+    return '<div class="note" style="margin-top:14px;align-self:flex-start">Local Records ('+(lf.sex==='M'?'Men':'Women')+', kg)</div>'
+      +'<div class="note" style="margin-top:6px">No records entered for these classes yet.</div>';
+  }
+  const hd='<div class="note" style="margin-top:14px;align-self:flex-start">Local Records ('+(lf.sex==='M'?'Men':'Women')+', kg)</div>';
+  let h=hd+'<div class="stdwrap"><table class="stdtbl"><thead><tr><th>Class</th><th>SQ</th><th>BP</th><th>DL</th><th>Total</th></tr></thead><tbody>'
+    +rows.map(r=>'<tr'+(r.current?' class="cur"':'')+'><td class="cls">'+esc(r.cls)+' kg'+(r.current?'<span class="tag">you</span>':'')+'</td>'
+      +'<td>'+kg1(r.sq)+'</td><td>'+kg1(r.bp)+'</td><td>'+kg1(r.dl)+'</td><td>'+kg1(r.total)+'</td></tr>').join('')
+    +'</tbody></table></div>';
+  // Qualifying total: measured against the competition best total (kg).
+  const me=rows.find(r=>r.current), ct=(lf.sq||0)+(lf.bp||0)+(lf.dl||0);
+  if(me&&me.qual!=null){
+    const diff=ct-me.qual, got=diff>=0;
+    h+='<div class="note" style="margin-top:14px;align-self:flex-start">Qualifying Total - '+esc(me.cls)+' kg</div>'
+      +'<div class="pstats"><div class="pstat"><span>Qualifying</span><b>'+kg1(me.qual)+'</b></div>'
+      +'<div class="pstat"><span>Your total</span><b>'+(ct?kg1(ct):'-')+'</b></div>'
+      +'<div class="pstat"><span>'+(got?'Over by':'Short by')+'</span><b style="color:var(--'+(got?'teal':'no')+')">'
+        +(ct?kg1(Math.abs(diff)):'-')+'</b></div></div>'
+      +'<div class="note" style="margin-top:6px;color:var(--'+(got?'teal':'muted')+')">'
+        +(!ct?'Enter a competition total to see the gap.'
+          :(diff===0?'Qualified - exactly on the standard.'
+          :(got?'Qualified - '+kg1(diff)+' kg over the standard.':'Need '+kg1(-diff)+' kg more to qualify.')))+'</div>';
+  }
+  return h;
+}
 function compTotal(u){ const lf=lifterFor(u); return lf?((lf.sq||0)+(lf.bp||0)+(lf.dl||0)):-1; }
 function hasProfileInfo(u){ const p=profiles[u.id]||{}, lf=lifterFor(u);
   const comp=lf&&((lf.sq||0)+(lf.bp||0)+(lf.dl||0))>0;
@@ -46,8 +77,41 @@ function carGo(dir){  // move to prev/next hero, looping past the ends
   const left=t.offsetLeft-(car.clientWidth-t.offsetWidth)/2;
   car.scrollTo({left:Math.max(0,left),behavior:'smooth'});
 }
+/* ===== Admin editor for local records + qualifying totals ===== */
+let stdSex='M';
+function renderStdAdmin(){
+  const el=$('stdAdmin'); if(!el) return;
+  if(!(session&&session.role==='Admin')){ el.innerHTML=''; return; }
+  const cls=wclassList(stdSex);
+  const f=(v)=>v==null?'':v;
+  el.innerHTML='<div class="card">'
+    +'<div class="seg" id="stdSexSeg" style="margin-bottom:10px">'
+      +'<button data-v="M" class="'+(stdSex==='M'?'on':'')+'">Men</button>'
+      +'<button data-v="F" class="'+(stdSex==='F'?'on':'')+'">Women</button></div>'
+    +'<div class="note" style="margin:-2px 0 10px">All values in kg. Leave a field blank to clear it.</div>'
+    +'<div class="stdwrap"><table class="stdtbl stdedit"><thead><tr><th>Class</th><th>SQ</th><th>BP</th><th>DL</th><th>Total</th><th>Qual</th><th></th></tr></thead><tbody>'
+    +cls.map(c=>{ const s=standards[stdSex+'|'+c]||{};
+      const inp=(k,v)=>'<td><input class="field mono stdin" type="number" inputmode="decimal" step="0.5" data-k="'+k+'" data-c="'+esc(c)+'" value="'+f(v)+'" /></td>';
+      return '<tr><td class="cls">'+esc(c)+'</td>'+inp('sq',s.sq)+inp('bp',s.bp)+inp('dl',s.dl)+inp('total',s.total)+inp('qual',s.qual)
+        +'<td><button class="btn sm" data-stdsave="'+esc(c)+'">Save</button></td></tr>'; }).join('')
+    +'</tbody></table></div></div>';
+  document.querySelectorAll('#stdSexSeg button').forEach(b=>b.onclick=()=>{ stdSex=b.dataset.v; renderStdAdmin(); });
+}
+document.addEventListener('click',async e=>{
+  const b=e.target.closest('[data-stdsave]'); if(!b) return;
+  const c=b.dataset.stdsave;
+  const val=k=>{ const i=document.querySelector('.stdin[data-k="'+k+'"][data-c="'+CSS.escape(c)+'"]');
+    return (i&&i.value!=='')?Number(i.value):null; };
+  try{
+    await rpc('app_set_standard',{p_token:session.token,p_sex:stdSex,p_wclass:c,
+      p_sq:val('sq'),p_bp:val('bp'),p_dl:val('dl'),p_total:val('total'),p_qual:val('qual')});
+    await loadStandards(); renderStdAdmin(); renderProfiles(); toast(c+' kg saved');
+  }catch(err){ toast(err.message); }
+});
+
 function renderProfiles(){
   const out=$('profilesOut'),title=$('profTitle');
+  renderStdAdmin();
   if(pView.mode==='list'){ title.textContent='Athlete profiles';
     const shown=users.filter(hasProfileInfo);
     const ranked=shown.slice().sort((a,b)=>compTotal(b)-compTotal(a));
@@ -82,6 +146,7 @@ function renderProfiles(){
       +tile('Squat',(lf.gsq||'-'))+tile('Bench',(lf.gbp||'-'))+tile('Deadlift',(lf.gdl||'-'))
       +tile('Total',(gt||'-'))+gtile('GL Points',(gt?ggl.toFixed(2):'-'))+tile('Total kg',(gt?Math.round(gt/2.20462):'-'))+'</div>';
   }
+  if(lf) stats+=standardsHTML(lf);
   title.textContent='Profile';
   out.innerHTML='<button class="btn sm ghost backbtn" data-back="list">‹ All profiles</button>'+
     '<div class="card pdetail">'+avatarHTML(p,u.u)+'<div class="dn">'+esc(u.u)+'</div>'+

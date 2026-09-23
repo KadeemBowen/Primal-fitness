@@ -18,6 +18,7 @@ function toast(msg){const t=$('toast');t.textContent=msg;t.classList.add('show')
 /* ===== state (in-memory; no local persistence) ===== */
 let session=null;              // {id, username, role, pw}
 let lifters=[], users=[], profiles={}, assignments=[];
+let standards={};   // local records + qualifying totals, keyed "<sex>|<wclass>"
 let form={sex:'M',eq:'Classic'}, sortBy='gl', fSex='all', fEq='all', editId=null, rankMode='comp';
 
 /* ===== data loading ===== */
@@ -25,8 +26,15 @@ async function loadLifters(){ const lf=await sb('lifters?select=*');
   lifters=(lf||[]).map(l=>({id:l.id,name:l.name,sex:l.sex,eq:l.equip,bw:Number(l.bw)||0,age:l.age_cat||'',sq:Number(l.sq)||0,bp:Number(l.bp)||0,dl:Number(l.dl)||0,gsq:Number(l.gsq)||0,gbp:Number(l.gbp)||0,gdl:Number(l.gdl)||0})); }
 async function loadUsers(){ const us=await rpc('app_list_users',{}); users=(us||[]).map(u=>({id:u.id,u:u.username,role:u.role})); }
 async function loadProfiles(){ const pf=await sb('profiles?select=*'); profiles={}; (pf||[]).forEach(p=>profiles[p.user_id]={bio:p.bio,video:p.video,img:p.img}); }
+const num=v=>(v==null||v===''?null:Number(v));
+// Missing table (not migrated yet) must not take the whole app down.
+async function loadStandards(){ standards={};
+  try{ const rows=await sb('standards?select=*');
+    (rows||[]).forEach(r=>standards[r.sex+'|'+r.wclass]={sex:r.sex,cls:r.wclass,
+      sq:num(r.sq),bp:num(r.bp),dl:num(r.dl),total:num(r.total),qual:num(r.qual_total)});
+  }catch(e){ standards={}; } }
 async function loadAll(){ if(typeof loadCustomPrograms==='function') await loadCustomPrograms();   // merge custom programs before assignments filter
-  await Promise.all([loadLifters(),loadUsers(),loadProfiles(),loadAssignments(),loadMyAlerts(),loadAdminAlerts()]); }
+  await Promise.all([loadLifters(),loadUsers(),loadProfiles(),loadAssignments(),loadStandards(),loadMyAlerts(),loadAdminAlerts()]); }
 
 /* ===== auth ===== */
 $('liBtn').onclick=doLogin;
@@ -82,3 +90,9 @@ function gl(total,bw,sex,eq){ if(!total||!bw)return 0; const c=GLC[sex+'-'+eq]; 
   const d=c[0]-c[1]*Math.exp(-c[2]*bw); return d<=0?0:total*100/d; }
 const MC=[53,59,66,74,83,93,105,120],WC=[43,47,52,57,63,69,76,84];
 function wclass(bw,sex){ const a=sex==='M'?MC:WC; if(!bw)return '–'; for(const c of a) if(bw<=c)return c+''; return a[a.length-1]+'+'; }
+// Every class for a sex, lightest first, with the open class last.
+function wclassList(sex){ const a=sex==='M'?MC:WC; return a.map(String).concat([a[a.length-1]+'+']); }
+// The lifter's class plus the one below and the one above (whichever exist).
+function wclassBand(bw,sex){ const list=wclassList(sex), cur=wclass(bw,sex), i=list.indexOf(cur);
+  if(i<0) return [];
+  return [list[i-1],cur,list[i+1]].filter(Boolean).map(c=>({cls:c,current:c===cur})); }

@@ -63,7 +63,7 @@
   .fold-hd::after{content:'\25BE';margin-left:auto;color:var(--text);font-size:21px;line-height:1;width:32px;height:32px;display:grid;place-items:center;transition:transform .18s}
   .fold.collapsed .fold-hd::after{transform:rotate(-90deg)}
   .fold.collapsed .fold-body{display:none}
-  body:not(.role-Admin) #asgnFold,body:not(.role-Admin) #usersProgFold{display:none}
+  body:not(.role-Admin) #asgnFold,body:not(.role-Admin) #usersProgFold,body:not(.role-Admin) #stdFold{display:none}
   .pwkhd.wktoggle{cursor:pointer}
   .pwkhd.wktoggle .focus{margin-left:auto}
   .wkchev{margin-left:6px;margin-right:-4px;color:var(--text);font-size:18px;line-height:1;width:28px;height:28px;display:grid;place-items:center;transition:transform .18s}
@@ -103,6 +103,17 @@
   tbody tr.me td:first-child{border-left:3px solid var(--teal)}
   .pstats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;width:100%;margin-top:8px}
   .pstat{border:1px solid var(--line);border-radius:10px;padding:9px 6px;text-align:center;background:var(--panel2)}
+  /* Local records / qualifying totals table */
+  .stdwrap{width:100%;overflow-x:auto;margin-top:8px}
+  .stdtbl{width:100%;border-collapse:collapse;font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums;font-size:12px}
+  .stdtbl th{font-family:'Oswald';font-weight:600;letter-spacing:.04em;text-transform:uppercase;font-size:10px;color:var(--muted);text-align:right;padding:7px 8px;border-bottom:1px solid var(--line);white-space:nowrap}
+  .stdtbl td{padding:8px;text-align:right;border-bottom:1px solid var(--line);white-space:nowrap;color:var(--text)}
+  .stdtbl tr:last-child td{border-bottom:none}
+  .stdtbl th:first-child,.stdtbl td.cls{text-align:left;font-family:'Inter',system-ui,sans-serif;font-weight:600}
+  .stdtbl tr.cur td{background:rgba(0,224,198,.07);color:var(--teal)}
+  .stdtbl tr.cur td.cls{color:var(--teal)}
+  .stdtbl .tag{margin-left:6px}
+  .stdedit .stdin{width:72px;padding:6px 7px;font-size:12px;text-align:right}
   .pstat span{display:block;font-size:9px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:3px}
   .pstat b{font-family:'JetBrains Mono';font-size:16px;font-weight:700}
   .asgnrow{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 0;border-top:1px solid var(--line)}
@@ -120,6 +131,12 @@
   .lockbox{padding:14px;color:var(--muted);font-size:13px}
   .pday{padding:10px 14px;border-top:1px solid var(--line)}
   .pdayhd{font-weight:600;font-size:13px;margin-bottom:8px}
+  .pdayhd.daytoggle{display:flex;align-items:center;gap:8px;min-height:44px;margin-bottom:0;cursor:pointer;user-select:none}
+  .pdayhd.daytoggle .dn{min-width:0}
+  .pday:not(.collapsed) .pdayhd.daytoggle{margin-bottom:8px}
+  .daychev{margin-left:auto;margin-right:-4px;color:var(--text);font-size:18px;line-height:1;width:28px;height:28px;display:grid;place-items:center;transition:transform .18s;flex:0 0 auto}
+  .pday.collapsed .daychev{transform:rotate(-90deg)}
+  .pday.collapsed .daybody{display:none}
   .dbadge{display:inline-block;font-size:10px;border:1px solid var(--line);border-radius:20px;padding:1px 8px;color:var(--muted);vertical-align:middle;margin-left:4px}
   .dbadge.done{border-color:var(--teal);color:var(--teal)}
   .pex{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:7px 0;border-top:1px solid rgba(255,255,255,.04)}

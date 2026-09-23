@@ -365,7 +365,8 @@ const HARDCODED_KEYS=Object.keys(PROGRAMS);   // built-in programs (structure no
 let PROG_KEYS=Object.keys(PROGRAMS);
 const round5=x=>Math.round(x/5)*5;
 let progAthlete=null, progProgram=null, progLogs=[], amUnit='lb';
-let expandedWeeks=new Set();   // which week indices the admin has opened (kept across board re-renders)
+let expandedWeeks=new Set();   // which week indices are open (kept across board re-renders)
+let expandedDays=new Set();    // which days are open, keyed "<weekIdx>|<day.d>"
 let amOpen=null;               // athlete ids expanded in "Users & their programs" (null = seed with your own)
 let editingLog=null;           // "wi|day|ex" of the log entry an admin is currently editing
 // Log/unlog: for the athlete's own board use the self functions; when an admin
@@ -463,7 +464,7 @@ function weekUnlocked(prog,wkIdx,bypass){ if(bypass) return true; if(wkIdx===0) 
 function renderProg(){
   const admin=session&&session.role==='Admin', aEl=$('asgnAdmin'), bEl=$('progBoard');
   if(!aEl||!bEl) return;
-  expandedWeeks.clear();   // entering the tab / fresh render starts with weeks collapsed
+  expandedWeeks.clear(); expandedDays.clear();   // entering the tab / fresh render starts collapsed
   amOpen=null;             // and with only your own programs expanded
   if(!session){ aEl.innerHTML=''; bEl.innerHTML=''; return; }
   if(admin){
@@ -557,7 +558,13 @@ function renderBoard(){ const bEl=$('progBoard'), prog=activeProg(), a=asgn(prog
 function dayHTML(wi,day,tm,edit,prog,bypass,a){ const di=dayInfo(wi,day); if(!di.exs.length) return '';
   const admin=!!(session&&session.role==='Admin');
   const badge=di.allDone?'<span class="dbadge done">done</span>':'<span class="dbadge">'+di.done.size+'/'+di.req.length+'</span>';
-  let h='<div class="pday"><div class="pdayhd">Day '+day.d+' - '+esc(day.title)+' '+badge+'</div>';
+  // Custom programs key days as 'd<id>', so "Day "+day.d would print "Day d0" in
+  // front of the title the admin typed. Built-ins key them '1'-'4' / 'A'-'D'.
+  const label=prog.custom?esc(day.title):('Day '+day.d+' - '+esc(day.title));
+  const dkey=wi+'|'+day.d, dopen=expandedDays.has(dkey);
+  let h='<div class="pday dayfold'+(dopen?'':' collapsed')+'" data-day="'+dkey+'">'
+    +'<div class="pdayhd daytoggle"><span class="dn">'+label+'</span>'+badge+'<span class="daychev">▾</span></div>'
+    +'<div class="daybody">';
   if(di.started!==null&&!di.allDone&&!bypass){ const left=12-(Date.now()-di.started)/3600000;
     h+='<div class="note" style="margin:0 0 8px;color:var(--teal)">'+(left>0?left.toFixed(1)+' h left to finish this day':'window expired - will reset')+'</div>'; }
   const asgKey={squat:'sq',bench:'bp',deadlift:'dl'};
@@ -616,7 +623,7 @@ function dayHTML(wi,day,tm,edit,prog,bypass,a){ const di=dayInfo(wi,day); if(!di
     } else h+='<div class="pexr"><span class="note">-</span></div>';
     h+='</div>';
   });
-  h+='</div>'; return h;
+  h+='</div></div>'; return h;   // close .daybody, then .pday
 }
 
 function celebrate(msg){
@@ -635,13 +642,15 @@ function celebrate(msg){
 document.addEventListener('click',async e=>{
   const wt=e.target.closest('.pwkhd.wktoggle');
   if(wt){ const pw=wt.closest('.pwk'); if(pw){ const wi=+pw.dataset.wk; if(pw.classList.toggle('collapsed')) expandedWeeks.delete(wi); else expandedWeeks.add(wi); } return; }
+  const dt2=e.target.closest('.pdayhd.daytoggle');
+  if(dt2){ const pd=dt2.closest('.pday'); if(pd){ const dk=pd.dataset.day; if(pd.classList.toggle('collapsed')) expandedDays.delete(dk); else expandedDays.add(dk); } return; }
   const an=e.target.closest('.asgnname');
   if(an){ const box=an.closest('[data-amuser]'); if(box){ const uid=box.dataset.amuser;
     if(box.classList.toggle('collapsed')) amOpen.delete(uid); else amOpen.add(uid); } return; }
   const pg=e.target.closest('[data-prog]');
-  if(pg){ progProgram=pg.dataset.prog; expandedWeeks.clear(); await loadAndRenderBoard(); return; }
+  if(pg){ progProgram=pg.dataset.prog; expandedWeeks.clear(); expandedDays.clear(); await loadAndRenderBoard(); return; }
   const v=e.target.closest('[data-view]');
-  if(v){ const pr=v.dataset.view.split('|'); progAthlete=pr[0]; progProgram=pr[1]; expandedWeeks.clear(); await loadAndRenderBoard(); $('progBoard').scrollIntoView({behavior:'smooth'}); return; }
+  if(v){ const pr=v.dataset.view.split('|'); progAthlete=pr[0]; progProgram=pr[1]; expandedWeeks.clear(); expandedDays.clear(); await loadAndRenderBoard(); $('progBoard').scrollIntoView({behavior:'smooth'}); return; }
   const un=e.target.closest('[data-unas]');
   if(un){ if(!confirm("Remove this program and all of the athlete's logs for it?")) return; const pr=un.dataset.unas.split('|');
     try{ await rpc('app_unassign_program',{p_token:session.token,p_user:pr[0],p_program:pr[1]}); await loadAssignments(); renderAmList();
