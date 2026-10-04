@@ -5,9 +5,9 @@ function mainTriple(prefix,name,lift){
   const rA=[5,5,3,5], rT=['5+','5+','3+',5];
   const e1=['4-5','4-5','4-5','5'], e2=['7','7','7','6'], e3=[8,8,9,'6'];
   return [
-    {k:prefix+'1',name:name+' - set 1',lift:lift,t:'w',wk:[0,1,2,3].map(i=>[1,rA[i],s1[i],e1[i]])},
-    {k:prefix+'2',name:name+' - set 2',lift:lift,t:'w',wk:[0,1,2,3].map(i=>[1,rA[i],s2[i],e2[i]])},
-    {k:prefix+'3',name:name+' - top set',lift:lift,t:'w',drive:true,wk:[0,1,2,3].map(i=>[1,rT[i],tp[i],e3[i]])}
+    {k:prefix+'1',name:name+' set 1',lift:lift,t:'w',wk:[0,1,2,3].map(i=>[1,rA[i],s1[i],e1[i]])},
+    {k:prefix+'2',name:name+' set 2',lift:lift,t:'w',wk:[0,1,2,3].map(i=>[1,rA[i],s2[i],e2[i]])},
+    {k:prefix+'3',name:name+' top set',lift:lift,t:'w',drive:true,wk:[0,1,2,3].map(i=>[1,rT[i],tp[i],e3[i]])}
   ];
 }
 const a3=(s,r,rpe)=>[[s,r,null,rpe],[s,r,null,rpe],[s,r,null,rpe],null];          // accessory, same 3 wks then deload-out
@@ -17,13 +17,13 @@ const a3v=(s,r,s3,r3,rpe)=>[[s,r,null,rpe],[s,r,null,rpe],[s3,r3,null,rpe],null]
 const _tGoal=(k,name,lift)=>({k,name,lift,t:'goal',wk:[null,null,null,null,[1,1,null,null]]});
 const _tWarm=(k,name,lift,goalK,pct,r)=>({k,name,lift,t:'warmup',goalK,pct,wk:[null,null,null,null,[1,r,pct,null]]});
 const _tDay=(d,title,prefix,lift,liftName)=>({d,title,ex:[
-  _tGoal(prefix+'goal',liftName+' - Goal weight',lift),
-  _tWarm(prefix+'w1',liftName+' - Warm-up 1 (40%)',lift,prefix+'goal',0.40,5),
-  _tWarm(prefix+'w2',liftName+' - Warm-up 2 (60%)',lift,prefix+'goal',0.60,3),
-  _tWarm(prefix+'w3',liftName+' - Warm-up 3 (75%)',lift,prefix+'goal',0.75,2),
-  _tWarm(prefix+'w4',liftName+' - Warm-up 4 (85%)',lift,prefix+'goal',0.85,1),
-  _tWarm(prefix+'w5',liftName+' - Warm-up 5 (92%)',lift,prefix+'goal',0.92,1),
-  _tWarm(prefix+'top',liftName+' - Max attempt',lift,prefix+'goal',1.00,1)
+  _tGoal(prefix+'goal',liftName+' Goal weight',lift),
+  _tWarm(prefix+'w1',liftName+' Warm-up 1 (40%)',lift,prefix+'goal',0.40,5),
+  _tWarm(prefix+'w2',liftName+' Warm-up 2 (60%)',lift,prefix+'goal',0.60,3),
+  _tWarm(prefix+'w3',liftName+' Warm-up 3 (75%)',lift,prefix+'goal',0.75,2),
+  _tWarm(prefix+'w4',liftName+' Warm-up 4 (85%)',lift,prefix+'goal',0.85,1),
+  _tWarm(prefix+'w5',liftName+' Warm-up 5 (92%)',lift,prefix+'goal',0.92,1),
+  _tWarm(prefix+'top',liftName+' Max attempt',lift,prefix+'goal',1.00,1)
 ]});
 
 const PROGRAMS={
@@ -66,9 +66,9 @@ const PROGRAMS={
         {k:'shrugs',name:'Shrugs (superset)',lift:null,t:'rpe',wk:a3(3,'15-20','9')},
         {k:'cablerow',name:'Machine / Cable Row',lift:null,t:'rpe',wk:a3(3,12,'7-8')}
       ]},
-      _tDay('5','Test Week - Bench Max','ftbn','bench','Bench Press'),
-      _tDay('6','Test Week - Squat Max','ftsq','squat','Competition Squat'),
-      _tDay('7','Test Week - Deadlift Max','ftdl','deadlift','Competition Deadlift')
+      _tDay('5','Test Week Bench Max','ftbn','bench','Bench Press'),
+      _tDay('6','Test Week Squat Max','ftsq','squat','Competition Squat'),
+      _tDay('7','Test Week Deadlift Max','ftdl','deadlift','Competition Deadlift')
     ]
   },
   'primal-infant':{
@@ -84,10 +84,10 @@ const PROGRAMS={
         {k:'cgbench',name:'Close-grip Bench',lift:'bench',t:'w',wk:[[3,8,155,7],[3,8,160,7],[3,8,165,7.5],[2,8,145,6],[3,6,170,7.5],[3,6,175,7.5],null,null]},
         {k:'rowsA',name:'Rows',lift:null,t:'bw',wk:[[4,8,'BW',7],[4,8,'BW',7],[4,8,'BW',7],[2,8,'BW',6],[3,8,'BW',7],[3,8,'BW',7],null,null]}
       ]},
-      {d:'B',title:'Sumo Deadlift Heavy + Larsen Press',ex:[
-        {k:'sumodl',name:'Sumo Deadlift',lift:'deadlift',t:'w',drive:true,wk:[[4,4,405,7],[4,3,420,7.5],[4,3,430,8],[3,3,385,6],[3,2,450,8],[3,2,465,8],[1,1,490,8.5],[3,3,350,6]]},
-        {k:'sumodl_bo',name:'Sumo DL (back-off)',lift:'deadlift',t:'w',wk:[null,null,null,null,[2,2,415,7],[2,2,425,7],[1,2,455,7.5],null]},
-        {k:'blockpull',name:'Sumo Block Pulls (2 in)',lift:'deadlift',t:'w',wk:[[3,3,415,7],[3,3,430,7.5],[3,3,440,8],[2,3,385,6],[3,2,460,8],[3,2,475,8],null,null]},
+      {d:'B',title:'Deadlift Heavy + Larsen Press',ex:[
+        {k:'sumodl',name:'Deadlift',lift:'deadlift',t:'w',drive:true,wk:[[4,4,405,7],[4,3,420,7.5],[4,3,430,8],[3,3,385,6],[3,2,450,8],[3,2,465,8],[1,1,490,8.5],[3,3,350,6]]},
+        {k:'sumodl_bo',name:'DL (back-off)',lift:'deadlift',t:'w',wk:[null,null,null,null,[2,2,415,7],[2,2,425,7],[1,2,455,7.5],null]},
+        {k:'blockpull',name:'Block Pulls (2 in)',lift:'deadlift',t:'w',wk:[[3,3,415,7],[3,3,430,7.5],[3,3,440,8],[2,3,385,6],[3,2,460,8],[3,2,475,8],null,null]},
         {k:'larsen',name:'Larsen Press',lift:'bench',t:'w',wk:[[3,5,165,7],[3,5,170,7],[3,5,175,7],[2,4,155,6],[3,5,180,7],[3,5,185,7],[2,4,175,7],null]},
         {k:'ohp',name:'OHP',lift:'bench',t:'w',wk:[[4,6,95,7],[4,6,100,7],[4,6,105,7],[3,6,85,6],[3,6,110,7],[3,6,115,7],[2,6,95,6],null]},
         {k:'pullupB',name:'Pull-ups',lift:null,t:'bw',wk:[[4,'AMRAP','BW',7],[4,'AMRAP','BW',7],[4,'AMRAP','BW',7],[2,'AMRAP','BW',6],[3,'AMRAP','BW',7],[3,'AMRAP','BW',7],[2,'AMRAP','BW',6],null]}
@@ -101,7 +101,7 @@ const PROGRAMS={
         {k:'tricep',name:'Tricep work',lift:null,t:'acc',wk:[[3,12,null,7],[3,12,null,7],[3,12,null,7],[2,10,null,6],[3,12,null,7],[3,12,null,7],null,null]}
       ]},
       {d:'D',title:'Accessories & Weak Points (Optional)',ex:[
-        {k:'pausedsumo',name:'Paused Sumo (2 sec off floor)',lift:'deadlift',t:'w',wk:[[3,3,320,7],[3,3,330,7],[3,3,340,7],[2,2,305,6],[3,2,350,7],[3,2,360,7],[2,2,370,7.5],null]},
+        {k:'pausedsumo',name:'Paused Deadlift (2 sec off floor)',lift:'deadlift',t:'w',wk:[[3,3,320,7],[3,3,330,7],[3,3,340,7],[2,2,305,6],[3,2,350,7],[3,2,360,7],[2,2,370,7.5],null]},
         {k:'rdl',name:'Romanian Deadlift',lift:'deadlift',t:'w',wk:[[3,6,225,7],[3,6,235,7],[3,6,245,7.5],[2,5,205,6],[3,6,255,7.5],[3,6,265,7.5],[2,5,245,7],null]},
         {k:'highbarsq',name:'High-bar Squat',lift:'squat',t:'w',wk:[[4,6,265,7],[4,6,275,7],[4,6,285,7.5],[2,5,245,6],[3,6,295,7.5],[3,6,305,7.5],[2,5,275,7],null]},
         {k:'pullupD',name:'Pull-ups',lift:null,t:'bw',wk:[[3,'AMRAP','BW',7],[3,'AMRAP','BW',7],[3,'AMRAP','BW',7],[2,'AMRAP','BW',6],[3,'AMRAP','BW',7],[3,'AMRAP','BW',7],[2,'AMRAP','BW',6],null]},
@@ -121,49 +121,49 @@ PROGRAMS['primal-gorilla-fire']=(function(){
     note:'Mixed Smolov Jr - high-frequency squat & bench, deadlift kept light. 4 loading weeks + a peak/test week. Enter each 1RM so the training max equals the block max (e.g. 417 / 272 / 583 lb \u2192 TM 375 / 245 / 525). The source deadlift TM looked high - enter a realistic deadlift number so the test attempts come out sane.',
     days:[
       {d:'1',title:'Heavy Volume \u00b7 6\u00d76  (Wk5: peak triples)',ex:[
-        {k:'gsq6',name:'Competition Squat - 6\u00d76',lift:'squat',t:'w',wk:l4(6,6,[265,275,285,295])},
-        {k:'gbn6',name:'Competition Bench 0-1-0 - 6\u00d76',lift:'bench',t:'w',wk:l4(6,6,[170,175,180,185])},
-        {k:'gsqpk',name:'Competition Squat - peak triples',lift:'squat',t:'w',wk:w5(3,3,295)},
-        {k:'gbnpk',name:'Competition Bench 0-1-0 - peak triples',lift:'bench',t:'w',wk:w5(3,3,205)},
-        {k:'gdlpk',name:'Sumo Deadlift - peak',lift:'deadlift',t:'w',wk:w5(2,2,405)}
+        {k:'gsq6',name:'Competition Squat 6\u00d76',lift:'squat',t:'w',wk:l4(6,6,[265,275,285,295])},
+        {k:'gbn6',name:'Competition Bench 0-1-0 6\u00d76',lift:'bench',t:'w',wk:l4(6,6,[170,175,180,185])},
+        {k:'gsqpk',name:'Competition Squat peak triples',lift:'squat',t:'w',wk:w5(3,3,295)},
+        {k:'gbnpk',name:'Competition Bench 0-1-0 peak triples',lift:'bench',t:'w',wk:w5(3,3,205)},
+        {k:'gdlpk',name:'Deadlift peak',lift:'deadlift',t:'w',wk:w5(2,2,405)}
       ]},
-      {d:'2',title:'Bench 7\u00d75 + Sumo  (Wk5: openers)',ex:[
-        {k:'gbn7',name:'Competition Bench 0-1-0 - 7\u00d75',lift:'bench',t:'w',wk:l4(7,5,[185,190,195,200])},
-        {k:'gdlsumo',name:'Sumo Deadlift - 4\u00d73',lift:'deadlift',t:'w',drive:true,wk:l4(4,3,[315,340,370,380])},
-        {k:'gdlpsumo',name:'Paused Sumo Deadlift - 2\u00d73',lift:'deadlift',t:'w',wk:l4(2,3,[270,285,300,310])},
-        {k:'gsqo2',name:'Competition Squat - heavy doubles',lift:'squat',t:'w',wk:w5(3,2,315)},
-        {k:'gsqo1',name:'Competition Squat - top single',lift:'squat',t:'w',wk:w5(1,1,335)},
-        {k:'gbno2',name:'Competition Bench 0-1-0 - heavy doubles',lift:'bench',t:'w',wk:w5(3,2,205)},
-        {k:'gbno1',name:'Competition Bench 0-1-0 - top single',lift:'bench',t:'w',wk:w5(1,1,215)},
-        {k:'gdlo2',name:'Sumo Deadlift - doubles',lift:'deadlift',t:'w',wk:w5(2,2,405)},
-        {k:'gdlo1',name:'Sumo Deadlift - top single',lift:'deadlift',t:'w',wk:w5(1,1,455)}
+      {d:'2',title:'Bench 7\u00d75 + Deadlift  (Wk5: openers)',ex:[
+        {k:'gbn7',name:'Competition Bench 0-1-0 7\u00d75',lift:'bench',t:'w',wk:l4(7,5,[185,190,195,200])},
+        {k:'gdlsumo',name:'Deadlift 4\u00d73',lift:'deadlift',t:'w',drive:true,wk:l4(4,3,[315,340,370,380])},
+        {k:'gdlpsumo',name:'Paused Deadlift 2\u00d73',lift:'deadlift',t:'w',wk:l4(2,3,[270,285,300,310])},
+        {k:'gsqo2',name:'Competition Squat heavy doubles',lift:'squat',t:'w',wk:w5(3,2,315)},
+        {k:'gsqo1',name:'Competition Squat top single',lift:'squat',t:'w',wk:w5(1,1,335)},
+        {k:'gbno2',name:'Competition Bench 0-1-0 heavy doubles',lift:'bench',t:'w',wk:w5(3,2,205)},
+        {k:'gbno1',name:'Competition Bench 0-1-0 top single',lift:'bench',t:'w',wk:w5(1,1,215)},
+        {k:'gdlo2',name:'Deadlift doubles',lift:'deadlift',t:'w',wk:w5(2,2,405)},
+        {k:'gdlo1',name:'Deadlift top single',lift:'deadlift',t:'w',wk:w5(1,1,455)}
       ]},
       {d:'3',title:'Squat 8\u00d74 + Bench  (Wk5: SBD TEST)',ex:[
-        {k:'gsq8',name:'Competition Squat - 8\u00d74',lift:'squat',t:'w',wk:l4(8,4,[300,310,315,330])},
-        {k:'gsqp',name:'Paused Squat - 3\u00d73',lift:'squat',t:'w',wk:l4(3,3,[265,270,280,285])},
-        {k:'gbn7b',name:'Competition Bench 0-1-0 - 7\u00d74',lift:'bench',t:'w',wk:l4(7,4,[195,200,205,210])},
+        {k:'gsq8',name:'Competition Squat 8\u00d74',lift:'squat',t:'w',wk:l4(8,4,[300,310,315,330])},
+        {k:'gsqp',name:'Paused Squat 3\u00d73',lift:'squat',t:'w',wk:l4(3,3,[265,270,280,285])},
+        {k:'gbn7b',name:'Competition Bench 0-1-0 7\u00d74',lift:'bench',t:'w',wk:l4(7,4,[195,200,205,210])},
         info('gwu','TEST DAY - warm-ups to opener: bar\u00d75, then 40 / 55 / 70 / 80 / 90% of opener for 5 / 3 / 2 / 1 / 1, then open.'),
-        {k:'gsqt1',name:'Squat - Opener',lift:'squat',t:'w',wk:w5(1,1,355)},
-        {k:'gsqt2',name:'Squat - 2nd attempt',lift:'squat',t:'w',wk:w5(1,1,375)},
-        {k:'gsqt3',name:'Squat - 3rd attempt',lift:'squat',t:'w',wk:w5(1,1,395)},
-        {k:'gbnt1',name:'Bench - Opener',lift:'bench',t:'w',wk:w5(1,1,235)},
-        {k:'gbnt2',name:'Bench - 2nd attempt',lift:'bench',t:'w',wk:w5(1,1,245)},
-        {k:'gbnt3',name:'Bench - 3rd attempt',lift:'bench',t:'w',wk:w5(1,1,255)},
-        {k:'gdlt1',name:'Deadlift - Opener',lift:'deadlift',t:'w',wk:w5(1,1,500)},
-        {k:'gdlt2',name:'Deadlift - 2nd attempt',lift:'deadlift',t:'w',wk:w5(1,1,525)},
-        {k:'gdlt3',name:'Deadlift - 3rd attempt',lift:'deadlift',t:'w',wk:w5(1,1,550)},
+        {k:'gsqt1',name:'Squat Opener',lift:'squat',t:'w',wk:w5(1,1,355)},
+        {k:'gsqt2',name:'Squat 2nd attempt',lift:'squat',t:'w',wk:w5(1,1,375)},
+        {k:'gsqt3',name:'Squat 3rd attempt',lift:'squat',t:'w',wk:w5(1,1,395)},
+        {k:'gbnt1',name:'Bench Opener',lift:'bench',t:'w',wk:w5(1,1,235)},
+        {k:'gbnt2',name:'Bench 2nd attempt',lift:'bench',t:'w',wk:w5(1,1,245)},
+        {k:'gbnt3',name:'Bench 3rd attempt',lift:'bench',t:'w',wk:w5(1,1,255)},
+        {k:'gdlt1',name:'Deadlift Opener',lift:'deadlift',t:'w',wk:w5(1,1,500)},
+        {k:'gdlt2',name:'Deadlift 2nd attempt',lift:'deadlift',t:'w',wk:w5(1,1,525)},
+        {k:'gdlt3',name:'Deadlift 3rd attempt',lift:'deadlift',t:'w',wk:w5(1,1,550)},
         info('gpot','Potential day max \u2248 107\u2013110% of training max - only chase the 3rd if the opener and 2nd move fast.')
       ]},
       {d:'4',title:'Squat 9\u00d73 + Bench 6\u00d73',ex:[
-        {k:'gsq3',name:'Competition Squat - 9\u00d73',lift:'squat',t:'w',drive:true,wk:l4(9,3,[320,330,340,345])},
-        {k:'gbn3',name:'Competition Bench 0-1-0 - 6\u00d73',lift:'bench',t:'w',drive:true,wk:l4(6,3,[200,205,210,215])}
+        {k:'gsq3',name:'Competition Squat 9\u00d73',lift:'squat',t:'w',drive:true,wk:l4(9,3,[320,330,340,345])},
+        {k:'gbn3',name:'Competition Bench 0-1-0 6\u00d73',lift:'bench',t:'w',drive:true,wk:l4(6,3,[200,205,210,215])}
       ]}
     ]
   };
 })();
 
 /* ===== Meet prep: Silverback (deadlift build) -> Peak (meet peak) =====
-   Both blocks are pct:true - every main-lift number below is a PERCENT of the e1RM entered
+   Both blocks are pct:true every main-lift number below is a PERCENT of the e1RM entered
    on the assignment, not a weight. Re-assign with fresh e1RMs after each test and the whole
    block re-prices itself. Meet/mock days scale off the goal you enter on the day instead. */
 PROGRAMS['primal-silverback']=(function(){
@@ -173,21 +173,21 @@ PROGRAMS['primal-silverback']=(function(){
     name:'Primal Silverback (4-wk deadlift build)',
     weeks:4, deload:0, pct:true,
     refTM:{squat:100,bench:100,deadlift:100},
-    note:'Oct 5 - Nov 1. Bridge block between Gorilla Through Fire and the meet peak - the pull is the project, squat and bench are held and nudged. Every main lift is a PERCENT of the e1RM you enter, so assign this with the numbers you finish the Gorilla test week on and it prices itself. Wk 1 is deliberately light - you are still paying off Gorilla.',
+    note:'Oct 5 - Nov 1. Bridge block between Gorilla Through Fire and the meet peak - the pull is the project, squat and bench are held and nudged. Every main lift is a PERCENT of the e1RM you enter, so assign this with the numbers you finish the Gorilla test week on and it prices itself. Floor-speed emphasis: deficit sumo (wks 1 & 3) and paused sumo off the floor (wks 2 & 4). Wk 1 is deliberately light - you are still paying off Gorilla.',
     days:[
       {d:'1',title:'Squat Heavy + Bench Volume',ex:[
-        {k:'svsq',name:'Competition Squat - top set',lift:'squat',t:'w',wk:[[1,5,75,7],[1,5,78,7.5],[1,3,84,8],[1,3,88,8]]},
-        {k:'svsqbo',name:'Competition Squat - back-off',lift:'squat',t:'w',wk:[[3,5,70,7],[3,5,72,7],[3,4,78,7.5],[2,3,82,7.5]]},
+        {k:'svsq',name:'Competition Squat top set',lift:'squat',t:'w',wk:[[1,5,75,7],[1,5,78,7.5],[1,3,84,8],[1,3,88,8]]},
+        {k:'svsqbo',name:'Competition Squat back-off',lift:'squat',t:'w',wk:[[3,5,70,7],[3,5,72,7],[3,4,78,7.5],[2,3,82,7.5]]},
         {k:'svbnv',name:'Competition Bench 0-1-0 (volume)',lift:'bench',t:'w',wk:[[4,6,65,7],[4,6,68,7],[4,5,72,7.5],[3,4,75,7.5]]},
         {k:'svrow',name:'Barbell Row',lift:null,t:'rpe',wk:A(4,8,'7-8')},
         {k:'svlegcurl',name:'Leg Curl',lift:null,t:'rpe',wk:A(3,10,'8')},
         {k:'svcore',name:'Weighted Core',lift:null,t:'acc',wk:A(3,12,null)}
       ]},
       {d:'2',title:'Deadlift Heavy + Bench Heavy',ex:[
-        {k:'svdl',name:'Competition Deadlift - top set',lift:'deadlift',t:'w',wk:[[1,3,78,7],[1,3,82,8],[1,2,88,8],[1,1,93,8.5]]},
-        {k:'svdlbo',name:'Competition Deadlift - back-off',lift:'deadlift',t:'w',wk:[[3,3,72,7],[3,3,75,7.5],[3,2,80,7.5],[2,2,83,7.5]]},
-        {k:'svbn',name:'Competition Bench 0-1-0 - top set',lift:'bench',t:'w',wk:[[1,5,75,7],[1,5,78,7.5],[1,3,85,8],[1,3,89,8]]},
-        {k:'svbnbo',name:'Competition Bench - back-off',lift:'bench',t:'w',wk:[[3,5,70,7],[3,5,73,7],[3,4,77,7.5],[2,3,81,7.5]]},
+        {k:'svdl',name:'Competition Deadlift top set',lift:'deadlift',t:'w',wk:[[1,3,78,7],[1,3,82,8],[1,2,88,8],[1,1,93,8.5]]},
+        {k:'svdlbo',name:'Competition Deadlift back-off',lift:'deadlift',t:'w',wk:[[3,3,72,7],[3,3,75,7.5],[3,2,80,7.5],[2,2,83,7.5]]},
+        {k:'svbn',name:'Competition Bench 0-1-0 top set',lift:'bench',t:'w',wk:[[1,5,75,7],[1,5,78,7.5],[1,3,85,8],[1,3,89,8]]},
+        {k:'svbnbo',name:'Competition Bench back-off',lift:'bench',t:'w',wk:[[3,5,70,7],[3,5,73,7],[3,4,77,7.5],[2,3,81,7.5]]},
         {k:'svpull',name:'Pull-ups',lift:null,t:'bw',wk:[[3,'AMRAP','BW',8],[3,'AMRAP','BW',8],[3,'AMRAP','BW',8],[2,'AMRAP','BW',7]]},
         {k:'svtri',name:'Tricep extension',lift:null,t:'rpe',wk:A(3,12,'8')}
       ]},
@@ -200,8 +200,8 @@ PROGRAMS['primal-silverback']=(function(){
         {k:'svlat',name:'Lat Pulldown',lift:null,t:'rpe',wk:A(3,10,'8')}
       ]},
       {d:'4',title:'Deadlift Variation & Weak Points',ex:[
-        {k:'svdef',name:'Deficit Deadlift (1.5 in)',lift:'deadlift',t:'w',wk:[[3,4,62,7],[3,4,65,7.5],[3,3,68,8],null]},
-        {k:'svpdl',name:'Paused Deadlift (2 sec below knee)',lift:'deadlift',t:'w',wk:[null,null,null,[3,2,72,7]]},
+        {k:'svdef',name:'Deficit Deadlift (1.5 in)',lift:'deadlift',t:'w',wk:[[3,4,62,7],null,[3,3,68,8],null]},
+        {k:'svpdl',name:'Paused Deadlift (2 sec off floor)',lift:'deadlift',t:'w',wk:[null,[3,2,63,7.5],null,[3,2,66,8]]},
         {k:'svrdl',name:'Romanian Deadlift',lift:'deadlift',t:'w',wk:[[3,8,48,7],[3,8,50,7],[3,6,53,7.5],[2,8,46,6]]},
         {k:'svohp',name:'Overhead Press',lift:null,t:'rpe',wk:[[4,6,null,'7'],[4,6,null,'7'],[3,6,null,'7-8'],[3,6,null,'7']]},
         {k:'svrow2',name:'Chest-supported Row',lift:null,t:'rpe',wk:A(4,10,'8')},
@@ -216,23 +216,23 @@ PROGRAMS['primal-peak']=(function(){
   const only=(wks,row)=>[0,1,2,3].map(i=>wks.indexOf(i)>=0?row.slice():null);
   const info=(k,name,wks)=>({k,name,lift:null,t:'info',wk:only(wks,[1,1,null,null])});
   // A full platform run for one lift: enter the 3rd-attempt goal, everything else scales off it.
-  // Same keys serve the Wk-2 mock meet and the Wk-4 meet - goals are looked up per week.
+  // Same keys serve the Wk-2 mock meet and the Wk-4 meet goals are looked up per week.
   const meet=(pfx,lift,label,wks)=>[
-    {k:pfx+'g', name:label+' - 3rd attempt goal',    lift:lift,t:'goal',                        wk:only(wks,[1,1,null,null])},
-    {k:pfx+'w1',name:label+' - Warm-up 1 (40%)',     lift:lift,t:'warmup',goalK:pfx+'g',pct:0.40,wk:only(wks,[1,5,0.40,null])},
-    {k:pfx+'w2',name:label+' - Warm-up 2 (55%)',     lift:lift,t:'warmup',goalK:pfx+'g',pct:0.55,wk:only(wks,[1,3,0.55,null])},
-    {k:pfx+'w3',name:label+' - Warm-up 3 (68%)',     lift:lift,t:'warmup',goalK:pfx+'g',pct:0.68,wk:only(wks,[1,2,0.68,null])},
-    {k:pfx+'w4',name:label+' - Warm-up 4 (78%)',     lift:lift,t:'warmup',goalK:pfx+'g',pct:0.78,wk:only(wks,[1,1,0.78,null])},
-    {k:pfx+'a1',name:label+' - OPENER (90%)',        lift:lift,t:'warmup',goalK:pfx+'g',pct:0.90,wk:only(wks,[1,1,0.90,null])},
-    {k:pfx+'a2',name:label+' - 2nd attempt (96%)',   lift:lift,t:'warmup',goalK:pfx+'g',pct:0.96,wk:only(wks,[1,1,0.96,null])},
-    {k:pfx+'a3',name:label+' - 3rd attempt (goal)',  lift:lift,t:'warmup',goalK:pfx+'g',pct:1.00,wk:only(wks,[1,1,1.00,null])}
+    {k:pfx+'g', name:label+' 3rd attempt goal',    lift:lift,t:'goal',                        wk:only(wks,[1,1,null,null])},
+    {k:pfx+'w1',name:label+' Warm-up 1 (40%)',     lift:lift,t:'warmup',goalK:pfx+'g',pct:0.40,wk:only(wks,[1,5,0.40,null])},
+    {k:pfx+'w2',name:label+' Warm-up 2 (55%)',     lift:lift,t:'warmup',goalK:pfx+'g',pct:0.55,wk:only(wks,[1,3,0.55,null])},
+    {k:pfx+'w3',name:label+' Warm-up 3 (68%)',     lift:lift,t:'warmup',goalK:pfx+'g',pct:0.68,wk:only(wks,[1,2,0.68,null])},
+    {k:pfx+'w4',name:label+' Warm-up 4 (78%)',     lift:lift,t:'warmup',goalK:pfx+'g',pct:0.78,wk:only(wks,[1,1,0.78,null])},
+    {k:pfx+'a1',name:label+' OPENER (90%)',        lift:lift,t:'warmup',goalK:pfx+'g',pct:0.90,wk:only(wks,[1,1,0.90,null])},
+    {k:pfx+'a2',name:label+' 2nd attempt (96%)',   lift:lift,t:'warmup',goalK:pfx+'g',pct:0.96,wk:only(wks,[1,1,0.96,null])},
+    {k:pfx+'a3',name:label+' 3rd attempt (goal)',  lift:lift,t:'warmup',goalK:pfx+'g',pct:1.00,wk:only(wks,[1,1,1.00,null])}
   ];
   const MEET=[1,3];   // weeks 2 (mock) and 4 (meet)
   return {
     name:'Primal Peak (4-wk meet peak)',
     weeks:4, deload:0, test:4, pct:true,
     refTM:{squat:100,bench:100,deadlift:100},
-    note:'Nov 2 - Nov 29, meet Sunday Nov 29. Every main lift is a PERCENT of the e1RM you enter - assign this with the numbers you finish Silverback on. Wk 1 heavy triples · Wk 2 peak singles + MOCK MEET Sat Nov 14 · Wk 3 openers · Wk 4 taper then compete. Day 3 is the platform day every week. On mock and meet day enter your 3rd-attempt goal and the app prices the warm-ups and all three attempts off it. Nothing after Nov 14 adds fitness - no hero singles in the taper.',
+    note:'Nov 2 - Nov 29, meet Sunday Nov 29. Every main lift is a PERCENT of the e1RM you enter - assign this with the numbers you finish Silverback on. Wk 1 heavy triples \u00b7 Wk 2 peak singles + MOCK MEET Sat Nov 14 \u00b7 Wk 3 openers \u00b7 Wk 4 taper then compete. Day 3 is the platform day every week. On mock and meet day enter your 3rd-attempt goal and the app prices the warm-ups and all three attempts off it. Wk 3 openers are enter-the-weight rows - type the exact openers the mock proved. Nothing after Nov 14 adds fitness - no hero singles in the taper.',
     days:[
       {d:'1',title:'Squat Heavy + Bench Volume  (Mon)',ex:[
         {k:'pksq',name:'Competition Squat',lift:'squat',t:'w',wk:[[4,3,83,7.5],[2,2,85,8],[3,2,80,7],[2,2,60,5]]},
@@ -243,26 +243,26 @@ PROGRAMS['primal-peak']=(function(){
       ]},
       {d:'2',title:'Deadlift + Bench Heavy  (Wed / Tue in meet week)',ex:[
         {k:'pkdl',name:'Competition Deadlift',lift:'deadlift',t:'w',wk:[[3,3,83,7.5],[2,3,65,6],[2,2,80,7.5],[2,2,55,5]]},
-        {k:'pkbn',name:'Competition Bench 0-1-0 - heavy',lift:'bench',t:'w',wk:[[4,3,83,7.5],[3,3,70,6],[3,3,77,7],[1,3,55,5]]},
+        {k:'pkbn',name:'Competition Bench 0-1-0 heavy',lift:'bench',t:'w',wk:[[4,3,83,7.5],[3,3,70,6],[3,3,77,7],[1,3,55,5]]},
         {k:'pkohp',name:'Overhead Press',lift:null,t:'rpe',wk:[[3,6,null,'7'],[3,6,null,'6'],[2,6,null,'6'],null]},
         {k:'pkpull',name:'Pull-ups',lift:null,t:'bw',wk:[[3,'AMRAP','BW',7],[2,'AMRAP','BW',6],[2,'AMRAP','BW',6],null]},
         info('pkw2','Light and fast - the mock meet is Saturday. Do not chase weight today.',[1]),
         info('pkw4','Last session before the meet. Tue Nov 24, then rest Wed-Sat.',[3])
       ]},
-      {d:'3',title:'Platform Day  (Wk1 technique · Wk2 MOCK MEET · Wk3 openers · Wk4 MEET)',ex:[
+      {d:'3',title:'Platform Day  (Wk1 technique \u00b7 Wk2 MOCK MEET \u00b7 Wk3 openers \u00b7 Wk4 MEET)',ex:[
         // --- Week 1: technique / commands ---
-        {k:'pksq3',name:'Competition Squat - technique triples',lift:'squat',t:'w',wk:[[3,3,78,7],null,null,null]},
-        {k:'pkbn3',name:'Competition Bench 0-1-0 - commands',lift:'bench',t:'w',wk:[[3,4,73,7],null,null,null]},
+        {k:'pksq3',name:'Competition Squat technique triples',lift:'squat',t:'w',wk:[[3,3,78,7],null,null,null]},
+        {k:'pkbn3',name:'Competition Bench 0-1-0 commands',lift:'bench',t:'w',wk:[[3,4,73,7],null,null,null]},
         {k:'pkpsq',name:'Pause Squat (3 sec)',lift:'squat',t:'w',wk:[[3,3,65,7],null,null,null]},
-        // --- Week 3: opener rehearsal ---
+        // --- Week 3: opener rehearsal (enter the exact weights the mock proved) ---
         info('pko0','Openers only. Weights you could triple. If an opener grinds, lower the meet opener - that is what today is for.',[2]),
-        {k:'pkosq',name:'Squat - Opener single',lift:'squat',t:'w',wk:[null,null,[1,1,90,7],null]},
-        {k:'pkobn',name:'Bench - Opener single',lift:'bench',t:'w',wk:[null,null,[1,1,90,7],null]},
-        {k:'pkobn2',name:'Bench - 2nd attempt single',lift:'bench',t:'w',wk:[null,null,[1,1,96,8],null]},
-        {k:'pkodl',name:'Deadlift - Opener single',lift:'deadlift',t:'w',wk:[null,null,[1,1,90,7],null]},
+        {k:'pkosq',name:'Squat Opener (enter weight)',lift:'squat',t:'goal',wk:[null,null,[1,1,null,null],null]},
+        {k:'pkobn',name:'Bench Opener (enter weight)',lift:'bench',t:'goal',wk:[null,null,[1,1,null,null],null]},
+        {k:'pkobn2',name:'Bench 2nd attempt (enter weight)',lift:'bench',t:'goal',wk:[null,null,[1,1,null,null],null]},
+        {k:'pkodl',name:'Deadlift Opener (enter weight)',lift:'deadlift',t:'goal',wk:[null,null,[1,1,null,null],null]},
         // --- Weeks 2 & 4: full platform run ---
-        info('pkm2','MOCK MEET · Sat Nov 14 - run it live: singlet, belt, commands, meet timing, squat then bench then deadlift. This is what sets your real openers.',[1]),
-        info('pkm4','MEET DAY · Sun Nov 29. Openers are locked from the mock - do not raise them in the warm-up room.',[3]),
+        info('pkm2','MOCK MEET \u00b7 Sat Nov 14 - run it live: singlet, belt, commands, meet timing, squat then bench then deadlift. This is what sets your real openers.',[1]),
+        info('pkm4','MEET DAY \u00b7 Sun Nov 29. Openers are locked from the mock - do not raise them in the warm-up room.',[3]),
         ...meet('pmsq','squat','Squat',MEET),
         ...meet('pmbn','bench','Bench',MEET),
         ...meet('pmdl','deadlift','Deadlift',MEET),
@@ -314,7 +314,7 @@ PROGRAMS['primal-peak']=(function(){
         A('gq_calf','Standing Calf Raise',4,'15',9)
       ]},
       {d:'4',title:'Glutes & Hamstrings + Core',ex:[
-        L('gq_dl','Sumo / Trap-Bar Deadlift','deadlift',3,[65,67.5,70,72.5],['8','8','8','6']),
+        L('gq_dl','Trap-Bar Deadlift','deadlift',3,[65,67.5,70,72.5],['8','8','8','6']),
         A('gq_bridge','Barbell Glute Bridge',3,'12',8),
         A('gq_legcurl','Seated Leg Curl',4,'12',9),
         A('gq_pull','Cable Pull-Through',3,'15',8),
@@ -334,7 +334,7 @@ PROGRAMS['primal-peak']=(function(){
         A('hc_lunge','Reverse Lunge',3,'12/leg',8),
         BW('hc_bridge','Glute Bridge (DB on hips)',3,'20'),
         BW('hc_band','Banded Lateral Walk',3,'20 steps'),
-        I('hc_cardio1','Cardio finisher 8 min: 40s work / 20s rest - high knees, squat jumps, mountain climbers')
+        I('hc_cardio1','Cardio finisher 8 min: 40s work / 20s rest high knees, squat jumps, mountain climbers')
       ]},
       {d:'2',title:'Upper + Core',ex:[
         A('hc_press','DB Floor / Bench Press',3,'12',8),
@@ -507,7 +507,7 @@ function renderAmList(){ const el=$('amList'); if(!el) return;
   groups.sort((a,b)=>(a.uid===me?-1:b.uid===me?1:a.nm.localeCompare(b.nm)));
   el.innerHTML=groups.map(g=>'<div class="asgnuser'+(amOpen.has(g.uid)?'':' collapsed')+'" data-amuser="'+g.uid+'">'
     +'<div class="asgnname">'+esc(g.nm)+(g.uid===me?'<span class="tag">you</span>':'')
-      +(g.progs.length>1?'<span class="tag">'+g.progs.length+' programs</span>':'')+'<span class="amchev">▾</span></div>'
+      +(g.progs.length>1?'<span class="tag">'+g.progs.length+' programs</span>':'')+'<span class="amchev">\u25be</span></div>'
     +'<div class="asgnprogs">'
     +g.progs.map(a=>{const pn=(PROGRAMS[a.program]||{}).name||a.program;
       return '<div class="asgnrow"><div><b>'+esc(pn)+'</b><div class="note" style="margin:2px 0 0">SQ '+a.sq+' \u00b7 BP '+a.bp+' \u00b7 DL '+a.dl+' lb</div></div>'
@@ -563,7 +563,7 @@ function dayHTML(wi,day,tm,edit,prog,bypass,a){ const di=dayInfo(wi,day); if(!di
   const label=prog.custom?esc(day.title):('Day '+day.d+' - '+esc(day.title));
   const dkey=wi+'|'+day.d, dopen=expandedDays.has(dkey);
   let h='<div class="pday dayfold'+(dopen?'':' collapsed')+'" data-day="'+dkey+'">'
-    +'<div class="pdayhd daytoggle"><span class="dn">'+label+'</span>'+badge+'<span class="daychev">▾</span></div>'
+    +'<div class="pdayhd daytoggle"><span class="dn">'+label+'</span>'+badge+'<span class="daychev">\u25be</span></div>'
     +'<div class="daybody">';
   if(di.started!==null&&!di.allDone&&!bypass){ const left=12-(Date.now()-di.started)/3600000;
     h+='<div class="note" style="margin:0 0 8px;color:var(--teal)">'+(left>0?left.toFixed(1)+' h left to finish this day':'window expired - will reset')+'</div>'; }
@@ -635,7 +635,7 @@ function celebrate(msg){
     const c=colors[i%colors.length], rot=(Math.random()*720-360), sway=(Math.random()*2-1)*90;
     conf+='<i style="left:'+left+'%;background:'+c+';animation-delay:'+delay.toFixed(2)+'s;animation-duration:'+dur.toFixed(2)+'s;--rot:'+rot.toFixed(0)+'deg;--sway:'+sway.toFixed(0)+'px"></i>';
   }
-  wrap.innerHTML='<div class="celebrate-badge">🎉<span>'+esc(msg||'Workout Complete!')+'</span></div>'+conf;
+  wrap.innerHTML='<div class="celebrate-badge">\ud83c\udf89<span>'+esc(msg||'Workout Complete!')+'</span></div>'+conf;
   document.body.appendChild(wrap);
   setTimeout(()=>wrap.remove(),3200);
 }
@@ -686,4 +686,3 @@ function renderE1(){
 }
 ['e1W','e1R'].forEach(id=>$(id).addEventListener('input',renderE1));
 document.querySelectorAll('#e1Unit button').forEach(b=>b.onclick=()=>{document.querySelectorAll('#e1Unit button').forEach(x=>x.classList.toggle('on',x===b));e1Unit=b.dataset.v;renderE1();});
-
