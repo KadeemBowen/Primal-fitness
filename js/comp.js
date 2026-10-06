@@ -14,7 +14,8 @@ const COMP_GYMKEY={sq:'gsq',bp:'gbp',dl:'gdl'};
 // Warm-ups and attempts as a fraction of the goal - the same ramp the peak
 // blocks rehearse, so meet day feels like the mock.
 const COMP_WARM=[[0.40,5],[0.55,3],[0.68,2],[0.78,1]];
-const COMP_ATT=[['a1','Opener',0.90],['a2','2nd attempt',0.96],['a3','3rd attempt',1.00]];
+// Short labels: the table has to fit a phone without sideways scrolling.
+const COMP_ATT=[['a1','Opener',0.90],['a2','2nd',0.96],['a3','3rd',1.00]];
 
 const r2_5=v=>Math.round(v/2.5)*2.5;                 // meet-legal kg increment
 const kgTxt=v=>(v==null?'-':(Math.round(v*10)/10).toString());
@@ -56,35 +57,38 @@ function renderComp(){
         +'value="'+(g==null?'':g)+'" placeholder="'+(comp?kgTxt(comp):'kg')+'" />';
 
     if(g){
-      h+='<div class="stdwrap"><table class="stdtbl comptbl"><tbody>';
+      // Four fixed-width columns with lb tucked under kg, so the whole ramp
+      // fits a phone - no sideways scrolling to read a weight.
+      h+='<table class="stdtbl comptbl"><tbody>';
       COMP_WARM.forEach(([pct,reps],i)=>{
         const w=r2_5(g*pct);
-        h+='<tr><td class="cls">Warm-up '+(i+1)+'</td><td class="cmreps">'+reps+' reps</td>'
-          +'<td><b>'+kgTxt(w)+'</b> kg</td><td class="cmlb">'+kg2lb(w)+' lb</td><td class="cmpct">'+Math.round(pct*100)+'%</td></tr>';
+        h+='<tr><td class="cls">Warm '+(i+1)+'</td><td class="cmreps">×'+reps+'</td>'
+          +'<td class="cmw"><b>'+kgTxt(w)+'</b> kg<span class="cmlb">'+kg2lb(w)+' lb</span></td>'
+          +'<td class="cmpct">'+Math.round(pct*100)+'%</td></tr>';
       });
       COMP_ATT.forEach(([id,nm,pct])=>{
         const a=attemptOf(k,id,pct);
         h+='<tr class="cmatt'+(a.over?' cmover':'')+'"><td class="cls">'+nm+'</td>'
-          +'<td class="cmreps">1</td>'
-          +'<td><input class="field mono compatt" data-lift="'+k+'" data-att="'+id+'" type="number" inputmode="decimal" step="2.5" value="'+kgTxt(a.kg)+'" /></td>'
-          +'<td class="cmlb">'+kg2lb(a.kg)+' lb</td>'
-          +'<td class="cmpct">'+(a.over?'<button class="btn sm ghost" data-reset="'+k+'|'+id+'">reset</button>':Math.round(pct*100)+'%')+'</td></tr>';
+          +'<td class="cmreps">×1</td>'
+          +'<td class="cmw"><input class="field mono compatt" data-lift="'+k+'" data-att="'+id+'" type="number" inputmode="decimal" step="2.5" value="'+kgTxt(a.kg)+'" />'
+            +'<span class="cmlb">'+kg2lb(a.kg)+' lb</span></td>'
+          +'<td class="cmpct">'+(a.over?'<button class="btn sm ghost cmreset" data-reset="'+k+'|'+id+'">undo</button>':Math.round(pct*100)+'%')+'</td></tr>';
       });
-      h+='</tbody></table></div>';
+      h+='</tbody></table>';
     } else h+='<div class="note" style="margin-top:8px">Enter a goal to build the ramp.</div>';
     h+='</div>';
   });
 
-  // Projected total off whatever the three 3rd attempts currently say.
-  const thirds=COMP_LIFTS.map(([k])=>{ const a=attemptOf(k,'a3',1.00); return a?a.kg:0; });
-  const tot=thirds.reduce((x,y)=>x+y,0);
+  // Projected totals off whatever each attempt column currently says.
+  const sum=(id,pct)=>COMP_LIFTS.map(([k])=>{ const a=attemptOf(k,id,pct); return a?a.kg:0; }).reduce((x,y)=>x+y,0);
+  const openers=sum('a1',0.90), seconds=sum('a2',0.96), tot=sum('a3',1.00);
   if(tot){
-    const openers=COMP_LIFTS.map(([k])=>{ const a=attemptOf(k,'a1',0.90); return a?a.kg:0; }).reduce((x,y)=>x+y,0);
-    h+='<div class="card"><div class="comphd">Projected total</div><div class="pstats">'
+    h+='<div class="card"><div class="comphd">Projected total</div><div class="pstats compproj">'
       +'<div class="pstat"><span>If all openers</span><b>'+kgTxt(openers)+' kg</b></div>'
-      +'<div class="pstat"><span>If all thirds</span><b style="color:var(--teal)">'+kgTxt(tot)+' kg</b></div>'
+      +'<div class="pstat"><span>If all 2nds</span><b style="color:var(--gold)">'+kgTxt(seconds)+' kg</b></div>'
+      +'<div class="pstat"><span>If all 3rds</span><b style="color:var(--teal)">'+kgTxt(tot)+' kg</b></div>'
       +'<div class="pstat"><span>Comp best</span><b>'+kgTxt((lf.sq||0)+(lf.bp||0)+(lf.dl||0))+' kg</b></div>'
-      +'</div>'+compQualHTML(lf,tot)+'</div>';
+      +'</div>'+compQualHTML(lf,seconds,tot)+'</div>';
   }
   h+='<div class="note" style="margin-top:10px">Nothing on this screen is saved - goals and edited attempts clear on refresh.</div>';
   out.innerHTML=h;
@@ -93,14 +97,19 @@ function renderComp(){
 }
 
 // Reuse the qualifying total already stored per weight class, when there is one.
-function compQualHTML(lf,projected){
+function compQualHTML(lf,seconds,thirds){
   if(typeof standards!=='object'||!lf.bw) return '';
   const s=standards[lf.sex+'|'+wclass(lf.bw,lf.sex)];
   if(!s||s.qual==null) return '';
-  const diff=projected-s.qual, got=diff>=0;
-  return '<div class="note" style="margin-top:10px;color:var(--'+(got?'teal':'muted')+')">'
-    +'Qualifying total '+kgTxt(s.qual)+' kg · '
-    +(got?'thirds clear it by '+kgTxt(diff)+' kg.':'thirds fall '+kgTxt(-diff)+' kg short.')+'</div>';
+  // Whether the 2nds already clear it is the more useful question - it says
+  // whether the lifter needs a risky third to qualify at all.
+  const d2=seconds-s.qual, d3=thirds-s.qual;
+  let msg, col;
+  if(d2>=0){ col='teal'; msg='2nds already clear it by '+kgTxt(d2)+' kg.'; }
+  else if(d3>=0){ col='gold'; msg='needs the 3rds - they clear it by '+kgTxt(d3)+' kg, 2nds fall '+kgTxt(-d2)+' kg short.'; }
+  else { col='muted'; msg='3rds still fall '+kgTxt(-d3)+' kg short.'; }
+  return '<div class="note" style="margin-top:10px;color:var(--'+col+')">'
+    +'Qualifying total '+kgTxt(s.qual)+' kg · '+msg+'</div>';
 }
 
 document.addEventListener('input',e=>{

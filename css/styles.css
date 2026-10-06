@@ -106,15 +106,23 @@
   /* Competition day: attempt planner */
   .comphd{font-family:'Oswald';font-weight:600;letter-spacing:.05em;text-transform:uppercase;font-size:14px;margin-bottom:10px}
   .compbests{margin-bottom:2px}
-  .comptbl td{padding:7px 8px}
-  .comptbl .cmreps{color:var(--muted);font-size:11px}
-  .comptbl .cmlb{color:var(--muted);font-size:11px}
-  .comptbl .cmpct{color:var(--muted);font-size:11px;text-align:right}
+  /* Fixed columns so the ramp fits a phone - no sideways scroll to read a weight. */
+  /* the global table{min-width:540px} (for the rankings grid) is what forced
+     this one to overflow - opt out so the fixed columns can actually shrink */
+  .comptbl{table-layout:fixed;width:100%;min-width:0;margin-top:8px}
+  .comptbl td{padding:6px 4px}
+  .comptbl td.cls{width:26%;font-size:12px}
+  .comptbl .cmreps{width:13%;color:var(--muted);font-size:11px}
+  .comptbl .cmw{width:38%}
+  .comptbl .cmlb{display:block;color:var(--muted);font-size:10px;line-height:1.3;margin-top:1px}
+  .comptbl .cmpct{width:23%;color:var(--muted);font-size:11px;text-align:right}
   .comptbl tr.cmatt td{border-top:1px solid var(--line)}
   .comptbl tr.cmatt td.cls{color:var(--text);font-weight:700}
   .comptbl tr.cmover td.cls{color:var(--gold)}
-  .comptbl .compatt{width:92px;padding:6px 7px;font-size:13px;text-align:right}
+  .comptbl .compatt{width:100%;max-width:88px;padding:5px 6px;font-size:13px;text-align:right}
   .comptbl tr.cmover .compatt{border-color:var(--gold);color:var(--gold)}
+  .comptbl .cmreset{padding:3px 7px;font-size:10px}
+  .pstats.compproj{grid-template-columns:repeat(2,1fr)}
 
   /* Local records / qualifying totals table */
   .stdwrap{width:100%;overflow-x:auto;margin-top:8px}
