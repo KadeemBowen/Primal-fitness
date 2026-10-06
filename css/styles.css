@@ -103,19 +103,6 @@
   tbody tr.me td:first-child{border-left:3px solid var(--teal)}
   .pstats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;width:100%;margin-top:8px}
   .pstat{border:1px solid var(--line);border-radius:10px;padding:9px 6px;text-align:center;background:var(--panel2)}
-  /* Competition day: attempt planner */
-  .comphd{font-family:'Oswald';font-weight:600;letter-spacing:.05em;text-transform:uppercase;font-size:14px;margin-bottom:10px}
-  .compbests{margin-bottom:2px}
-  .comptbl td{padding:7px 8px}
-  .comptbl .cmreps{color:var(--muted);font-size:11px}
-  .comptbl .cmlb{color:var(--muted);font-size:11px}
-  .comptbl .cmpct{color:var(--muted);font-size:11px;text-align:right}
-  .comptbl tr.cmatt td{border-top:1px solid var(--line)}
-  .comptbl tr.cmatt td.cls{color:var(--text);font-weight:700}
-  .comptbl tr.cmover td.cls{color:var(--gold)}
-  .comptbl .compatt{width:92px;padding:6px 7px;font-size:13px;text-align:right}
-  .comptbl tr.cmover .compatt{border-color:var(--gold);color:var(--gold)}
-
   /* Local records / qualifying totals table */
   .stdwrap{width:100%;overflow-x:auto;margin-top:8px}
   .stdtbl{width:100%;border-collapse:collapse;font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums;font-size:12px}

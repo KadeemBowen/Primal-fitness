@@ -57,24 +57,23 @@ async function doLogin(){
 }
 $('logoutBtn').onclick=async()=>{ try{ if(session&&session.token) await rpc('app_logout',{p_token:session.token}); }catch(e){}
   session=null; clearStoredSession(); lifters=[];users=[];profiles={};
-  document.body.classList.remove('authed','role-Admin','role-Lifter','role-Spectate','role-CompCoach');
+  document.body.classList.remove('authed','role-Admin','role-Lifter','role-Spectate');
   $('liUser').value=''; };
 
-function roleLabel(r){ return r==='Spectate'?'Spectator':(r==='CompCoach'?'Comp Coach':r); }   // display names; stored values stay 'Spectate' / 'CompCoach'
+function roleLabel(r){ return r==='Spectate'?'Spectator':r; }   // display name; stored value stays 'Spectate'
 function applyAuth(){
   document.body.classList.add('authed');
-  document.body.classList.remove('role-Admin','role-Lifter','role-Spectate','role-CompCoach');
+  document.body.classList.remove('role-Admin','role-Lifter','role-Spectate');
   document.body.classList.add('role-'+session.role);
-  const admin=session.role==='Admin', spec=session.role==='Spectate', coach=session.role==='CompCoach';
+  const admin=session.role==='Admin', spec=session.role==='Spectate';
   $('whoName').textContent=session.username+' · '+roleLabel(session.role);
   document.querySelector('nav [data-go="users"]').style.display=admin?'':'none';
   document.querySelector('nav [data-go="build"]').style.display=admin?'':'none';
-  document.querySelector('nav [data-go="prog"]').style.display=(spec||coach)?'none':'';
-  document.querySelector('nav [data-go="comp"]').style.display=(admin||coach)?'':'none';
+  document.querySelector('nav [data-go="prog"]').style.display=spec?'none':'';
   $('addCard').style.display=admin?'':'none';
-  navTo('rank'); renderRank(); if(typeof renderComp==='function') renderComp(); if(admin) renderUsers(); if(admin&&typeof renderBuild==='function') renderBuild(); renderProg();
+  navTo('rank'); renderRank(); if(admin) renderUsers(); if(admin&&typeof renderBuild==='function') renderBuild(); renderProg();
 }
-const ROLE_SCREENS={Admin:['rank','profiles','prog','comp','load','users','build'],Lifter:['rank','profiles','prog','load'],Spectate:['rank','profiles','load'],CompCoach:['rank','profiles','comp','load']};
+const ROLE_SCREENS={Admin:['rank','profiles','prog','load','users','build'],Lifter:['rank','profiles','prog','load'],Spectate:['rank','profiles','load']};
 function navTo(go){
   if(!session) return 'rank';
   const allowed=ROLE_SCREENS[session.role]||['rank'];
