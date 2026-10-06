@@ -7,7 +7,7 @@ function renderUsers(){
   $('usersOut').innerHTML=users.map(u=>{
     const isAdmin=u.role==='Admin', open=mgrOpen===u.id&&!isAdmin;
     let h='<div class="urow"><div class="uinfo"><span class="nm">'+esc(u.u)+'</span>'+(u.id===session.id?'<span class="tag">you</span>':'')+'</div>'+
-      '<select class="field rolesel" data-role="'+u.id+'">'+['Admin','Lifter','Spectate'].map(r=>'<option value="'+r+'"'+(r===u.role?' selected':'')+'>'+roleLabel(r)+'</option>').join('')+'</select>'+
+      '<select class="field rolesel" data-role="'+u.id+'">'+['Admin','Lifter','Spectate','CompCoach'].map(r=>'<option value="'+r+'"'+(r===u.role?' selected':'')+'>'+roleLabel(r)+'</option>').join('')+'</select>'+
       // admins are staff, not clients: no notifications/payments — just a password reset
       (isAdmin
         ? '<button class="btn sm ghost" data-reset="'+u.id+'">Reset PW</button>'
