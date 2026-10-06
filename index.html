@@ -122,6 +122,11 @@
     <div id="progBoard"></div>
   </section>
 
+  <section id="comp" class="screen">
+    <h2 class="title">Competition day</h2>
+    <div id="compOut"></div>
+  </section>
+
   <section id="load" class="screen">
     <h2 class="title" id="loadTitle">Competition loading</h2>
     <div class="seg" id="loadMode" style="margin-bottom:12px"><button data-v="comp" class="on">Competition</button><button data-v="gym">Gym</button></div>
@@ -153,7 +158,7 @@
       <div class="fg">
         <input id="nuName" class="field full" placeholder="Username" autocapitalize="off" />
         <input id="nuPass" class="field" type="text" placeholder="Password" />
-        <select id="nuRole" class="field"><option value="Lifter">Lifter</option><option value="Spectate">Spectator</option><option value="Admin">Admin</option></select>
+        <select id="nuRole" class="field"><option value="Lifter">Lifter</option><option value="Spectate">Spectator</option><option value="CompCoach">Comp Coach</option><option value="Admin">Admin</option></select>
       </div>
       <button class="btn primary full" id="addUserBtn" style="margin-top:10px">Create user</button>
       <div class="note">Roles — <b style="color:var(--text)">Admin</b>: full control incl. users. <b style="color:var(--text)">Lifter</b>: view rankings, use programs &amp; loading. <b style="color:var(--text)">Spectator</b>: view rankings &amp; loading only.</div>
@@ -177,6 +182,7 @@
   <button data-go="profiles"><svg viewBox="0 0 24 24"><circle cx="12" cy="9" r="3.2"/><path d="M5.5 19a6.5 6.5 0 0 1 13 0"/></svg>Profiles</button>
   <button data-go="prog"><svg viewBox="0 0 24 24"><path d="M5 12h2l2-7 4 14 3-9 2 2h2"/></svg>Programs</button>
   <button data-go="build"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M17.5 14.5v6M14.5 17.5h6"/></svg>Build</button>
+  <button data-go="comp"><svg viewBox="0 0 24 24"><path d="M5 7h14M7 7v4a5 5 0 0 0 10 0V7M4 8h3M17 8h3M10 19h4M12 16v3"/></svg>Competition</button>
   <button data-go="load"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.4"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/></svg>Loading</button>
   <button data-go="users"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.3 2.7-5 6-5s6 1.7 6 5M17 11l2 2 3-3.5"/></svg>Users</button>
 </nav>
@@ -189,6 +195,7 @@
 <script src="js/users.js"></script>
 <script src="js/profiles.js"></script>
 <script src="js/programs.js"></script>
+<script src="js/comp.js"></script>
 <script src="js/loading.js"></script>
 <script src="js/alerts.js"></script>
 <script src="js/build.js"></script>
