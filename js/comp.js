@@ -22,10 +22,15 @@ const kgTxt=v=>(v==null?'-':(Math.round(v*10)/10).toString());
 const kg2lb=v=>Math.round(v*2.20462);
 
 function compKey(lift){ return compLifter+'|'+lift; }
-function goalOf(lift){ const v=compGoal[compKey(lift)]; return (v==null||v==='')?null:Number(v); }
+// Inputs are kept as the raw text typed, so a half-typed "182." survives a
+// re-render; parse only when a number is needed. Accept a comma as decimal point.
+const kgNum=v=>{ if(v==null) return null; const t=(''+v).trim().replace(',','.');
+  if(t===''||t==='.') return null; const n=Number(t); return isFinite(n)?n:null; };
+const cleanKg=v=>(''+v).replace(',','.').replace(/[^0-9.]/g,'').replace(/(\..*)\./g,'$1');
+function goalOf(lift){ const n=kgNum(compGoal[compKey(lift)]); return n?n:null; }
 function attemptOf(lift,id,pct){
-  const o=compOver[compKey(lift)+'|'+id];
-  if(o!=null&&o!=='') return {kg:Number(o),over:true};
+  const raw=compOver[compKey(lift)+'|'+id], o=kgNum(raw);
+  if(o!=null) return {kg:o,over:true,raw:raw};
   const g=goalOf(lift); return g?{kg:r2_5(g*pct),over:false}:null;
 }
 
@@ -53,8 +58,8 @@ function renderComp(){
         +'<div class="pstat"><span>Gym best kg</span><b>'+(gymKg?kgTxt(r2_5(gymKg))+' kg':'-')+'</b></div>'
       +'</div>'
       +'<label class="lbl" style="margin-top:12px">Goal / 3rd attempt (kg)</label>'
-      +'<input class="field mono compgoal" data-lift="'+k+'" type="number" inputmode="decimal" step="2.5" '
-        +'value="'+(g==null?'':g)+'" placeholder="'+(comp?kgTxt(comp):'kg')+'" />';
+      +'<input class="field mono compgoal" data-lift="'+k+'" type="text" inputmode="decimal" autocomplete="off" '
+        +'value="'+esc(compGoal[compKey(k)]||'')+'" placeholder="'+(comp?kgTxt(comp):'kg')+'" />';
 
     if(g){
       // Four fixed-width columns with lb tucked under kg, so the whole ramp
@@ -70,7 +75,7 @@ function renderComp(){
         const a=attemptOf(k,id,pct);
         h+='<tr class="cmatt'+(a.over?' cmover':'')+'"><td class="cls">'+nm+'</td>'
           +'<td class="cmreps">×1</td>'
-          +'<td class="cmw"><input class="field mono compatt" data-lift="'+k+'" data-att="'+id+'" type="number" inputmode="decimal" step="2.5" value="'+kgTxt(a.kg)+'" />'
+          +'<td class="cmw"><input class="field mono compatt" data-lift="'+k+'" data-att="'+id+'" type="text" inputmode="decimal" autocomplete="off" value="'+esc(a.over?a.raw:kgTxt(a.kg))+'" />'
             +'<span class="cmlb">'+kg2lb(a.kg)+' lb</span></td>'
           +'<td class="cmpct">'+(a.over?'<button class="btn sm ghost cmreset" data-reset="'+k+'|'+id+'">undo</button>':Math.round(pct*100)+'%')+'</td></tr>';
       });
@@ -114,15 +119,19 @@ function compQualHTML(lf,seconds,thirds){
 
 document.addEventListener('input',e=>{
   const g=e.target.closest('.compgoal');
-  if(g){ compGoal[compLifter+'|'+g.dataset.lift]=g.value;
+  if(g){ const v=cleanKg(g.value); compGoal[compLifter+'|'+g.dataset.lift]=v;
     // Changing the goal re-derives every attempt that has not been typed over.
     renderComp(); const el=document.querySelector('.compgoal[data-lift="'+g.dataset.lift+'"]');
     if(el){ el.focus(); el.setSelectionRange(el.value.length,el.value.length); } return; }
   const a=e.target.closest('.compatt');
-  if(a){ compOver[compLifter+'|'+a.dataset.lift+'|'+a.dataset.att]=a.value;
+  if(a){ const v=cleanKg(a.value); if(v!==a.value) a.value=v;
+    compOver[compLifter+'|'+a.dataset.lift+'|'+a.dataset.att]=v;
     const row=a.closest('tr'); if(row){ row.classList.add('cmover');
-      const lb=row.querySelector('.cmlb'); if(lb) lb.textContent=kg2lb(Number(a.value)||0)+' lb'; } }
+      const lb=row.querySelector('.cmlb'); if(lb) lb.textContent=kg2lb(kgNum(v)||0)+' lb'; } }
 });
+// Once an attempt is finished (field left), redraw so the undo button and
+// projected totals pick up the new weight.
+document.addEventListener('change',e=>{ if(e.target.closest('.compatt')) renderComp(); });
 document.addEventListener('click',e=>{
   const r=e.target.closest('[data-reset]'); if(!r) return;
   const [lift,att]=r.dataset.reset.split('|');
