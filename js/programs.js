@@ -696,7 +696,7 @@ async function loadAndRenderBoard(){ const bEl=$('progBoard'); if(!bEl) return; 
 }
 function fmtReps(r){ return r==='AMRAP'?'AMRAP':r; }
 function renderBoard(){ const bEl=$('progBoard'), prog=activeProg(), a=asgn(progAthlete,progProgram);
-  const u=users.find(x=>x.id===progAthlete), nm=u?u.u:'', own=progAthlete===session.id, bypass=own&&session.role==='Admin', tm=curTMs(a,prog);
+  const u=users.find(x=>x.id===progAthlete), nm=u?u.u:'', own=progAthlete===session.id, bypass=session.role==='Admin', tm=curTMs(a,prog);   // admins see every week, any athlete
   const adminView=session.role==='Admin';   // admins can log/edit any athlete's board
   const canEdit=own||adminView;              // everyone folds their own weeks; only admins edit others'
   const my=assignmentsFor(progAthlete);

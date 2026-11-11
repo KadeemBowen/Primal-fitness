@@ -63,7 +63,7 @@
   .fold-hd::after{content:'\25BE';margin-left:auto;color:var(--text);font-size:21px;line-height:1;width:32px;height:32px;display:grid;place-items:center;transition:transform .18s}
   .fold.collapsed .fold-hd::after{transform:rotate(-90deg)}
   .fold.collapsed .fold-body{display:none}
-  body:not(.role-Admin) #asgnFold,body:not(.role-Admin) #usersProgFold,body:not(.role-Admin) #bestsFold,body:not(.role-Admin) #stdFold{display:none}
+  body.role-Spectate #compPlanner,body:not(.role-Admin) #asgnFold,body:not(.role-Admin) #usersProgFold,body:not(.role-Admin) #bestsFold,body:not(.role-Admin) #stdFold{display:none}
   .pwkhd.wktoggle{cursor:pointer}
   .pwkhd.wktoggle .focus{margin-left:auto}
   .wkchev{margin-left:6px;margin-right:-4px;color:var(--text);font-size:18px;line-height:1;width:28px;height:28px;display:grid;place-items:center;transition:transform .18s}

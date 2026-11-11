@@ -1,4 +1,4 @@
-/* ===== Competition day: attempt planner (Admin + Comp Coach) =====
+/* ===== Competition day: attempt planner (Admin, Comp Coach, Lifter) =====
    Pick a lifter, see their competition and gym bests, type a goal per lift and
    the warm-up ramp plus all three attempts price themselves off it. Any single
    attempt can be typed over when the platform says otherwise.
@@ -36,7 +36,7 @@ function attemptOf(lift,id,pct){
 
 function renderComp(){
   const out=$('compOut'); if(!out) return;
-  if(!session||!(session.role==='Admin'||session.role==='CompCoach')){ out.innerHTML=''; return; }
+  if(!session||!(session.role==='Admin'||session.role==='CompCoach'||session.role==='Lifter')){ out.innerHTML=''; return; }
   const list=lifters.slice().sort((a,b)=>(a.name||'').localeCompare(b.name||''));
   if(!list.length){ out.innerHTML='<div class="empty">No lifters yet. Add them on the Rankings tab.</div>'; return; }
   if(!compLifter||!list.some(l=>l.id===compLifter)) compLifter=list[0].id;

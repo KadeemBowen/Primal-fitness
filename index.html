@@ -127,12 +127,13 @@
   </section>
 
   <section id="comp" class="screen">
+    <div id="compPlanner">
     <h2 class="title">Competition day</h2>
     <div id="compOut"></div>
-  </section>
-
-  <section id="load" class="screen">
-    <h2 class="title" id="loadTitle">Competition loading</h2>
+    </div>
+    <div class="fold collapsed" id="loadFold" style="margin-top:14px">
+    <h2 class="title fold-hd" id="loadTitle">Competition loading</h2>
+    <div class="fold-body">
     <div class="seg" id="loadMode" style="margin-bottom:12px"><button data-v="comp" class="on">Competition</button><button data-v="gym">Gym</button></div>
     <div class="card" id="compCard">
       <div class="row" style="margin-bottom:10px">
@@ -152,6 +153,8 @@
       <div class="note">45 lb bar &middot; plates 45 / 35 / 25 / 10 / 5 / 2.5 lb &middot; no collars.</div>
     </div>
     <div class="card platewrap" id="loadOut"></div>
+    </div>
+    </div>
   </section>
 
   <section id="users" class="screen">
@@ -187,7 +190,6 @@
   <button data-go="prog"><svg viewBox="0 0 24 24"><path d="M5 12h2l2-7 4 14 3-9 2 2h2"/></svg>Programs</button>
   <button data-go="build"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M17.5 14.5v6M14.5 17.5h6"/></svg>Build</button>
   <button data-go="comp"><svg viewBox="0 0 24 24"><path d="M5 7h14M7 7v4a5 5 0 0 0 10 0V7M4 8h3M17 8h3M10 19h4M12 16v3"/></svg>Comp</button>
-  <button data-go="load"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.4"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/></svg>Loading</button>
   <button data-go="users"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.3 2.7-5 6-5s6 1.7 6 5M17 11l2 2 3-3.5"/></svg>Users</button>
 </nav>
 

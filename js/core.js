@@ -70,11 +70,13 @@ function applyAuth(){
   document.querySelector('nav [data-go="users"]').style.display=admin?'':'none';
   document.querySelector('nav [data-go="build"]').style.display=admin?'':'none';
   document.querySelector('nav [data-go="prog"]').style.display=(spec||coach)?'none':'';
-  document.querySelector('nav [data-go="comp"]').style.display=(admin||coach)?'':'none';
+  document.querySelector('nav [data-go="comp"]').style.display='';   // everyone: plate loading lives here
+  // Spectators only get plate loading on the Comp tab, so open it for them.
+  const lf=$('loadFold'); if(lf) lf.classList.toggle('collapsed',!spec);
   $('addCard').style.display=admin?'':'none';
   navTo('rank'); renderRank(); if(typeof renderComp==='function') renderComp(); if(admin) renderUsers(); if(admin&&typeof renderBuild==='function') renderBuild(); renderProg();
 }
-const ROLE_SCREENS={Admin:['rank','profiles','prog','comp','load','users','build'],Lifter:['rank','profiles','prog','load'],Spectate:['rank','profiles','load'],CompCoach:['rank','profiles','comp','load']};
+const ROLE_SCREENS={Admin:['rank','profiles','prog','comp','users','build'],Lifter:['rank','profiles','prog','comp'],Spectate:['rank','profiles','comp'],CompCoach:['rank','profiles','comp']};
 function navTo(go){
   if(!session) return 'rank';
   const allowed=ROLE_SCREENS[session.role]||['rank'];
