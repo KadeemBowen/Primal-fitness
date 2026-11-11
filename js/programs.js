@@ -304,8 +304,7 @@ PROGRAMS['peak-2']=(function(){
     refTM:{squat:100,bench:100,deadlift:100},
     note:'Meet moved to Sun Dec 6. Pick this up after Primal Peak Wk 2 Day 2 - leave Primal Peak assigned so its logs stay. Every main lift is a PERCENT of the e1RM you enter, so assign it with the same maxes as Primal Peak (or updated ones). Wk 1 = 2 sessions only (Thu Nov 12 + Sat Nov 14) to put heavy work back in · Wk 2 peak singles + MOCK MEET Thu Nov 19 / Fri Nov 20 · Wk 3 openers Thu Nov 26 / Fri Nov 27 · Wk 4 taper, last session Tue Dec 1, MEET Sun Dec 6. On mock and meet day enter your 3rd-attempt goal and the app prices the warm-ups and attempts off it.',
     days:[
-      {d:'1',title:'Squat + Bench Heavy  (Mon · Thu Nov 12 this week)',ex:[
-        info('p2i1','No mock this Saturday - the meet moved. Real triples today, RPE 8, no grinders.',[0]),
+      {d:'1',title:'Squat + Bench Heavy',ex:[
         {k:'p2sqs',name:'Competition Squat top single',lift:'squat',t:'w',wk:only([1],[1,1,88,7.5])},
         {k:'p2sq',name:'Competition Squat',lift:'squat',t:'w',wk:[[3,3,82,8],[2,2,83,7.5],[3,2,80,7],[2,2,60,5]]},
         {k:'p2bns',name:'Competition Bench 0-1-0 top single',lift:'bench',t:'w',wk:only([1],[1,1,88,7.5])},
@@ -314,8 +313,7 @@ PROGRAMS['peak-2']=(function(){
         {k:'p2core',name:'Core',lift:null,t:'acc',wk:[[3,12,null,null],[3,12,null,null],[2,12,null,null],null]},
         info('p2t4','Taper week - these are speed touches. Fast and easy, then walk away.',[3])
       ]},
-      {d:'2',title:'Deadlift + Bench  (Wed · Sat Nov 14 this week · Tue in meet week)',ex:[
-        info('p2i2','Heavy pull today - the last one was a light pre-mock day. Three clean triples, RPE 8.',[0]),
+      {d:'2',title:'Deadlift + Bench',ex:[
         {k:'p2dl',name:'Competition Deadlift',lift:'deadlift',t:'w',wk:[[3,3,83,8],[2,3,65,6],[2,2,80,7.5],[2,2,55,5]]},
         {k:'p2bn',name:'Competition Bench 0-1-0',lift:'bench',t:'w',wk:[[3,5,75,7.5],[3,3,70,6],[3,3,77,7],[1,3,55,5]]},
         {k:'p2psq',name:'Pause Squat (3 sec)',lift:'squat',t:'w',wk:[[3,3,68,7],null,null,null]},
