@@ -278,6 +278,74 @@ PROGRAMS['primal-peak']=(function(){
   };
 })();
 
+/* ===== Peak 2.0: re-run into the Dec 6 meet =====
+   The meet moved from Nov 29 to Dec 6 mid-way through Primal Peak (after Wk 2 Day 2).
+   Separate program key so everyone's Primal Peak logs stay untouched.
+   Wk 1 = the two sessions left this week (Nov 12-15) - heavy work back in, no mock.
+   Wk 2 = peak singles + MOCK MEET Sat Nov 21 · Wk 3 = openers · Wk 4 = taper, meet Sun Dec 6. */
+PROGRAMS['peak-2']=(function(){
+  const only=(wks,row)=>[0,1,2,3].map(i=>wks.indexOf(i)>=0?row.slice():null);
+  const info=(k,name,wks)=>({k,name,lift:null,t:'info',wk:only(wks,[1,1,null,null])});
+  const meet=(pfx,lift,label,wks)=>[
+    {k:pfx+'g', name:label+' 3rd attempt goal',    lift:lift,t:'goal',                        wk:only(wks,[1,1,null,null])},
+    {k:pfx+'w1',name:label+' Warm-up 1 (40%)',     lift:lift,t:'warmup',goalK:pfx+'g',pct:0.40,wk:only(wks,[1,5,0.40,null])},
+    {k:pfx+'w2',name:label+' Warm-up 2 (55%)',     lift:lift,t:'warmup',goalK:pfx+'g',pct:0.55,wk:only(wks,[1,3,0.55,null])},
+    {k:pfx+'w3',name:label+' Warm-up 3 (68%)',     lift:lift,t:'warmup',goalK:pfx+'g',pct:0.68,wk:only(wks,[1,2,0.68,null])},
+    {k:pfx+'w4',name:label+' Warm-up 4 (78%)',     lift:lift,t:'warmup',goalK:pfx+'g',pct:0.78,wk:only(wks,[1,1,0.78,null])},
+    {k:pfx+'a1',name:label+' OPENER (90%)',        lift:lift,t:'warmup',goalK:pfx+'g',pct:0.90,wk:only(wks,[1,1,0.90,null])},
+    {k:pfx+'a2',name:label+' 2nd attempt (96%)',   lift:lift,t:'warmup',goalK:pfx+'g',pct:0.96,wk:only(wks,[1,1,0.96,null])},
+    {k:pfx+'a3',name:label+' 3rd attempt (goal)',  lift:lift,t:'warmup',goalK:pfx+'g',pct:1.00,wk:only(wks,[1,1,1.00,null])}
+  ];
+  const MEET=[1,3];   // weeks 2 (mock) and 4 (meet)
+  return {
+    name:'Peak 2.0 (meet Dec 6)',
+    weeks:4, deload:0, test:4, pct:true,
+    refTM:{squat:100,bench:100,deadlift:100},
+    note:'Meet moved to Sun Dec 6. Pick this up after Primal Peak Wk 2 Day 2 - leave Primal Peak assigned so its logs stay. Every main lift is a PERCENT of the e1RM you enter, so assign it with the same maxes as Primal Peak (or updated ones). Wk 1 = 2 sessions only (Thu Nov 12 + Sat Nov 14) to put heavy work back in · Wk 2 peak singles + MOCK MEET Sat Nov 21 · Wk 3 openers Sat Nov 28 · Wk 4 taper, last session Tue Dec 1, MEET Sun Dec 6. On mock and meet day enter your 3rd-attempt goal and the app prices the warm-ups and attempts off it.',
+    days:[
+      {d:'1',title:'Squat + Bench Heavy  (Mon · Thu Nov 12 this week)',ex:[
+        info('p2i1','No mock this Saturday - the meet moved. Real triples today, RPE 8, no grinders.',[0]),
+        {k:'p2sqs',name:'Competition Squat top single',lift:'squat',t:'w',wk:only([1],[1,1,90,8])},
+        {k:'p2sq',name:'Competition Squat',lift:'squat',t:'w',wk:[[3,3,82,8],[2,2,83,7.5],[3,2,80,7],[2,2,60,5]]},
+        {k:'p2bns',name:'Competition Bench 0-1-0 top single',lift:'bench',t:'w',wk:only([1],[1,1,90,8])},
+        {k:'p2bnv',name:'Competition Bench 0-1-0 (commands)',lift:'bench',t:'w',wk:[[4,3,82,8],[3,2,83,7.5],[3,3,75,7],[2,3,60,5]]},
+        {k:'p2row',name:'Row of choice',lift:null,t:'rpe',wk:[[4,8,null,'7-8'],[3,8,null,'7'],[3,10,null,'6'],null]},
+        {k:'p2core',name:'Core',lift:null,t:'acc',wk:[[3,12,null,null],[3,12,null,null],[2,12,null,null],null]},
+        info('p2t4','Taper week - these are speed touches. Fast and easy, then walk away.',[3])
+      ]},
+      {d:'2',title:'Deadlift + Bench  (Wed · Sat Nov 14 this week · Tue in meet week)',ex:[
+        info('p2i2','Heavy pull today - the last one was a light pre-mock day. Three clean triples, RPE 8.',[0]),
+        {k:'p2dl',name:'Competition Deadlift',lift:'deadlift',t:'w',wk:[[3,3,83,8],[2,3,65,6],[2,2,80,7.5],[2,2,55,5]]},
+        {k:'p2bn',name:'Competition Bench 0-1-0',lift:'bench',t:'w',wk:[[3,5,75,7.5],[3,3,70,6],[3,3,77,7],[1,3,55,5]]},
+        {k:'p2psq',name:'Pause Squat (3 sec)',lift:'squat',t:'w',wk:[[3,3,68,7],null,null,null]},
+        {k:'p2ohp',name:'Overhead Press',lift:null,t:'rpe',wk:[[3,6,null,'7'],[3,6,null,'6'],[2,6,null,'6'],null]},
+        {k:'p2pull',name:'Pull-ups',lift:null,t:'bw',wk:[[3,'AMRAP','BW',7],[2,'AMRAP','BW',6],[2,'AMRAP','BW',6],null]},
+        info('p2w2','Light and fast - the mock meet is Saturday Nov 21. Do not chase weight today.',[1]),
+        info('p2w4','Last session before the meet. Tue Dec 1, then rest Wed-Sat.',[3])
+      ]},
+      {d:'3',title:'Platform Day  (Wk2 MOCK MEET · Wk3 openers · Wk4 MEET)',ex:[
+        info('p2o0','Openers only - Sat Nov 28. Weights you could triple. If an opener grinds, lower the meet opener - that is what today is for.',[2]),
+        {k:'p2osq',name:'Squat Opener (enter weight)',lift:'squat',t:'goal',wk:only([2],[1,1,null,null])},
+        {k:'p2obn',name:'Bench Opener (enter weight)',lift:'bench',t:'goal',wk:only([2],[1,1,null,null])},
+        {k:'p2obn2',name:'Bench 2nd attempt (enter weight)',lift:'bench',t:'goal',wk:only([2],[1,1,null,null])},
+        {k:'p2odl',name:'Deadlift Opener (enter weight)',lift:'deadlift',t:'goal',wk:only([2],[1,1,null,null])},
+        info('p2m2','MOCK MEET · Sat Nov 21 - run it live: singlet, belt, commands, meet timing, squat then bench then deadlift. This is what sets your real openers.',[1]),
+        info('p2m4','MEET DAY · Sun Dec 6. Openers are locked from the mock - do not raise them in the warm-up room.',[3]),
+        ...meet('p2msq','squat','Squat',MEET),
+        ...meet('p2mbn','bench','Bench',MEET),
+        ...meet('p2mdl','deadlift','Deadlift',MEET),
+        info('p2m5','Take the 3rd only if the 2nd moved without a grind. A total on the board beats a bomb-out.',MEET)
+      ]},
+      {d:'4',title:'Accessories & Recovery (optional)',ex:[
+        {k:'p2row2',name:'Chest-supported Row',lift:null,t:'rpe',wk:[null,[3,10,null,'7'],[3,10,null,'7'],null]},
+        {k:'p2rd',name:'Rear delts + face pulls',lift:null,t:'acc',wk:[null,[3,15,null,null],[3,15,null,null],null]},
+        {k:'p2ham',name:'Leg Curl / Back Extension',lift:null,t:'rpe',wk:[null,[3,12,null,'7'],[2,12,null,'6'],null]},
+        {k:'p2arms',name:'Arms (curl + triceps)',lift:null,t:'rpe',wk:[null,[3,12,null,'7'],[2,12,null,'6'],null]}
+      ]}
+    ]
+  };
+})();
+
 /* ===== Longer meet peaks: 5-wk and 6-wk =====
    The last four weeks match Primal Peak (4-wk) in intent - heavy triples ->
    peak singles + MOCK MEET -> openers -> taper then compete - and the final
