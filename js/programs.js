@@ -705,7 +705,7 @@ function renderBoard(){ const bEl=$('progBoard'), prog=activeProg(), a=asgn(prog
   html+='<div class="note" style="margin:2px 0 12px">'+esc(nm)+' \u00b7 Training max: SQ '+round5(tm.squat)+' \u00b7 BP '+round5(tm.bench)+' \u00b7 DL '+round5(tm.deadlift)+' lb'+(own?'':(adminView?' \u00b7 admin edit':' \u00b7 view only'))+(bypass?' \u00b7 weeks unlocked':'')+'</div>';
   for(let wi=0;wi<prog.weeks;wi++){
     const unlocked=weekUnlocked(prog,wi,bypass); let dc=0,dt=0; prog.days.forEach(d=>{ if(d.ex.some(e=>e.wk[wi])){ dt++; if(dayInfo(wi,d).allDone) dc++; } });
-    const dl=prog.deload===wi+1, tst=prog.test===wi+1;
+    const dl=Array.isArray(prog.deload)?prog.deload.indexOf(wi+1)>=0:prog.deload===wi+1, tst=prog.test===wi+1;
     html+='<div class="pwk wkfold'+(expandedWeeks.has(wi)?'':' collapsed')+'" data-wk="'+wi+'"><div class="pwkhd wktoggle"><span class="wn">Week '+(wi+1)+(dl?' \u00b7 Deload':'')+(tst?' \u00b7 '+(prog.testLabel||'TEST WEEK'):'')+'</span><span class="focus">'+dc+'/'+dt+' days</span><span class="wkchev">\u25be</span></div>';
     if(!unlocked){ html+='<div class="wkbody"><div class="lockbox">Locked - complete the previous week to unlock.</div></div></div>'; continue; }
     html+='<div class="wkbody">';
@@ -813,7 +813,7 @@ function bestsFromLogs(prog,logs){
   const out={};
   logs.forEach(l=>{ const ex=byKey[l.ex], w=+l.weight, r=+l.reps||0;
     if(!ex||!ex.lift||ex.t==='goal'||ex.t==='info'||!(w>0)||r<1) return;
-    if(VARIANT_RX.test(ex.name)) return;
+    if(ex.variant||VARIANT_RX.test(ex.name)) return;
     const b=out[ex.lift]||(out[ex.lift]={lift:ex.lift,top_weight:0,top_reps:0,e1rm:0,e1rm_weight:null,e1rm_reps:null,logged_at:null});
     if(w>b.top_weight||(w===b.top_weight&&r>b.top_reps)){ b.top_weight=w; b.top_reps=r; b.logged_at=l.at||null; }
     if(r<=10){ const e1=Math.round(e1rmOf(w,r)); if(e1>b.e1rm){ b.e1rm=e1; b.e1rm_weight=w; b.e1rm_reps=r; } }
