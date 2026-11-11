@@ -300,7 +300,7 @@ PROGRAMS['peak-2']=(function(){
   const MEET=[1,3];   // weeks 2 (mock) and 4 (meet)
   return {
     name:'Peak 2.0 (meet Dec 6)',
-    weeks:4, deload:0, test:4, pct:true,
+    weeks:4, deload:0, test:4, testLabel:'Peak Week', pct:true,
     refTM:{squat:100,bench:100,deadlift:100},
     note:'Meet moved to Sun Dec 6. Pick this up after Primal Peak Wk 2 Day 2 - leave Primal Peak assigned so its logs stay. Every main lift is a PERCENT of the e1RM you enter, so assign it with the same maxes as Primal Peak (or updated ones). Wk 1 = 2 sessions only (Thu Nov 12 + Sat Nov 14) to put heavy work back in · Wk 2 peak singles + MOCK MEET Thu Nov 19 / Fri Nov 20 · Wk 3 openers Thu Nov 26 / Fri Nov 27 · Wk 4 taper, last session Tue Dec 1, MEET Sun Dec 6. On mock and meet day enter your 3rd-attempt goal and the app prices the warm-ups and attempts off it.',
     days:[
@@ -706,7 +706,7 @@ function renderBoard(){ const bEl=$('progBoard'), prog=activeProg(), a=asgn(prog
   for(let wi=0;wi<prog.weeks;wi++){
     const unlocked=weekUnlocked(prog,wi,bypass); let dc=0,dt=0; prog.days.forEach(d=>{ if(d.ex.some(e=>e.wk[wi])){ dt++; if(dayInfo(wi,d).allDone) dc++; } });
     const dl=prog.deload===wi+1, tst=prog.test===wi+1;
-    html+='<div class="pwk wkfold'+(expandedWeeks.has(wi)?'':' collapsed')+'" data-wk="'+wi+'"><div class="pwkhd wktoggle"><span class="wn">Week '+(wi+1)+(dl?' \u00b7 Deload':'')+(tst?' \u00b7 TEST WEEK':'')+'</span><span class="focus">'+dc+'/'+dt+' days</span><span class="wkchev">\u25be</span></div>';
+    html+='<div class="pwk wkfold'+(expandedWeeks.has(wi)?'':' collapsed')+'" data-wk="'+wi+'"><div class="pwkhd wktoggle"><span class="wn">Week '+(wi+1)+(dl?' \u00b7 Deload':'')+(tst?' \u00b7 '+(prog.testLabel||'TEST WEEK'):'')+'</span><span class="focus">'+dc+'/'+dt+' days</span><span class="wkchev">\u25be</span></div>';
     if(!unlocked){ html+='<div class="wkbody"><div class="lockbox">Locked - complete the previous week to unlock.</div></div></div>'; continue; }
     html+='<div class="wkbody">';
     prog.days.forEach(d=>{ html+=dayHTML(wi,d,tm,canEdit,prog,bypass,a); });
