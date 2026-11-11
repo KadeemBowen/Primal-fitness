@@ -798,6 +798,75 @@ function celebrate(msg){
   document.body.appendChild(wrap);
   setTimeout(()=>wrap.remove(),3200);
 }
+/* ===== Athlete bests (admin) =====
+   Competition squat / bench / deadlift bests per program. Removing a program
+   deletes its logs, so its bests are saved to athlete_bests first; programs
+   still assigned are worked out live from program_logs. */
+const BEST_LIFTS=[['squat','SQ'],['bench','BP'],['deadlift','DL']];
+// Exercises that carry a lift only so they can be priced off it - not competition lifts.
+const VARIANT_RX=/pause|paused|deficit|romanian|\brdl\b|spoto|larsen|close.?grip|tempo|\bpins?\b|board|front|\bbox\b|block|incline|floor|safety|ssb|good ?morning/i;
+let bsOpen=new Set();
+const e1rmOf=(w,r)=>r<=1?w:w*0.0333*r+w;
+// logs: [{ex, weight, reps, at}] for one athlete + program -> {squat:{...}, ...}
+function bestsFromLogs(prog,logs){
+  const byKey={}; prog.days.forEach(d=>d.ex.forEach(e=>{ byKey[e.k]=e; }));
+  const out={};
+  logs.forEach(l=>{ const ex=byKey[l.ex], w=+l.weight, r=+l.reps||0;
+    if(!ex||!ex.lift||ex.t==='goal'||ex.t==='info'||!(w>0)||r<1) return;
+    if(VARIANT_RX.test(ex.name)) return;
+    const b=out[ex.lift]||(out[ex.lift]={lift:ex.lift,top_weight:0,top_reps:0,e1rm:0,e1rm_weight:null,e1rm_reps:null,logged_at:null});
+    if(w>b.top_weight||(w===b.top_weight&&r>b.top_reps)){ b.top_weight=w; b.top_reps=r; b.logged_at=l.at||null; }
+    if(r<=10){ const e1=Math.round(e1rmOf(w,r)); if(e1>b.e1rm){ b.e1rm=e1; b.e1rm_weight=w; b.e1rm_reps=r; } }
+  });
+  return out;
+}
+async function archiveBests(uid,program){
+  const prog=PROGRAMS[program]; if(!prog) return;
+  const l=await sb('program_logs?program=eq.'+encodeURIComponent(program)+'&user_id=eq.'+uid+'&select=ex,weight,reps,completed_at');
+  const rows=Object.values(bestsFromLogs(prog,(l||[]).map(x=>({ex:x.ex,weight:x.weight,reps:x.reps,at:x.completed_at}))));
+  if(!rows.length) return;   // nothing lifted on it - nothing to keep
+  await rpc('app_archive_bests',{p_token:session.token,p_user:uid,p_program:program,p_program_name:prog.name,p_rows:rows});
+}
+function refreshBestsIfOpen(){ const f=$('bestsFold'); if(f&&!f.classList.contains('collapsed')) renderBests(); }
+function fmtBest(b){ if(!b||!b.top_weight) return '<span class="note">-</span>';
+  return '<b class="mono">'+(+b.top_weight)+'×'+b.top_reps+'</b>'+(b.e1rm?' <span class="note">e1 '+Math.round(b.e1rm)+'</span>':''); }
+async function renderBests(){ const el=$('bestsList'); if(!el||!session||session.role!=='Admin') return;
+  el.innerHTML='<div class="note">Loading…</div>';
+  let saved;
+  try{ saved=await rpc('app_list_bests',{p_token:session.token})||[]; }
+  catch(e){ el.innerHTML='<div class="note">Athlete bests is not set up yet - run sql/athlete_bests.sql in Supabase. ('+esc(e.message)+')</div>'; return; }
+  let logs=[]; try{ logs=await sb('program_logs?weight=not.is.null&select=user_id,program,ex,weight,reps,completed_at')||[]; }catch(e){ logs=[]; }
+  // entries: one per athlete+program, each {lifts:{squat,bench,deadlift}}
+  const entries=[];
+  assignments.forEach(a=>{ const prog=PROGRAMS[a.program]; if(!prog) return;
+    const mine=logs.filter(x=>x.user_id===a.user_id&&x.program===a.program).map(x=>({ex:x.ex,weight:x.weight,reps:x.reps,at:x.completed_at}));
+    entries.push({uid:a.user_id,name:prog.name,active:true,when:null,lifts:bestsFromLogs(prog,mine)}); });
+  const savedGroups={};
+  saved.forEach(r=>{ const g=r.user_id+'|'+r.program+'|'+r.archived_at;
+    (savedGroups[g]||(savedGroups[g]={uid:r.user_id,uname:r.username,name:r.program_name||r.program,active:false,when:r.archived_at,lifts:{}})).lifts[r.lift]=Object.assign({id:r.id},r); });
+  Object.values(savedGroups).forEach(g=>entries.push(g));
+  if(!entries.length){ el.innerHTML='<div class="note">No athletes with programs yet.</div>'; return; }
+  const athletes={};
+  entries.forEach(en=>{ const u=users.find(x=>x.id===en.uid);
+    const a=athletes[en.uid]||(athletes[en.uid]={uid:en.uid,nm:u?u.u:(en.uname||'(deleted user)'),list:[]}); a.list.push(en); });
+  const list=Object.values(athletes).sort((a,b)=>a.nm.localeCompare(b.nm));
+  el.innerHTML='<div class="note" style="margin:0 0 6px">Heaviest competition lift logged per program (weight × reps, lb) and best estimated 1RM. Pause, deficit, Spoto and other variations are left out.</div>'
+    +list.map(a=>{
+      const all={}; a.list.forEach(en=>BEST_LIFTS.forEach(([lf])=>{ const b=en.lifts[lf]; if(!b) return;
+        const cur=all[lf]; if(!cur||+b.top_weight>+cur.top_weight||(+b.top_weight===+cur.top_weight&&+b.e1rm>+cur.e1rm)) all[lf]=b; }));
+      a.list.sort((x,y)=>(y.active-x.active)||(new Date(y.when)-new Date(x.when)));
+      const allTxt=BEST_LIFTS.map(([lf,ab])=>ab+' '+(all[lf]?(+all[lf].top_weight):'-')).join(' · ');
+      return '<div class="asgnuser'+(bsOpen.has(a.uid)?'':' collapsed')+'" data-bsuser="'+a.uid+'">'
+        +'<div class="asgnname">'+esc(a.nm)+'<span class="tag">best '+allTxt+'</span><span class="amchev">▾</span></div>'
+        +'<div class="asgnprogs">'
+        +a.list.map(en=>{ const ids=BEST_LIFTS.map(([lf])=>en.lifts[lf]&&en.lifts[lf].id).filter(Boolean);
+          return '<div class="asgnrow" style="display:block"><div><b>'+esc(en.name)+'</b>'
+            +(en.active?'<span class="tag">active</span>':'<span class="tag">saved '+new Date(en.when).toLocaleDateString()+'</span>')
+            +(!en.active&&ids.length?' <button class="xbtn" data-delbest="'+ids.join(',')+'" title="Delete saved bests">✕</button>':'')+'</div>'
+            +'<div class="note" style="margin:3px 0 0">'+BEST_LIFTS.map(([lf,ab])=>ab+' '+fmtBest(en.lifts[lf])).join(' · ')+'</div></div>'; }).join('')
+        +'</div></div>'; }).join('');
+}
+
 document.addEventListener('click',async e=>{
   const wt=e.target.closest('.pwkhd.wktoggle');
   if(wt){ const pw=wt.closest('.pwk'); if(pw){ const wi=+pw.dataset.wk; if(pw.classList.toggle('collapsed')) expandedWeeks.delete(wi); else expandedWeeks.add(wi); } return; }
@@ -805,15 +874,24 @@ document.addEventListener('click',async e=>{
   if(dt2){ const pd=dt2.closest('.pday'); if(pd){ const dk=pd.dataset.day; if(pd.classList.toggle('collapsed')) expandedDays.delete(dk); else expandedDays.add(dk); } return; }
   const an=e.target.closest('.asgnname');
   if(an){ const box=an.closest('[data-amuser]'); if(box){ const uid=box.dataset.amuser;
-    if(box.classList.toggle('collapsed')) amOpen.delete(uid); else amOpen.add(uid); } return; }
+    if(box.classList.toggle('collapsed')) amOpen.delete(uid); else amOpen.add(uid); }
+    const bb=an.closest('[data-bsuser]'); if(bb){ const uid=bb.dataset.bsuser;
+    if(bb.classList.toggle('collapsed')) bsOpen.delete(uid); else bsOpen.add(uid); } return; }
   const pg=e.target.closest('[data-prog]');
   if(pg){ progProgram=pg.dataset.prog; expandedWeeks.clear(); expandedDays.clear(); await loadAndRenderBoard(); return; }
   const v=e.target.closest('[data-view]');
   if(v){ const pr=v.dataset.view.split('|'); progAthlete=pr[0]; progProgram=pr[1]; expandedWeeks.clear(); expandedDays.clear(); await loadAndRenderBoard(); $('progBoard').scrollIntoView({behavior:'smooth'}); return; }
   const un=e.target.closest('[data-unas]');
-  if(un){ if(!confirm("Remove this program and all of the athlete's logs for it?")) return; const pr=un.dataset.unas.split('|');
+  if(un){ if(!confirm("Remove this program?\n\nThe athlete's best squat, bench and deadlift from it are saved to Athlete bests first, then all of its logs are deleted.")) return; const pr=un.dataset.unas.split('|');
+    // Save bests first - if that fails, remove nothing so the logs are not lost.
+    try{ await archiveBests(pr[0],pr[1]); }
+    catch(err){ toast('Could not save bests - nothing removed. '+err.message); return; }
     try{ await rpc('app_unassign_program',{p_token:session.token,p_user:pr[0],p_program:pr[1]}); await loadAssignments(); renderAmList();
-      if(progAthlete===pr[0]&&progProgram===pr[1]) progProgram=null; await loadAndRenderBoard(); toast('Removed'); }catch(err){toast(err.message);} return; }
+      if(progAthlete===pr[0]&&progProgram===pr[1]) progProgram=null; await loadAndRenderBoard(); refreshBestsIfOpen(); toast('Removed - bests saved'); }catch(err){toast(err.message);} return; }
+  if(e.target.closest('#bestsFold .fold-hd')){ setTimeout(refreshBestsIfOpen,0); return; }   // main.js toggles the fold
+  const db=e.target.closest('[data-delbest]');
+  if(db){ if(!confirm('Delete this saved best? This cannot be undone.')) return;
+    try{ for(const id of db.dataset.delbest.split(',')) await rpc('app_delete_best',{p_token:session.token,p_id:id}); await renderBests(); toast('Deleted'); }catch(err){toast(err.message);} return; }
   const el=e.target.closest('[data-editlog]');
   if(el){ editingLog=el.dataset.editlog; renderBoard(); return; }
   if(e.target.closest('[data-canceledit]')){ editingLog=null; renderBoard(); return; }
