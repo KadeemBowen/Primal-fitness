@@ -454,6 +454,99 @@
       ]});
   })();
 
+  /* ---------- 12 & 13. Women's hypertrophy: glute/quad + upper body + core ----------
+     Adjusted versions of Female Glute & Quad with real upper-body volume and
+     core every session. 6 weeks: wk 1-2 12-15 reps, wk 3-4 10-12, wk 5 8-10,
+     wk 6 deload. Squat and RDL price off the 1RM; everything else is by RPE. */
+  (function(){ const n=6;
+    // Compound: reps tighten each phase, effort climbs; deload = 2 easy sets.
+    const H=(k,name,s,suf)=>AR(k,name,[[s,'12-15'+(suf||''),null,'7-8'],[s,'12-15'+(suf||''),null,'8'],[s,'10-12'+(suf||''),null,'8'],
+      [s,'10-12'+(suf||''),null,'8-9'],[s,'8-10'+(suf||''),null,'8-9'],[2,'12'+(suf||''),null,'6']]);
+    // Isolation / pump: higher reps, taken close to failure.
+    const HI=(k,name,s,suf)=>AR(k,name,[[s,'15-20'+(suf||''),null,'8'],[s,'15-20'+(suf||''),null,'8-9'],[s,'12-15'+(suf||''),null,'9'],
+      [s,'12-15'+(suf||''),null,'9'],[s,'12-15'+(suf||''),null,'9'],[2,'15'+(suf||''),null,'6']]);
+    // Core: reps only, 3 sets, 2 on the deload.
+    const CO=(k,name,r)=>({k,name,lift:null,t:'acc',wk:R(n,i=>[i===n-1?2:3,r,null,null])});
+    const sq=(k,s)=>L(k,'Back Squat','squat',W([s,s,s,s,s,3],[10,10,8,8,6,8],[65,67.5,70,72.5,75,55],[7,7.5,8,8,8.5,6]));
+    const rdl=k=>L(k,'Romanian Deadlift','deadlift',W([3,3,3,3,3,2],[10,10,8,8,8,8],[50,52.5,55,57.5,60,45],[7,7.5,8,8,8.5,6]));
+
+    NEW['female-lower-upper']=P({ name:'Female Lower/Upper Hypertrophy (6-wk)', weeks:n, deload:6,
+      note:'Adjusted Glute & Quad: still glute and quad focused, but with two proper upper-body days and core every session. 4 days: Glutes · Upper (push/pull) · Quads · Upper (back & shoulders) + glute pump. Wk 1-2 sets of 12-15 · wk 3-4 10-12 · wk 5 8-10 (heaviest) · wk 6 deload. Back squat and RDL use % of 1RM; everything else by RPE - when you hit the top of the rep range at the target RPE, add a little weight next time. Rest 60-90 s on isolation work, 2 min on squats, RDLs and hip thrusts.',
+      days:[
+        {d:'1',title:'Glutes + Core',ex:[
+          H('flu_ht','Barbell Hip Thrust (1 s squeeze at top)',4),
+          rdl('flu_rdl'),
+          H('flu_bss','Bulgarian Split Squat',3,'/leg'),
+          HI('flu_kick','Cable Glute Kickback',3,'/leg'),
+          HI('flu_abd','Hip Abduction (machine or band)',3),
+          CO('flu_db','Dead Bug','10/side'),
+          CO('flu_pal','Pallof Press','12/side')
+        ]},
+        {d:'2',title:'Upper Push/Pull + Core',ex:[
+          H('flu_dbb','DB Bench Press',4),
+          H('flu_pd','Lat Pulldown',4),
+          H('flu_row','Seated Cable Row',3),
+          H('flu_sp','DB Shoulder Press',3),
+          HI('flu_lat','Lateral Raise',3),
+          HI('flu_tri','Triceps Rope Pushdown',3),
+          CO('flu_hkr','Hanging Knee Raise','12'),
+          I('flu_pl','Finish: 3 x 30-45 s plank',n,[1,2,3,4,5,6])
+        ]},
+        {d:'3',title:'Quads + Core',ex:[
+          sq('flu_sq',4),
+          H('flu_lp','Leg Press',3),
+          H('flu_lun','Walking Lunge',3,'/leg'),
+          HI('flu_ext','Leg Extension',3),
+          HI('flu_calf','Standing Calf Raise',4),
+          CO('flu_roll','Ab Wheel / Stability-ball Rollout','10'),
+          CO('flu_bic','Bicycle Crunch','20')
+        ]},
+        {d:'4',title:'Upper (Back & Shoulders) + Glute Pump',ex:[
+          H('flu_pu','Assisted Pull-up or Close-grip Pulldown',3),
+          H('flu_inc','Incline DB Press',3),
+          H('flu_csr','Chest-supported DB Row',3),
+          H('flu_arn','Arnold Press',3),
+          HI('flu_rd','Rear Delt Fly',3),
+          HI('flu_curl','Bicep Curl',3),
+          HI('flu_gb','Banded Glute Bridge (pause at top)',3),
+          CO('flu_lr','Lying Leg Raise','12'),
+          I('flu_sp2','Finish: 2 x 30 s side plank each side',n,[1,2,3,4,5,6])
+        ]}
+      ]});
+
+    NEW['female-full-body']=P({ name:'Female Full-Body Sculpt (6-wk)', weeks:n, deload:6,
+      note:'3-day full-body hypertrophy for busy weeks: every session hits glutes/quads, upper-body push and pull, shoulders or arms, and finishes with core. Same progression as Lower/Upper: wk 1-2 sets of 12-15 · wk 3-4 10-12 · wk 5 8-10 · wk 6 deload. Back squat and RDL use % of 1RM; the rest by RPE. Leave a day between sessions (e.g. Mon/Wed/Fri). Optional 10-15 min incline walk after any session.',
+      days:[
+        {d:'1',title:'Squat + Push/Pull + Core',ex:[
+          sq('ffb_sq',3),
+          H('ffb_gb','Barbell / DB Glute Bridge',3),
+          H('ffb_dbb','DB Bench Press',3),
+          H('ffb_pd','Lat Pulldown',3),
+          HI('ffb_lat','Lateral Raise',3),
+          CO('ffb_db','Dead Bug','10/side'),
+          I('ffb_pl','Finish: 3 x 30-45 s plank',n,[1,2,3,4,5,6])
+        ]},
+        {d:'2',title:'Hinge + Single-leg + Shoulders + Core',ex:[
+          rdl('ffb_rdl'),
+          H('ffb_bss','Bulgarian Split Squat',3,'/leg'),
+          H('ffb_row','Seated Cable Row',3),
+          H('ffb_sp','DB Shoulder Press',3),
+          HI('ffb_kick','Cable Glute Kickback',3,'/leg'),
+          CO('ffb_pal','Pallof Press','12/side'),
+          CO('ffb_hkr','Hanging Knee Raise','12')
+        ]},
+        {d:'3',title:'Glutes + Upper + Arms + Core',ex:[
+          H('ffb_ht','Barbell Hip Thrust (1 s squeeze at top)',4),
+          H('ffb_lp','Leg Press',3),
+          H('ffb_inc','Incline DB Press',3),
+          H('ffb_dbr','One-arm DB Row',3,'/arm'),
+          HI('ffb_arms','Bicep Curl + Triceps Pushdown (superset)',3),
+          CO('ffb_bic','Bicycle Crunch','20'),
+          I('ffb_sp2','Finish: 2 x 30 s side plank each side',n,[1,2,3,4,5,6])
+        ]}
+      ]});
+  })();
+
   Object.keys(NEW).forEach(k=>{ PROGRAMS[k]=NEW[k]; if(HARDCODED_KEYS.indexOf(k)<0) HARDCODED_KEYS.push(k); });
   PROG_KEYS=Object.keys(PROGRAMS);
 })();
