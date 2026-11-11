@@ -322,7 +322,7 @@ PROGRAMS['peak-2']=(function(){
         info('p2w2','Light and fast - the mock meet is Thu Nov 19 / Fri Nov 20. Do not chase weight today.',[1]),
         info('p2w4','Last session before the meet. Tue Dec 1, then rest Wed-Sat.',[3])
       ]},
-      {d:'3',title:'Platform Day  (Thu/Fri · Wk2 MOCK MEET · Wk3 openers · Wk4 MEET Sun)',ex:[
+      {d:'3',title:'Platform Day',ex:[
         info('p2o0','Openers only - Thu Nov 26 / Fri Nov 27. Weights you could triple. If an opener grinds, lower the meet opener - that is what today is for.',[2]),
         {k:'p2osq',name:'Squat Opener (enter weight)',lift:'squat',t:'goal',wk:only([2],[1,1,null,null])},
         {k:'p2obn',name:'Bench Opener (enter weight)',lift:'bench',t:'goal',wk:only([2],[1,1,null,null])},
