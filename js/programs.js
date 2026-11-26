@@ -30,15 +30,15 @@ const _tDay=(d,title,prefix,lift,liftName)=>({d,title,ex:[
 // on the goal row, then the opener single itself so the actual lift gets logged.
 const _OPEN_WARM=[[0.45,5],[0.60,3],[0.75,2],[0.87,1]];
 function _openerRun(goalK,lift,label,wk){
-  return _OPEN_WARM.map((p,j)=>({k:goalK+'w'+(j+1),name:label+' warm-up '+(j+1)+' ('+Math.round(p[0]*100)+'% of opener)',lift,t:'warmup',goalK,pct:p[0],wk:wk([1,p[1],p[0],null])}))
-    .concat([{k:goalK+'s',name:label+' OPENER single',lift,t:'warmup',goalK,pct:1,wk:wk([1,1,1,null])}]);
+  return _OPEN_WARM.map((p,j)=>({k:goalK+'w'+(j+1),name:label+' warm-up '+(j+1)+' ('+Math.round(p[0]*100)+'% of opener)',lift,t:'warmup',goalK,pct:p[0],opt:true,wk:wk([1,p[1],p[0],null])}))
+    .concat([{k:goalK+'s',name:label+' OPENER single',lift,t:'warmup',goalK,pct:1,opt:true,wk:wk([1,1,1,null])}]);
 }
 function _openerDay(pfx,wk){   // pfx 'pko' / 'p2o': same goal keys as before, so logged openers keep
   const g=(k,name,lift)=>({k:pfx+k,name,lift,t:'goal',wk:wk([1,1,null,null])});
   return [g('sq','Squat Opener (enter weight)','squat')].concat(_openerRun(pfx+'sq','squat','Squat',wk))
     .concat([g('bn','Bench Opener (enter weight)','bench'),g('bn2','Bench 2nd attempt (enter weight)','bench')])
     .concat(_openerRun(pfx+'bn','bench','Bench',wk))
-    .concat([{k:pfx+'bn2s',name:'Bench 2nd attempt single',lift:'bench',t:'warmup',goalK:pfx+'bn2',pct:1,wk:wk([1,1,1,null])}])
+    .concat([{k:pfx+'bn2s',name:'Bench 2nd attempt single',lift:'bench',t:'warmup',goalK:pfx+'bn2',pct:1,opt:true,wk:wk([1,1,1,null])}])
     .concat([g('dl','Deadlift Opener (enter weight)','deadlift')]).concat(_openerRun(pfx+'dl','deadlift','Deadlift',wk));
 }
 const PROGRAMS={
@@ -612,7 +612,7 @@ function presc(ex,wkIdx,tm,prog){ const e=ex.wk[wkIdx]; if(!e) return null;
   if(type==='w'){ wt=round5((w/prog.refTM[ex.lift])*(tm[ex.lift]||0)); }
   return {s,r,rpe,type,wt}; }
 function logOf(wk,day,k){ return progLogs.find(l=>l.week===wk&&l.day===day&&l.ex===k); }
-function dayInfo(wkIdx,day){ const exs=day.ex.filter(e=>e.wk[wkIdx]); const req=exs.filter(e=>e.t!=='info').map(e=>e.k);
+function dayInfo(wkIdx,day){ const exs=day.ex.filter(e=>e.wk[wkIdx]); const req=exs.filter(e=>e.t!=='info'&&!e.opt).map(e=>e.k);   // opt rows (opener warm-ups) never block a day or trigger a reset
   const logs=progLogs.filter(l=>l.week===wkIdx+1&&l.day===day.d); const done=new Set(logs.map(l=>l.ex));
   const allDone=req.length>0&&req.every(k=>done.has(k));
   let started=null; logs.forEach(l=>{const t=new Date(l.at).getTime(); if(started===null||t<started)started=t;});
@@ -722,7 +722,7 @@ function renderBoard(){ const bEl=$('progBoard'), prog=activeProg(), a=asgn(prog
 }
 function dayHTML(wi,day,tm,edit,prog,bypass,a){ const di=dayInfo(wi,day); if(!di.exs.length) return '';
   const admin=!!(session&&session.role==='Admin');
-  const badge=di.allDone?'<span class="dbadge done">done</span>':'<span class="dbadge">'+di.done.size+'/'+di.req.length+'</span>';
+  const badge=di.allDone?'<span class="dbadge done">done</span>':'<span class="dbadge">'+di.req.filter(k=>di.done.has(k)).length+'/'+di.req.length+'</span>';
   // Custom programs key days as 'd<id>', so "Day "+day.d would print "Day d0" in
   // front of the title the admin typed. Built-ins key them '1'-'4' / 'A'-'D'.
   const label=prog.custom?esc(day.title):('Day '+day.d+' - '+esc(day.title));
