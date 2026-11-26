@@ -26,6 +26,21 @@ const _tDay=(d,title,prefix,lift,liftName)=>({d,title,ex:[
   _tWarm(prefix+'top',liftName+' Max attempt',lift,prefix+'goal',1.00,1)
 ]});
 
+// Opener rehearsal (meet-peak openers week): warm-ups priced off the opener entered
+// on the goal row, then the opener single itself so the actual lift gets logged.
+const _OPEN_WARM=[[0.45,5],[0.60,3],[0.75,2],[0.87,1]];
+function _openerRun(goalK,lift,label,wk){
+  return _OPEN_WARM.map((p,j)=>({k:goalK+'w'+(j+1),name:label+' warm-up '+(j+1)+' ('+Math.round(p[0]*100)+'% of opener)',lift,t:'warmup',goalK,pct:p[0],wk:wk([1,p[1],p[0],null])}))
+    .concat([{k:goalK+'s',name:label+' OPENER single',lift,t:'warmup',goalK,pct:1,wk:wk([1,1,1,null])}]);
+}
+function _openerDay(pfx,wk){   // pfx 'pko' / 'p2o': same goal keys as before, so logged openers keep
+  const g=(k,name,lift)=>({k:pfx+k,name,lift,t:'goal',wk:wk([1,1,null,null])});
+  return [g('sq','Squat Opener (enter weight)','squat')].concat(_openerRun(pfx+'sq','squat','Squat',wk))
+    .concat([g('bn','Bench Opener (enter weight)','bench'),g('bn2','Bench 2nd attempt (enter weight)','bench')])
+    .concat(_openerRun(pfx+'bn','bench','Bench',wk))
+    .concat([{k:pfx+'bn2s',name:'Bench 2nd attempt single',lift:'bench',t:'warmup',goalK:pfx+'bn2',pct:1,wk:wk([1,1,1,null])}])
+    .concat([g('dl','Deadlift Opener (enter weight)','deadlift')]).concat(_openerRun(pfx+'dl','deadlift','Deadlift',wk));
+}
 const PROGRAMS={
   'primal-foundation':{
     name:'Primal Foundation (4-wk base + test)',
@@ -256,10 +271,7 @@ PROGRAMS['primal-peak']=(function(){
         {k:'pkpsq',name:'Pause Squat (3 sec)',lift:'squat',t:'w',wk:[[3,3,65,7],null,null,null]},
         // --- Week 3: opener rehearsal (enter the exact weights the mock proved) ---
         info('pko0','Openers only. Weights you could triple. If an opener grinds, lower the meet opener - that is what today is for.',[2]),
-        {k:'pkosq',name:'Squat Opener (enter weight)',lift:'squat',t:'goal',wk:[null,null,[1,1,null,null],null]},
-        {k:'pkobn',name:'Bench Opener (enter weight)',lift:'bench',t:'goal',wk:[null,null,[1,1,null,null],null]},
-        {k:'pkobn2',name:'Bench 2nd attempt (enter weight)',lift:'bench',t:'goal',wk:[null,null,[1,1,null,null],null]},
-        {k:'pkodl',name:'Deadlift Opener (enter weight)',lift:'deadlift',t:'goal',wk:[null,null,[1,1,null,null],null]},
+        ..._openerDay('pko',row=>only([2],row)),
         // --- Weeks 2 & 4: full platform run ---
         info('pkm2','MOCK MEET \u00b7 Sat Nov 14 - run it live: singlet, belt, commands, meet timing, squat then bench then deadlift. This is what sets your real openers.',[1]),
         info('pkm4','MEET DAY \u00b7 Sun Nov 29. Openers are locked from the mock - do not raise them in the warm-up room.',[3]),
@@ -324,10 +336,7 @@ PROGRAMS['peak-2']=(function(){
       ]},
       {d:'3',title:'Platform Day',ex:[
         info('p2o0','Openers only - Thu Nov 26 / Fri Nov 27. Weights you could triple. If an opener grinds, lower the meet opener - that is what today is for.',[2]),
-        {k:'p2osq',name:'Squat Opener (enter weight)',lift:'squat',t:'goal',wk:only([2],[1,1,null,null])},
-        {k:'p2obn',name:'Bench Opener (enter weight)',lift:'bench',t:'goal',wk:only([2],[1,1,null,null])},
-        {k:'p2obn2',name:'Bench 2nd attempt (enter weight)',lift:'bench',t:'goal',wk:only([2],[1,1,null,null])},
-        {k:'p2odl',name:'Deadlift Opener (enter weight)',lift:'deadlift',t:'goal',wk:only([2],[1,1,null,null])},
+        ..._openerDay('p2o',row=>only([2],row)),
         info('p2m2','MOCK MEET · Thu Nov 19 / Fri Nov 20 - run it live: singlet, belt, commands, meet timing, squat then bench then deadlift. This is what sets your real openers.',[1]),
         info('p2m4','MEET DAY · Sun Dec 6. Openers are locked from the mock - do not raise them in the warm-up room.',[3]),
         ...meet('p2msq','squat','Squat',MEET),
@@ -408,10 +417,7 @@ PROGRAMS['peak-2']=(function(){
             wk:seq([[3,4,60,7],[3,3,62,7]],[[3,3,65,7],null,null,null])},
           // --- openers week: enter the exact weights the mock proved ---
           info('pko0','Openers only. Weights you could triple. If an opener grinds, lower the meet opener - that is what today is for.',[OPEN]),
-          {k:'pkosq',name:'Squat Opener (enter weight)',lift:'squat',t:'goal',wk:at([OPEN],[1,1,null,null])},
-          {k:'pkobn',name:'Bench Opener (enter weight)',lift:'bench',t:'goal',wk:at([OPEN],[1,1,null,null])},
-          {k:'pkobn2',name:'Bench 2nd attempt (enter weight)',lift:'bench',t:'goal',wk:at([OPEN],[1,1,null,null])},
-          {k:'pkodl',name:'Deadlift Opener (enter weight)',lift:'deadlift',t:'goal',wk:at([OPEN],[1,1,null,null])},
+          ..._openerDay('pko',row=>at([OPEN],row)),
           // --- mock + meet: full platform run ---
           info('pkm2','MOCK MEET - run it live: singlet, belt, commands, meet timing, squat then bench then deadlift. This is what sets your real openers.',[MOCK]),
           info('pkm4','MEET DAY. Openers are locked from the mock - do not raise them in the warm-up room.',[MEETW]),
